@@ -1,4 +1,3 @@
-#yaml-language-server: $schema=../../generate-schemas/schemas/system.schema.json
 apiVersion: canaries.flanksource.com/v1
 kind: Topology
 metadata:
@@ -16,7 +15,6 @@ spec:
     lookup:
       prometheus:
       - query: 'sum(1000 * max by (node) (rate(container_cpu_usage_seconds_total{container!=""}[5m])))'
-        url: 'http://prometheus-k8s.monitoring:9090'
         display:
           expr: |
             [{'name': 'cpu', 'value': int(results[0].value), 'headline': true, 'unit': 'millicores'}].toJSON()
@@ -24,7 +22,6 @@ spec:
     lookup:
       prometheus:
       - query: 'sum(max by (node) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m])))'
-        url: 'http://prometheus-k8s.monitoring:9090'
         display:
           expr: |
             [{'name': 'memory', 'value': int(results[0].value), 'headline': true, 'unit': 'bytes'}].toJSON()
@@ -50,7 +47,6 @@ spec:
               lookup:
                 prometheus:
                 - query: '1000 * max by (node) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
-                  url: 'http://prometheus-k8s.monitoring:9090'
                   display:
                     javascript: |
                       var components = [];
@@ -65,7 +61,6 @@ spec:
               lookup:
                 prometheus:
                 - query: 'max by (node) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m]))'
-                  url: 'http://prometheus-k8s.monitoring:9090'
                   display:
                     javascript: |
                       var components = [];
@@ -80,7 +75,6 @@ spec:
               lookup:
                 prometheus:
                 - query: 'max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"}[5m]))'
-                  url: 'http://prometheus-k8s.monitoring:9090'
                   display:
                     javascript: |
                       var components = [];
@@ -114,7 +108,6 @@ spec:
               lookup:
                 prometheus:
                 - query: '1000 * max by (pod) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
-                  url: 'http://prometheus-k8s.monitoring:9090'
                   display:
                     javascript: |
                       var components = [];
@@ -133,7 +126,6 @@ spec:
               lookup:
                 prometheus:
                 - query: 'max by (pod) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m]))'
-                  url: 'http://prometheus-k8s.monitoring:9090'
                   display:
                     javascript: |
                       var components = [];
