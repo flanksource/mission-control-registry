@@ -1,7 +1,7 @@
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "prometheus-topology.name" -}}
+{{- define "mission-control.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -10,7 +10,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "prometheus-topology.fullname" -}}
+{{- define "mission-control.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -26,16 +26,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "prometheus-topology.chart" -}}
+{{- define "mission-control.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "prometheus-topology.labels" -}}
-helm.sh/chart: {{ include "prometheus-topology.chart" . }}
-{{ include "prometheus-topology.selectorLabels" . }}
+{{- define "mission-control.labels" -}}
+helm.sh/chart: {{ include "mission-control.chart" . }}
+{{ include "mission-control.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -45,17 +45,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "prometheus-topology.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "prometheus-topology.name" . }}
+{{- define "mission-control.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "mission-control.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "prometheus-topology.serviceAccountName" -}}
+{{- define "mission-control.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "prometheus-topology.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "mission-control.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

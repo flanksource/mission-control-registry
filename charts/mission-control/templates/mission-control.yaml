@@ -23,7 +23,7 @@ kind: Topology
 metadata:
   name: {{ .Values.topologyName }}
   labels:
-    {{- include "mission-control-topology.labels" . | nindent 4 }}
+    {{- include "mission-control.labels" . | nindent 4 }}
 spec:
   icon: mission-control
   schedule: '@every 15m'
