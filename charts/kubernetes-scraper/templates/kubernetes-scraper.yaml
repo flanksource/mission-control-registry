@@ -1,0 +1,15 @@
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: {{ .Values.scraperName }}
+  labels:
+    {{- include "kubernetes-scraper.labels" . | nindent 4 }}
+spec:
+  kubernetes:
+    - clusterName: {{ .Values.clusterName }}
+      exclusions: {{ .Values.scrapeExclusions | toYaml | nindent 8 }}
+      event:
+        exclusions: {{ .Values.eventExclusions | toYaml | nindent 10 }}
+        severityKeywords: {{ .Values.severityKeywords | toYaml | nindent 10 }}
+  retention:
+    changes: {{ .Values.retention.changes | toYaml | nindent 6 }}

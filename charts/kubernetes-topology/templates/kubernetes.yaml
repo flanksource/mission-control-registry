@@ -1,0 +1,138 @@
+apiVersion: canaries.flanksource.com/v1
+kind: Topology
+metadata:
+  name: {{ .Values.topologyName }}
+  labels:
+    {{- include "kubernetes-topology.labels" . | nindent 4 }}
+spec:
+  type: KubernetesCluster
+  icon: kubernetes
+  schedule: "@every 10m"
+  id:
+    javascript: properties.id
+  properties:
+  - name: cpu
+    lookup:
+      prometheus:
+      - query: 'sum(1000 * max by (node) (rate(container_cpu_usage_seconds_total{container!=""}[5m])))'
+        display:
+          expr: |
+            [{'name': 'cpu', 'value': int(results[0].value), 'headline': true, 'unit': 'millicores'}].toJSON()
+  - name: memory
+    lookup:
+      prometheus:
+      - query: 'sum(max by (node) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m])))'
+        display:
+          expr: |
+            [{'name': 'memory', 'value': int(results[0].value), 'headline': true, 'unit': 'bytes'}].toJSON()
+  components:
+    - name: nodes
+      icon: server
+      owner: infra
+      id:
+        javascript: properties.zone + "/" + self.name
+      type: KubernetesNode
+      components:
+        - name: NodesGroup
+          type: virtual
+          icon: server
+          lookup:
+            kubernetes:
+              - kind: Node
+                name: k8s
+                display:
+                  javascript: JSON.stringify(k8s.getNodeTopology(results)) 
+          properties:
+            - name: cpu
+              lookup:
+                prometheus:
+                - query: '1000 * max by (node) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
+                  display:
+                    javascript: |
+                      var components = [];
+                      for (idx in results) {
+                        components.push({
+                          name: results[idx].node,
+                          properties: [{name: 'cpu', value: parseInt(Number(results[idx].value))}],
+                        })
+                      }
+                      JSON.stringify(components)
+            - name: memory
+              lookup:
+                prometheus:
+                - query: 'max by (node) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m]))'
+                  display:
+                    javascript: |
+                      var components = [];
+                      for (idx in results) {
+                        components.push({
+                          name: results[idx].node,
+                          properties: [{name: 'memory', value: parseInt(Number(results[idx].value))}],
+                        })
+                      }
+                      JSON.stringify(components)
+            - name: ephemeral-storage
+              lookup:
+                prometheus:
+                - query: 'max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"}[5m]))'
+                  display:
+                    javascript: |
+                      var components = [];
+                      for (idx in results) {
+                        components.push({
+                          name: results[idx].instance,
+                          properties: [{name: 'ephemeral-storage', value: parseInt(Number(results[idx].value))}],
+                        })
+                      }
+                      JSON.stringify(components)
+    - name: pods
+      icon: pods
+      type: KubernetesPods
+      owner: Dev
+      components:
+        - name: PodGroup
+          icon: pods
+          type: virtual
+          lookup:
+            kubernetes:
+              - kind: Pod
+                name: k8s-pods
+                ready: false
+                ignore:
+                  - junit-fail**
+                  - junit-pass**
+                display:
+                  javascript: JSON.stringify(k8s.getPodTopology(results)) 
+          properties:
+            - name: cpu
+              lookup:
+                prometheus:
+                - query: '1000 * max by (pod) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
+                  display:
+                    javascript: |
+                      var components = [];
+                      for (idx in results) {
+                        var value = parseInt(Number(results[idx].value))
+                        // CPU can be between 0 & 1, so take ceil for that case
+                        if (value < 1) {value = 1}
+
+                        components.push({
+                          name: results[idx].pod,
+                          properties: [{name: 'cpu', value: value}],
+                        })
+                      }
+                      JSON.stringify(components)
+            - name: memory
+              lookup:
+                prometheus:
+                - query: 'max by (pod) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m]))'
+                  display:
+                    javascript: |
+                      var components = [];
+                      for (idx in results) {
+                        components.push({
+                          name: results[idx].pod,
+                          properties: [{name: 'memory', value: parseInt(Number(results[idx].value))}],
+                        })
+                      }
+                      JSON.stringify(components)
