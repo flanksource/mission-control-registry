@@ -22,6 +22,18 @@ scraper:
     - certificaterequest
     - orders.acme.cert-manager.io
 
+  relationships:
+    # FluxCD Helm relationships
+    - name:
+        label: 'helm.toolkit.fluxcd.io/name'
+      namespace:
+        label: 'helm.toolkit.fluxcd.io/namespace'
+    # FluxCD Kustomize relationships
+    - name:
+        label: 'kustomize.toolkit.fluxcd.io/name'
+      namespace:
+        label: 'kustomize.toolkit.fluxcd.io/namespace'
+
   eventExclusions:
     - SuccessfulCreate
     - Created
