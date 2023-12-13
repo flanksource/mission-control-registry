@@ -23,7 +23,7 @@ jobs:
       - name: Update chart repo
         run: |
           cd chart-index
-          cp ../flanksource-*.tgz ./
+          cp ../mission-control-*.tgz ./
           helm repo index --merge index.yaml .
       - name: Push changes to chart repo
         uses: stefanzweifel/git-auto-commit-action@v4
