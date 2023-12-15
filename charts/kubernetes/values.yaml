@@ -28,11 +28,15 @@ scraper:
         label: 'helm.toolkit.fluxcd.io/name'
       namespace:
         label: 'helm.toolkit.fluxcd.io/namespace'
+      kind:
+        value: 'HelmRelease'
     # FluxCD Kustomize relationships
     - name:
         label: 'kustomize.toolkit.fluxcd.io/name'
       namespace:
         label: 'kustomize.toolkit.fluxcd.io/namespace'
+      kind:
+        value: 'Kustomization'
 
   eventExclusions:
     - SuccessfulCreate
