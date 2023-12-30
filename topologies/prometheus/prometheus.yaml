@@ -15,7 +15,7 @@ spec:
             javascript: JSON.stringify(k8s.getPodTopology(results))
           kind: Pod
           name: k8s
-          namespace:
+          namespaceSelector:
             name: monitoring
       properties:
       - lookup:
