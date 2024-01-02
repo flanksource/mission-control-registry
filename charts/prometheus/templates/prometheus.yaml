@@ -8,6 +8,12 @@ spec:
   icon: prometheus
   type: Topology
   schedule: "@every 5m"
+  components:
+    - name: pods
+      icon: pods
+      selectors:
+        - name: pods
+          labelSelector: 'namespace=monitoring'
   properties:
   - name: Metrics
     headline: true
