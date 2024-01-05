@@ -136,3 +136,21 @@ spec:
                         })
                       }
                       JSON.stringify(components)
+
+    - name: Namespaces
+      type: Lookup
+      icon: namespace
+      components:
+        - name: NamespaceGroup
+          type: virtual
+          lookup:
+            postgres:
+            - connection: connection://postgres/mission-control
+              query: select distinct(namespace) from components where type = 'KubernetesPod' and deleted_at is null
+              display:
+                expr: |
+                  results.rows.map(r, {
+                    'name': r.namespace,
+                    'icon': 'namespace',
+                    'selectors': [{'name': 'pods', 'labelSelector': 'namespace='+r.namespace}]
+                  }).toJSON()
