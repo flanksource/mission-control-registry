@@ -154,3 +154,33 @@ spec:
                     'icon': 'namespace',
                     'selectors': [{'name': 'pods', 'labelSelector': 'namespace='+r.namespace}]
                   }).toJSON()
+
+          properties:
+            - name: cpu
+              lookup:
+                prometheus:
+                - query: '1000 * max by (namespace) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
+                  display:
+                    javascript: |
+                      var components = [];
+                      for (idx in results) {
+                        components.push({
+                          name: results[idx].namespace,
+                          properties: [{name: 'cpu', value: parseInt(Number(results[idx].value))}],
+                        })
+                      }
+                      JSON.stringify(components)
+            - name: memory
+              lookup:
+                prometheus:
+                - query: 'max by (namespace) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m]))'
+                  display:
+                    javascript: |
+                      var components = [];
+                      for (idx in results) {
+                        components.push({
+                          name: results[idx].namespace,
+                          properties: [{name: 'memory', value: parseInt(Number(results[idx].value))}],
+                        })
+                      }
+                      JSON.stringify(components)
