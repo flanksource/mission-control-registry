@@ -1,0 +1,27 @@
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: {{ .Values.scraper.name }}
+  labels:
+    {{- include "aws.labels" . | nindent 4 }}
+spec:
+  aws:
+  - compliance: {{ .Values.compliance }}
+
+    region: {{ .Values.regions }}
+
+    {{- if .Values.costReporting.enabled }}
+    cost_reporting:
+      database: {{.Values.costReporting.database}}
+      region: {{.Values.costReporting.region}}
+      s3_bucket_path: {{.Values.costReporting.s3BucketPath}}
+      table: {{.Values.costReporting.table}} 
+    {{- end }}
+
+    inventory: {{ .Values.inventory }}
+    patch_details: {{ .Values.patchDetails }}
+    patch_states: {{ .Values.patchStates }}
+    trusted_advisor_check: {{ .Values.trustedAdvisorCheck }}
+
+    include: {{ .Values.includeResources }}
+    exclude: {{ .Values.excludeResources }}
