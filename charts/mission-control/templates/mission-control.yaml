@@ -59,8 +59,7 @@ spec:
     checks:
     - inline:
         http:
-        - display: {}
-          endpoint: http://mission-control:8080/health
+        - endpoint: http://mission-control:8080/health
           name: incident-commander-http-check
           responseCodes:
           - 200
@@ -105,11 +104,61 @@ spec:
           - 200
         schedule: '@every 1m'
     components:
+    - name: Canaries
+      icon: canary-checker
+      checks:
+        - inline:
+            postgres:
+              - query: |
+                  WITH cte AS (
+                    SELECT name, resource_id, resource_type, created_at, details, status, ROW_NUMBER() OVER (PARTITION by resource_id, name ORDER BY created_at DESC) AS rn
+                    FROM job_history
+                    WHERE
+                      resource_id in (select id::text from canaries where deleted_at is null) AND
+                      status != 'RUNNING' AND
+                      resource_type = 'canary'
+                  )
+                  SELECT * FROM cte WHERE rn = 1;
+                connection: connection://postgres/mission-control/mission-control 
+                name: CanarySync Check
+                transform:
+                  expr: |
+                    results.rows.map(r, {
+                      'name': r.name + ':' +r.resource_id,
+                      'icon': 'canary-checker',
+                      'message': r.created_at + ' | ' r.details,
+                      'description': r.details,
+                      'pass': r.status=='SUCCESS',
+                    }).toJSON()
     - forEach:
         properties:
         - name: Type
           text: SystemTemplate
       icon: k8s-customresourcedefinition
+      checks:
+        - inline:
+            postgres:
+              - query: |
+                  WITH cte AS (
+                    SELECT name, resource_id, resource_type, created_at, details, status, ROW_NUMBER() OVER (PARTITION by resource_id, name ORDER BY created_at DESC) AS rn
+                    FROM job_history
+                    WHERE
+                      resource_id in (select id::text from topologies where deleted_at is null) AND
+                      status != 'RUNNING' AND
+                      resource_type = 'topology'
+                  )
+                  SELECT * FROM cte WHERE rn = 1;
+                connection: connection://postgres/mission-control/mission-control 
+                name: TopologyChecks
+                transform:
+                  expr: |
+                    results.rows.map(r, {
+                      'name': r.name + ':' +r.resource_id,
+                      'icon': 'traces',
+                      'message': r.created_at + ' | ' r.details,
+                      'description': r.details,
+                      'pass': r.status=='SUCCESS',
+                    }).toJSON()
       lookup:
         postgres:
         - connection: connection://postgres/mission-control
@@ -118,27 +167,11 @@ spec:
               JSON.stringify(results.rows.map(function(r) {return {
                 name: r.name,
                 properties: [
-                {
-                  name: 'Last runtime',
-                  text: r.time_end,
-                },
-                {
-                  name: 'Duration',
-                  text: r.duration_millis,
-                  unit: 'ms',
-                  headline: true,
-                },
-                {
-                  name: 'Success Count',
-                  text: r.success_count,
-                  headline: true,
-                },
-                {
-                  name: 'Error Count',
-                  text: r.error_count,
-                  headline: true,
-                },
-              ],
+                  { name: 'Last runtime', text: r.time_end},
+                  { name: 'Duration', text: r.duration_millis, unit: 'ms', headline: true},
+                  { name: 'Success Count', text: r.success_count, headline: true},
+                  { name: 'Error Count', text: r.error_count, headline: true},
+                ],
               }}))
           name: Topologies count query
           query: |
@@ -193,8 +226,34 @@ spec:
     - labelSelector: app.kubernetes.io/name=canary-checker
       name: pods
     type: API
-  - icon: logs
-    name: APM Hub
+
+  - name: Event Queue
+    icon: switch
+    properties:
+      - name: Backlog
+        lookup:
+          postgres:
+            - query: SELECT count(*) FROM event_queue
+              connection: connection://postgres/mission-control/mission-control 
+              display:
+                expr: results.rows[0].count 
+    checks:
+      - inline:
+          postgres:
+            - query: SELECT distinct(name), count(*) FROM event_queue GROUP BY name
+              connection: connection://postgres/mission-control/mission-control 
+              name: Event Queue Checks
+              transformDeleteStrategy: MarkHealthy
+              transform:
+                expr: |
+                  results.rows.map(r, {
+                    'name': r.name,
+                    'icon': 'switch',
+                    'pass': int(r.count) < 200,
+                  }).toJSON()
+
+  - name: APM Hub
+    icon: logs
     properties:
     - headline: true
       lookup:
@@ -234,6 +293,30 @@ spec:
           responseCodes:
           - 200
         schedule: '@every 1m'
+    - inline:
+        postgres:
+          - query: |
+              WITH cte AS (
+                SELECT name, resource_id, resource_type, created_at, details, status, ROW_NUMBER() OVER (PARTITION by resource_id, name ORDER BY created_at DESC) AS rn
+                FROM job_history
+                WHERE
+                  resource_id in (select id::text from config_scrapers where deleted_at is null) AND
+                  status != 'RUNNING' AND
+                  resource_type = 'config_scraper'
+              )
+              SELECT * FROM cte WHERE rn = 1
+            connection: connection://postgres/mission-control/mission-control 
+            name: Config Scraper Checks
+            transform:
+              expr: |
+                results.rows.map(r, {
+                  'name': r.name + ':' +r.resource_id,
+                  'icon': 'config',
+                  'message': r.created_at + ' | ' r.details,
+                  'description': r.details,
+                  'pass': r.status=='SUCCESS',
+                }).toJSON()
+
     components:
     - icon: k8s-customresourcedefinition
       lookup:
@@ -368,10 +451,13 @@ spec:
     - labelSelector: app.kubernetes.io/name=incident-manager-ui
       name: pods
     type: Website
+
   - name: Kratos
     icon: ory-kratos
+    type: Service
     properties:
-    - configLookup:
+    - name: Version
+      configLookup:
         config:
           name: kratos
           tags:
@@ -381,7 +467,6 @@ spec:
         display:
           javascript: tags['app.kubernetes.io/version']
       headline: true
-      name: Version
     - headline: true
       lookup:
         postgres:
@@ -395,4 +480,71 @@ spec:
     selectors:
     - labelSelector: app.kubernetes.io/name=kratos
       name: pods
-    type: Service
+
+  - name: Upstream Replication
+    icon: helm
+    properties:
+      - name: Check Status Backlog
+        lookup:
+          postgres:
+            - query: SELECT count(*) FROM check_statuses where is_pushed = false
+              connection: connection://postgres/mission-control/mission-control 
+              display:
+                expr: results.rows[0].count 
+      - name: Check Status Last Push
+        lookup:
+          postgres:
+            - query: SELECT max(time) FROM check_statuses where is_pushed = true
+              connection: connection://postgres/mission-control/mission-control 
+              display:
+                expr: results.rows[0].max
+      - name: Config Analysis Backlog
+        lookup:
+          postgres:
+            - query: SELECT count(*) FROM config_analysis where is_pushed = false
+              connection: connection://postgres/mission-control/mission-control 
+              display:
+                expr: results.rows[0].count 
+      - name: Config Analysis Last Push
+        lookup:
+          postgres:
+            - query: SELECT max(time) FROM config_analysis where is_pushed = true
+              connection: connection://postgres/mission-control/mission-control 
+              display:
+                expr: results.rows[0].max
+      - name: Config Changes Backlog
+        lookup:
+          postgres:
+            - query: SELECT count(*) FROM config_changes where is_pushed = false
+              connection: connection://postgres/mission-control/mission-control 
+              display:
+                expr: results.rows[0].count 
+      - name: Config Changes Last Push
+        lookup:
+          postgres:
+            - query: SELECT max(time) FROM config_changes where is_pushed = true
+              connection: connection://postgres/mission-control/mission-control 
+              display:
+                expr: results.rows[0].max
+    checks:
+      - inline:
+          postgres:
+            - query: SELECT count(*) FROM check_statuses where is_pushed = false
+              connection: connection://postgres/mission-control/mission-control 
+              name: Check status Backlog
+              display:
+                expr: results.rows[0].count
+      - inline:
+          postgres:
+            - query: SELECT count(*) FROM config_analysis where is_pushed = false
+              connection: connection://postgres/mission-control/mission-control 
+              name: Config Analysis Backlog
+              display:
+                expr: results.rows[0].count
+      - inline:
+          postgres:
+            - query: SELECT count(*) FROM config_changes where is_pushed = false
+              connection: connection://postgres/mission-control/mission-control 
+              name: Config Changes Backlog
+              display:
+                expr: results.rows[0].count
