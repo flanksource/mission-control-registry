@@ -7,7 +7,7 @@ metadata:
 spec:
   type: KubernetesCluster
   icon: kubernetes
-  schedule: "@every 10m"
+  schedule: "{{ .Values.topology.schedule }}"
   id:
     javascript: properties.id
   properties:
@@ -87,8 +87,8 @@ spec:
                       JSON.stringify(components)
     - name: pods
       icon: pods
-      type: KubernetesPods
-      owner: Dev
+      type: Kubernetes::Pods
+      hidden: true
       components:
         - name: PodGroup
           icon: pods
@@ -132,6 +132,54 @@ spec:
                       for (idx in results) {
                         components.push({
                           name: results[idx].pod,
+                          properties: [{name: 'memory', value: parseInt(Number(results[idx].value))}],
+                        })
+                      }
+                      JSON.stringify(components)
+
+    - name: Namespaces
+      type: Lookup
+      icon: namespace
+      components:
+        - name: NamespaceGroup
+          type: virtual
+          lookup:
+            postgres:
+            - connection: connection://postgres/mission-control
+              query: select distinct(namespace) from components where type = 'Kubernetes::Pod' and deleted_at is null
+              display:
+                expr: |
+                  results.rows.map(r, {
+                    'name': r.namespace,
+                    'icon': 'namespace',
+                    'type': 'Kubernetes::Namespace',
+                  }).toJSON()
+
+          properties:
+            - name: cpu
+              lookup:
+                prometheus:
+                - query: '1000 * max by (namespace) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
+                  display:
+                    javascript: |
+                      var components = [];
+                      for (idx in results) {
+                        components.push({
+                          name: results[idx].namespace,
+                          properties: [{name: 'cpu', value: parseInt(Number(results[idx].value))}],
+                        })
+                      }
+                      JSON.stringify(components)
+            - name: memory
+              lookup:
+                prometheus:
+                - query: 'max by (namespace) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m]))'
+                  display:
+                    javascript: |
+                      var components = [];
+                      for (idx in results) {
+                        components.push({
+                          name: results[idx].namespace,
                           properties: [{name: 'memory', value: parseInt(Number(results[idx].value))}],
                         })
                       }
