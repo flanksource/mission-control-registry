@@ -40,6 +40,9 @@ helm.sh/chart: {{ include "kubernetes.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- range $key, $val := .Values.labels }}
+{{ $key }}: {{ $val | quote }}
+{{- end}}
 {{- end }}
 
 {{/*

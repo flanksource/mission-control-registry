@@ -7,7 +7,7 @@ metadata:
 spec:
   type: KubernetesCluster
   icon: kubernetes
-  schedule: "@every 10m"
+  schedule: "{{ .Values.topology.schedule }}"
   id:
     javascript: properties.id
   properties:
@@ -87,8 +87,8 @@ spec:
                       JSON.stringify(components)
     - name: pods
       icon: pods
-      type: KubernetesPods
-      owner: Dev
+      type: Kubernetes::Pods
+      hidden: true
       components:
         - name: PodGroup
           icon: pods
@@ -146,13 +146,13 @@ spec:
           lookup:
             postgres:
             - connection: connection://postgres/mission-control
-              query: select distinct(namespace) from components where type = 'KubernetesPod' and deleted_at is null
+              query: select distinct(namespace) from components where type = 'Kubernetes::Pod' and deleted_at is null
               display:
                 expr: |
                   results.rows.map(r, {
                     'name': r.namespace,
                     'icon': 'namespace',
-                    'selectors': [{'name': 'pods', 'labelSelector': 'namespace='+r.namespace}]
+                    'type': 'Kubernetes::Namespace',
                   }).toJSON()
 
           properties:

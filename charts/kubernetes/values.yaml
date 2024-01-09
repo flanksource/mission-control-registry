@@ -3,12 +3,12 @@ fullnameOverride: ""
 labels: {}
 topology:
   name: cluster
+  schedule: "@every 5m"
+
 scraper:
   name: kubernetes
   clusterName: kubernetes
-  scrapeExclusions:
-    - Secret
-    - ReplicaSet
+  defaultScrapeExclusions:
     - APIService
     - PodMetrics
     - NodeMetrics
@@ -17,10 +17,13 @@ scraper:
     - leases.coordination.k8s.io
     - podmetrics.metrics.k8s.io
     - nodemetrics.metrics.k8s.io
-    - customresourcedefinition
     - controllerrevision
     - certificaterequest
     - orders.acme.cert-manager.io
+
+  scrapeExclusions:
+    - Secret
+    - customresourcedefinition
 
   relationships:
     # FluxCD Helm relationships
