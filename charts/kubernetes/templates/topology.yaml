@@ -82,7 +82,7 @@ spec:
                   display:
                     expr: |
                       dyn(results).map(r, {
-                        'name': r.node,
+                        'name': r.instance,
                         'properties': [{'name': 'memory', 'value': int(r.value)}]
                       }).toJSON()
 
