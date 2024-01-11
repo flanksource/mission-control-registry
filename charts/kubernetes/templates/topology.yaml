@@ -5,33 +5,31 @@ metadata:
   labels:
     {{- include "kubernetes.labels" . | nindent 4 }}
 spec:
-  type: KubernetesCluster
+  type: Kubernetes::Cluster
   icon: kubernetes
   schedule: "{{ .Values.topology.schedule }}"
-  id:
-    javascript: properties.id
   properties:
   - name: cpu
     lookup:
       prometheus:
-      - query: 'sum(1000 * max by (node) (rate(container_cpu_usage_seconds_total{container!=""}[5m])))'
+      - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
         display:
           expr: |
             [{'name': 'cpu', 'value': int(results[0].value), 'headline': true, 'unit': 'millicores'}].toJSON()
   - name: memory
     lookup:
       prometheus:
-      - query: 'sum(max by (node) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m])))'
+      - query: 'sum(container_memory_working_set_bytes{container!=""})'
         display:
           expr: |
             [{'name': 'memory', 'value': int(results[0].value), 'headline': true, 'unit': 'bytes'}].toJSON()
+
   components:
     - name: nodes
       icon: server
-      owner: infra
       id:
         javascript: properties.zone + "/" + self.name
-      type: KubernetesNode
+      type: Kubernetes::Node
       components:
         - name: NodesGroup
           type: virtual
@@ -41,54 +39,58 @@ spec:
               - kind: Node
                 name: k8s
                 display:
-                  javascript: JSON.stringify(k8s.getNodeTopology(results)) 
+                  expr: |
+                    dyn(results).map(r, r.Object).map(r, {
+                      'name': r.metadata.name,
+                      'type': 'Kubernetes::Node',
+                      'labels': k8s.labels(r),
+                      'external_id': r.metadata.name,
+                      'logs': [{'name': 'Kubernetes', 'type': 'KubernetesNode'}],
+                      'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Node'}],
+                      'selectors':[{'fieldSelector': 'node='+r.metadata.name}],
+                      'status': k8s.getHealth(r).status == "Healthy" ? "healthy" : "unhealthy",
+                      'status_reason': k8s.getHealth(r).message,
+                      'properties': k8s.nodeProperties(r),
+                    }).toJSON()
+
           properties:
             - name: cpu
               lookup:
                 prometheus:
-                - query: '1000 * max by (node) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
+                - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (node)'
                   display:
-                    javascript: |
-                      var components = [];
-                      for (idx in results) {
-                        components.push({
-                          name: results[idx].node,
-                          properties: [{name: 'cpu', value: parseInt(Number(results[idx].value))}],
-                        })
-                      }
-                      JSON.stringify(components)
+                    expr: |
+                      dyn(results).map(r, {
+                        'name': r.node,
+                        'properties': [{'name': 'cpu', 'value': math.Ceil(int(r.value))}]
+                      }).toJSON()
             - name: memory
               lookup:
                 prometheus:
-                - query: 'max by (node) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m]))'
+                - query: 'sum(container_memory_working_set_bytes{container!=""}) by (node)'
                   display:
-                    javascript: |
-                      var components = [];
-                      for (idx in results) {
-                        components.push({
-                          name: results[idx].node,
-                          properties: [{name: 'memory', value: parseInt(Number(results[idx].value))}],
-                        })
-                      }
-                      JSON.stringify(components)
+                    expr: |
+                      dyn(results).map(r, {
+                        'name': r.node,
+                        'properties': [{'name': 'memory', 'value': int(r.value)}]
+                      }).toJSON()
+
             - name: ephemeral-storage
               lookup:
                 prometheus:
                 - query: 'max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"}[5m]))'
                   display:
-                    javascript: |
-                      var components = [];
-                      for (idx in results) {
-                        components.push({
-                          name: results[idx].instance,
-                          properties: [{name: 'ephemeral-storage', value: parseInt(Number(results[idx].value))}],
-                        })
-                      }
-                      JSON.stringify(components)
-    - name: pods
+                    expr: |
+                      dyn(results).map(r, {
+                        'name': r.node,
+                        'properties': [{'name': 'memory', 'value': int(r.value)}]
+                      }).toJSON()
+
+    - name: Pods
       icon: pods
-      type: Kubernetes::Pods
+      type: KubernetesPods
       hidden: true
+      type: virtual
       components:
         - name: PodGroup
           icon: pods
@@ -96,91 +98,88 @@ spec:
           lookup:
             kubernetes:
               - kind: Pod
-                name: k8s-pods
                 ready: false
                 ignore:
                   - junit-fail**
                   - junit-pass**
                 display:
-                  javascript: JSON.stringify(k8s.getPodTopology(results)) 
+                  expr: |
+                    dyn(results).map(r, r.Object).map(r, {
+                      'name': r.metadata.name,
+                      'namespace': r.metadata.namespace,
+                      'type': 'Kubernetes::Pod',
+                      'external_id': r.metadata.namespace + '/' + r.metadata.name,
+                      'parentLookup': {'name': r.metadata.namespace, 'type': 'Kubernetes::Namespace'},
+                      'labels': k8s.labels(r),
+                      'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Pod'}],
+                      'logs': [{'name': 'Kubernetes', 'type': 'KubernetesPod'}],
+                      'status': k8s.getHealth(r).status == "Healthy" ? "healthy" : "unhealthy",
+                      'status_reason': k8s.getHealth(r).message,
+                      'properties': k8s.podProperties(r),
+                    }).toJSON()
+
           properties:
             - name: cpu
               lookup:
                 prometheus:
-                - query: '1000 * max by (pod) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
+                - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (pod)'
                   display:
-                    javascript: |
-                      var components = [];
-                      for (idx in results) {
-                        var value = parseInt(Number(results[idx].value))
-                        // CPU can be between 0 & 1, so take ceil for that case
-                        if (value < 1) {value = 1}
-
-                        components.push({
-                          name: results[idx].pod,
-                          properties: [{name: 'cpu', value: value}],
-                        })
-                      }
-                      JSON.stringify(components)
+                    expr: |
+                      dyn(results).map(r, {
+                        'name': r.pod,
+                        'properties': [{'name': 'cpu', 'value': math.Ceil(int(r.value))}]
+                      }).toJSON()
             - name: memory
               lookup:
                 prometheus:
-                - query: 'max by (pod) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m]))'
+                - query: 'sum(container_memory_working_set_bytes{container!=""}) by (pod)'
                   display:
-                    javascript: |
-                      var components = [];
-                      for (idx in results) {
-                        components.push({
-                          name: results[idx].pod,
-                          properties: [{name: 'memory', value: parseInt(Number(results[idx].value))}],
-                        })
-                      }
-                      JSON.stringify(components)
+                    expr: |
+                      dyn(results).map(r, {
+                        'name': r.pod,
+                        'properties': [{'name': 'memory', 'value': int(r.value)}]
+                      }).toJSON()
 
     - name: Namespaces
-      type: Lookup
       icon: namespace
+      type: Kubernetes::Namespaces
       components:
         - name: NamespaceGroup
           type: virtual
           lookup:
-            postgres:
-            - connection: connection://postgres/mission-control
-              query: select distinct(namespace) from components where type = 'Kubernetes::Pod' and deleted_at is null
-              display:
-                expr: |
-                  results.rows.map(r, {
-                    'name': r.namespace,
-                    'icon': 'namespace',
-                    'type': 'Kubernetes::Namespace',
-                  }).toJSON()
-
+            kubernetes:
+              - kind: Namespace
+                display:
+                  expr: |
+                    dyn(results).map(r, r.Object).map(r, {
+                      'name': r.metadata.name,
+                      'type': 'Kubernetes::Namespace',
+                      'external_id': r.metadata.name,
+                      'labels': k8s.labels(r),
+                      'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Namespace'}],
+                      'properties': [
+                        {'name': 'memory', 'unit': 'bytes', 'headline': true},
+                        {'name': 'cpu', 'unit': 'millicores', 'headline': true},
+                      ],
+                    }).toJSON()
           properties:
             - name: cpu
               lookup:
                 prometheus:
-                - query: '1000 * max by (namespace) (rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
+                - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (namespace)'
                   display:
-                    javascript: |
-                      var components = [];
-                      for (idx in results) {
-                        components.push({
-                          name: results[idx].namespace,
-                          properties: [{name: 'cpu', value: parseInt(Number(results[idx].value))}],
-                        })
-                      }
-                      JSON.stringify(components)
+                    expr: |
+                      dyn(results).map(r, {
+                        'name': r.namespace,
+                        'properties': [{'name': 'cpu', 'value': math.Ceil(int(r.value))}]
+                      }).toJSON()
             - name: memory
               lookup:
                 prometheus:
-                - query: 'max by (namespace) (avg_over_time(container_memory_working_set_bytes{container!=""}[5m]))'
+                - query: 'sum(container_memory_working_set_bytes{container!=""}) by (namespace)'
                   display:
-                    javascript: |
-                      var components = [];
-                      for (idx in results) {
-                        components.push({
-                          name: results[idx].namespace,
-                          properties: [{name: 'memory', value: parseInt(Number(results[idx].value))}],
-                        })
-                      }
-                      JSON.stringify(components)
+                    expr: |
+                      dyn(results).map(r, {
+                        'name': r.namespace,
+                        'properties': [{'name': 'memory', 'value': int(r.value)}]
+                      }).toJSON()
