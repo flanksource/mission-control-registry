@@ -49,10 +49,10 @@ compliance: true
 # Scrape cost reports and match them with catalog items
 costReporting:
   enabled: false
-  database: athena_database_name
-  region: athena_database_region
-  s3BucketPath: s3_bucket_path_for_athena_query_results
-  table: athena_database_table_name
+  database: ''
+  region: ''
+  s3BucketPath: ''
+  table: ''
 
 inventory: true
 
