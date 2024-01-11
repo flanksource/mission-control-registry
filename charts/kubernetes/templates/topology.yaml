@@ -86,59 +86,53 @@ spec:
                         'properties': [{'name': 'memory', 'value': int(r.value)}]
                       }).toJSON()
 
-    - name: Pods
+    - name: PodGroup
       icon: pods
-      type: KubernetesPods
-      hidden: true
       type: virtual
-      components:
-        - name: PodGroup
-          icon: pods
-          type: virtual
-          lookup:
-            kubernetes:
-              - kind: Pod
-                ready: false
-                ignore:
-                  - junit-fail**
-                  - junit-pass**
-                display:
-                  expr: |
-                    dyn(results).map(r, r.Object).map(r, {
-                      'name': r.metadata.name,
-                      'namespace': r.metadata.namespace,
-                      'type': 'Kubernetes::Pod',
-                      'external_id': r.metadata.namespace + '/' + r.metadata.name,
-                      'parentLookup': {'name': r.metadata.namespace, 'type': 'Kubernetes::Namespace'},
-                      'labels': k8s.labels(r),
-                      'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Pod'}],
-                      'logs': [{'name': 'Kubernetes', 'type': 'KubernetesPod'}],
-                      'status': k8s.getHealth(r).status == "Healthy" ? "healthy" : "unhealthy",
-                      'status_reason': k8s.getHealth(r).message,
-                      'properties': k8s.podProperties(r),
-                    }).toJSON()
+      lookup:
+        kubernetes:
+          - kind: Pod
+            ready: false
+            ignore:
+              - junit-fail**
+              - junit-pass**
+            display:
+              expr: |
+                dyn(results).map(r, r.Object).map(r, {
+                  'name': r.metadata.name,
+                  'namespace': r.metadata.namespace,
+                  'type': 'Kubernetes::Pod',
+                  'external_id': r.metadata.namespace + '/' + r.metadata.name,
+                  'parentLookup': {'name': r.metadata.namespace, 'type': 'Kubernetes::Namespace'},
+                  'labels': k8s.labels(r),
+                  'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Pod'}],
+                  'logs': [{'name': 'Kubernetes', 'type': 'KubernetesPod'}],
+                  'status': k8s.getHealth(r).status == "Healthy" ? "healthy" : "unhealthy",
+                  'status_reason': k8s.getHealth(r).message,
+                  'properties': k8s.podProperties(r),
+                }).toJSON()
 
-          properties:
-            - name: cpu
-              lookup:
-                prometheus:
-                - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (pod)'
-                  display:
-                    expr: |
-                      dyn(results).map(r, {
-                        'name': r.pod,
-                        'properties': [{'name': 'cpu', 'value': math.Ceil(int(r.value))}]
-                      }).toJSON()
-            - name: memory
-              lookup:
-                prometheus:
-                - query: 'sum(container_memory_working_set_bytes{container!=""}) by (pod)'
-                  display:
-                    expr: |
-                      dyn(results).map(r, {
-                        'name': r.pod,
-                        'properties': [{'name': 'memory', 'value': int(r.value)}]
-                      }).toJSON()
+      properties:
+        - name: cpu
+          lookup:
+            prometheus:
+            - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (pod)'
+              display:
+                expr: |
+                  dyn(results).map(r, {
+                    'name': r.pod,
+                    'properties': [{'name': 'cpu', 'value': math.Ceil(int(r.value))}]
+                  }).toJSON()
+        - name: memory
+          lookup:
+            prometheus:
+            - query: 'sum(container_memory_working_set_bytes{container!=""}) by (pod)'
+              display:
+                expr: |
+                  dyn(results).map(r, {
+                    'name': r.pod,
+                    'properties': [{'name': 'memory', 'value': int(r.value)}]
+                    }).toJSON()
 
     - name: Namespaces
       icon: namespace
