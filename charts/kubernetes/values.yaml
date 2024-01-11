@@ -43,6 +43,12 @@ scraper:
     - Created
     - DNSConfigForming
 
+  transform:
+    changes:
+      exclude:
+        - 'details.source.component == "canary-checker" && details.reason == "Failed"'
+        - 'details.source.component == "canary-checker" && details.reason == "Succeeded"'
+
   severityKeywords:
    error:
      - failed

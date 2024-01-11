@@ -8,8 +8,8 @@ spec:
   kubernetes:
     - clusterName: {{ .Values.scraper.clusterName }}
       exclusions: {{ .Values.scraper.scrapeExclusions | toYaml | nindent 8 }}
-      transform: {{ .Values.scraper.transform | toYaml | nindent 8 }}
       relationships: {{ .Values.scraper.relationships | toYaml | nindent 8 }}
+      transform: {{ .Values.scraper.transform | toYaml | nindent 8 }}
       event:
         exclusions: {{ .Values.scraper.eventExclusions | toYaml | nindent 10 }}
         severityKeywords: {{ .Values.scraper.severityKeywords | toYaml | nindent 10 }}
