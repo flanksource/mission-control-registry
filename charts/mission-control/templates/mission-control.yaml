@@ -92,7 +92,7 @@ spec:
       headline: true
       name: Version
     selectors:
-    - labelSelector: app.kubernetes.io/name=incident-commander
+    - labelSelector: app.kubernetes.io/name=mission-control
     type: API
   - checks:
     - inline:
