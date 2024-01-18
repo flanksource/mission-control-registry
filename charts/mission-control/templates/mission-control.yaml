@@ -26,7 +26,7 @@ metadata:
     {{- include "mission-control.labels" . | nindent 4 }}
 spec:
   icon: mission-control
-  schedule: '@every 15m'
+  schedule: '@every 5m'
   type: Topology
   properties:
   - name: URL
@@ -232,14 +232,14 @@ spec:
         lookup:
           postgres:
             - query: SELECT count(*) FROM event_queue
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].count 
     checks:
       - inline:
           postgres:
             - query: SELECT distinct(name), count(*) FROM event_queue GROUP BY name
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               name: Event Queue Checks
               transformDeleteStrategy: MarkHealthy
               transform:
@@ -302,7 +302,7 @@ spec:
                   resource_type = 'config_scraper'
               )
               SELECT * FROM cte WHERE rn = 1
-            connection: connection://postgres/mission-control/mission-control 
+            connection: connection://postgres/mission-control
             name: Config Scraper Checks
             transform:
               expr: |
@@ -426,6 +426,7 @@ spec:
       name: Connections
     selectors:
     - labelSelector: app=postgresql
+      fieldSelector: namespace=mission-control
     type: Database
   - icon: html
     name: UI
@@ -481,63 +482,63 @@ spec:
         lookup:
           postgres:
             - query: SELECT count(*) FROM check_statuses where is_pushed = false
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].count 
       - name: Check Status Last Push
         lookup:
           postgres:
             - query: SELECT max(time) FROM check_statuses where is_pushed = true
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].max
       - name: Config Analysis Backlog
         lookup:
           postgres:
             - query: SELECT count(*) FROM config_analysis where is_pushed = false
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].count 
       - name: Config Analysis Last Push
         lookup:
           postgres:
             - query: SELECT max(last_observed) FROM config_analysis where is_pushed = true
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].max
       - name: Config Changes Backlog
         lookup:
           postgres:
             - query: SELECT count(*) FROM config_changes where is_pushed = false
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].count 
       - name: Config Changes Last Push
         lookup:
           postgres:
             - query: SELECT max(created_at) FROM config_changes where is_pushed = true
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].max
     checks:
       - inline:
           postgres:
             - query: SELECT count(*) FROM check_statuses where is_pushed = false
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               name: Check status Backlog
               display:
                 expr: results.rows[0].count
       - inline:
           postgres:
             - query: SELECT count(*) FROM config_analysis where is_pushed = false
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               name: Config Analysis Backlog
               display:
                 expr: results.rows[0].count
       - inline:
           postgres:
             - query: SELECT count(*) FROM config_changes where is_pushed = false
-              connection: connection://postgres/mission-control/mission-control 
+              connection: connection://postgres/mission-control
               name: Config Changes Backlog
               display:
                 expr: results.rows[0].count
