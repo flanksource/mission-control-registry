@@ -502,7 +502,7 @@ spec:
       - name: Config Analysis Last Push
         lookup:
           postgres:
-            - query: SELECT max(time) FROM config_analysis where is_pushed = true
+            - query: SELECT max(last_observed) FROM config_analysis where is_pushed = true
               connection: connection://postgres/mission-control/mission-control 
               display:
                 expr: results.rows[0].max
@@ -516,7 +516,7 @@ spec:
       - name: Config Changes Last Push
         lookup:
           postgres:
-            - query: SELECT max(time) FROM config_changes where is_pushed = true
+            - query: SELECT max(created_at) FROM config_changes where is_pushed = true
               connection: connection://postgres/mission-control/mission-control 
               display:
                 expr: results.rows[0].max
