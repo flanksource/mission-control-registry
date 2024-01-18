@@ -12,8 +12,8 @@ spec:
     - name: pods
       icon: pods
       selectors:
-        - name: pods
-          labelSelector: 'namespace=monitoring'
+        - labelSelector: 'namespace=monitoring'
+          fieldSelector: 'type=Kubernetes::Pod'
   properties:
   - name: Metrics
     headline: true

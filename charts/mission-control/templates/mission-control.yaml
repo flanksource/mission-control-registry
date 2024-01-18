@@ -224,7 +224,6 @@ spec:
       type: url
     selectors:
     - labelSelector: app.kubernetes.io/name=canary-checker
-      name: pods
     type: API
 
   - name: Event Queue
@@ -282,7 +281,6 @@ spec:
       type: url
     selectors:
     - labelSelector: app.kubernetes.io/name=apm-hub
-      name: pods
     type: API
   - checks:
     - inline:
@@ -390,7 +388,6 @@ spec:
       type: url
     selectors:
     - labelSelector: app.kubernetes.io/name=config-db
-      name: pods
     type: API
   - icon: postgres
     name: PostgreSQL
@@ -430,7 +427,6 @@ spec:
       name: Connections
     selectors:
     - labelSelector: app=postgresql
-      name: pods
     type: Database
   - icon: html
     name: UI
@@ -449,7 +445,6 @@ spec:
       name: Version
     selectors:
     - labelSelector: app.kubernetes.io/name=incident-manager-ui
-      name: pods
     type: Website
 
   - name: Kratos
@@ -479,7 +474,6 @@ spec:
       name: Identities
     selectors:
     - labelSelector: app.kubernetes.io/name=kratos
-      name: pods
 
   - name: Upstream Replication
     icon: helm
