@@ -93,7 +93,6 @@ spec:
       name: Version
     selectors:
     - labelSelector: app.kubernetes.io/name=incident-commander
-      name: pods
     type: API
   - checks:
     - inline:
