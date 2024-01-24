@@ -2,3 +2,4 @@ nameOverride: ""
 fullnameOverride: ""
 labels: {}
 topologyName: prometheus
+prometheusURL: ''
