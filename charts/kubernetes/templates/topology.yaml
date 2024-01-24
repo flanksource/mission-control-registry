@@ -13,6 +13,7 @@ spec:
     lookup:
       prometheus:
       - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
+        url: {{ .Values.topology.prometheusURL | quote }}
         display:
           expr: |
             [{'name': 'cpu', 'value': int(results[0].value), 'headline': true, 'unit': 'millicores'}].toJSON()
@@ -20,6 +21,7 @@ spec:
     lookup:
       prometheus:
       - query: 'sum(container_memory_working_set_bytes{container!=""})'
+        url: {{ .Values.topology.prometheusURL | quote }}
         display:
           expr: |
             [{'name': 'memory', 'value': int(results[0].value), 'headline': true, 'unit': 'bytes'}].toJSON()
@@ -58,6 +60,7 @@ spec:
               lookup:
                 prometheus:
                 - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (node)'
+                  url: {{ .Values.topology.prometheusURL | quote }}
                   display:
                     expr: |
                       dyn(results).map(r, {
@@ -68,6 +71,7 @@ spec:
               lookup:
                 prometheus:
                 - query: 'sum(container_memory_working_set_bytes{container!=""}) by (node)'
+                  url: {{ .Values.topology.prometheusURL | quote }}
                   display:
                     expr: |
                       dyn(results).map(r, {
@@ -79,6 +83,7 @@ spec:
               lookup:
                 prometheus:
                 - query: 'max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"}[5m]))'
+                  url: {{ .Values.topology.prometheusURL | quote }}
                   display:
                     expr: |
                       dyn(results).map(r, {
@@ -117,6 +122,7 @@ spec:
           lookup:
             prometheus:
             - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (pod)'
+              url: {{ .Values.topology.prometheusURL | quote }}
               display:
                 expr: |
                   dyn(results).map(r, {
@@ -127,6 +133,7 @@ spec:
           lookup:
             prometheus:
             - query: 'sum(container_memory_working_set_bytes{container!=""}) by (pod)'
+              url: {{ .Values.topology.prometheusURL | quote }}
               display:
                 expr: |
                   dyn(results).map(r, {
@@ -161,6 +168,7 @@ spec:
               lookup:
                 prometheus:
                 - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (namespace)'
+                  url: {{ .Values.topology.prometheusURL | quote }}
                   display:
                     expr: |
                       dyn(results).map(r, {
@@ -171,6 +179,7 @@ spec:
               lookup:
                 prometheus:
                 - query: 'sum(container_memory_working_set_bytes{container!=""}) by (namespace)'
+                  url: {{ .Values.topology.prometheusURL | quote }}
                   display:
                     expr: |
                       dyn(results).map(r, {

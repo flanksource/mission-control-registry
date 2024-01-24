@@ -20,12 +20,14 @@ spec:
     lookup:
       prometheus:
         - query: 'count({__name__=~".+"})'
+          url: {{ .Values.prometheusURL | quote }}
           display:
             expr: results[0].value 
   - name: Disk
     lookup:
       prometheus:
         - query: 'prometheus_tsdb_storage_blocks_bytes'
+          url: {{ .Values.prometheusURL | quote }}
           display:
             expr: |
               [{'name': 'Disk', 'value': int(results[0].value), 'headline': true, 'unit': 'bytes'}].toJSON()
@@ -33,6 +35,7 @@ spec:
     lookup:
       prometheus:
         - query: 'max(container_memory_working_set_bytes{namespace="monitoring",container="prometheus"})'
+          url: {{ .Values.prometheusURL | quote }}
           display:
             expr: |
               [{'name': 'Memory', 'value': int(results[0].value), 'headline': true, 'unit': 'bytes'}].toJSON()
@@ -40,23 +43,27 @@ spec:
     lookup:
       prometheus:
         - query: 'count(prometheus_target_scrape_pool_targets)'
+          url: {{ .Values.prometheusURL | quote }}
           display:
             expr: results[0].value
   - name: Rule groups with duration > 1 sec
     lookup:
       prometheus:
         - query: 'count(prometheus_rule_group_last_duration_seconds > 1)'
+          url: {{ .Values.prometheusURL | quote }}
           display:
             expr: results[0].value
   - name: Version
     lookup:
       prometheus:
         - query: prometheus_build_info
+          url: {{ .Values.prometheusURL | quote }}
           display:
             expr: results[0].version
   - name: Alerts
     lookup:
       prometheus:
         - query: count(ALERTS{alertstate="firing"})
+          url: {{ .Values.prometheusURL | quote }}
           display:
             expr: results[0].value

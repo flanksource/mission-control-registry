@@ -4,6 +4,7 @@ labels: {}
 topology:
   name: cluster
   schedule: "@every 5m"
+  prometheusURL: ''
 
 scraper:
   name: kubernetes
