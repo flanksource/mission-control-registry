@@ -6,7 +6,7 @@ metadata:
     {{- include "kubernetes.labels" . | nindent 4 }}
 spec:
   kubernetes:
-    - clusterName: {{ .Values.scraper.clusterName }}
+    - clusterName: {{ .Values.clusterName }}
       exclusions: {{ toYaml (concat .Values.scraper.scrapeExclusions .Values.scraper.defaultScrapeExclusions) | nindent 8 }}
       relationships: {{ .Values.scraper.relationships | toYaml | nindent 8 }}
       transform: {{ .Values.scraper.transform | toYaml | nindent 8 }}

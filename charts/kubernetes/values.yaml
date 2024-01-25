@@ -1,14 +1,17 @@
 nameOverride: ""
 fullnameOverride: ""
 labels: {}
+
+clusterName: kubernetes
+prometheusURL: ''
+
 topology:
   name: cluster
   schedule: "@every 5m"
-  prometheusURL: ''
+  icon: kubernetes
 
 scraper:
   name: kubernetes
-  clusterName: kubernetes
   defaultScrapeExclusions:
     - APIService
     - PodMetrics
