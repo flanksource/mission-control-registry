@@ -3,3 +3,4 @@ fullnameOverride: ""
 labels: {}
 topologyName: mission-control
 connectionName: mission-control
+isAgent: false

@@ -475,6 +475,7 @@ spec:
     selectors:
     - labelSelector: app.kubernetes.io/name=kratos
 
+  {{- if .Values.isAgent }}
   - name: Upstream Replication
     icon: helm
     properties:
@@ -542,3 +543,5 @@ spec:
               name: Config Changes Backlog
               display:
                 expr: results.rows[0].count
+
+  {{- end }}
