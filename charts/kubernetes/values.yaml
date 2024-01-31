@@ -1,10 +1,10 @@
+# yaml-language-server: $schema=./values.schema.json
 nameOverride: ""
 fullnameOverride: ""
 labels: {}
 
 clusterName: kubernetes
-prometheusURL: ''
-
+prometheusURL: ""
 topology:
   name: cluster
   schedule: "@every 5m"
@@ -12,58 +12,73 @@ topology:
 
 scraper:
   name: kubernetes
-  defaultScrapeExclusions:
-    - APIService
-    - PodMetrics
-    - NodeMetrics
-    - endpoints.discovery.k8s.io
-    - endpointslices.discovery.k8s.io
-    - leases.coordination.k8s.io
-    - podmetrics.metrics.k8s.io
-    - nodemetrics.metrics.k8s.io
-    - controllerrevision
-    - certificaterequest
-    - orders.acme.cert-manager.io
+  exclusions:
+    name: []
+    namespace: []
+    kind: []
+    labels: {}
+  defaultExclusions:
+    name: []
+    namespace: []
+    labels: {}
+    kind:
+      - Secret
+      - APIService
+      - PodMetrics
+      - NodeMetrics
+      - endpoints.discovery.k8s.io
+      - endpointslices.discovery.k8s.io
+      - leases.coordination.k8s.io
+      - podmetrics.metrics.k8s.io
+      - nodemetrics.metrics.k8s.io
+      - customresourcedefinition
+      - controllerrevisions
+      - certificaterequests
+      - orders.acme.cert-manager.io
 
-  scrapeExclusions:
-    - Secret
-    - customresourcedefinition
-
-  relationships:
+  relationships: []
+  defaultRelationships:
+    - kind:
+        expr: "has(spec.claimRef) ? spec.claimRef.kind : ''"
+      name:
+        expr: "has(spec.claimRef) ? spec.claimRef.name : ''"
+      namespace:
+        expr: "has(spec.claimRef) ? spec.claimRef.namespace : ''"
     # FluxCD Helm relationships
     - name:
-        label: 'helm.toolkit.fluxcd.io/name'
+        label: "helm.toolkit.fluxcd.io/name"
       namespace:
-        label: 'helm.toolkit.fluxcd.io/namespace'
+        label: "helm.toolkit.fluxcd.io/namespace"
       kind:
-        value: 'HelmRelease'
+        value: "HelmRelease"
     # FluxCD Kustomize relationships
     - name:
-        label: 'kustomize.toolkit.fluxcd.io/name'
+        label: "kustomize.toolkit.fluxcd.io/name"
       namespace:
-        label: 'kustomize.toolkit.fluxcd.io/namespace'
+        label: "kustomize.toolkit.fluxcd.io/namespace"
       kind:
-        value: 'Kustomization'
+        value: "Kustomization"
 
-  eventExclusions:
-    reason:
-      - SuccessfulCreate
-      - Created
-      - DNSConfigForming
+  event:
+    exclusions:
+      reason:
+        - SuccessfulCreate2
+        - Created
+        - DNSConfigForming
+
+    severityKeywords:
+      error:
+        - failed
+        - error
+      warn:
+        - backoff
+        - nodeoutofmemory
 
   transform:
     changes:
       exclude:
         - 'details.source.component == "canary-checker" && details.reason == "Failed"'
         - 'details.source.component == "canary-checker" && details.reason == "Succeeded"'
-
-  severityKeywords:
-   error:
-     - failed
-     - error
-   warn:
-     - backoff
-     - nodeoutofmemory
 
   retention:
     changes:

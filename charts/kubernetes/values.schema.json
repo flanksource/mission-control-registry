@@ -1,0 +1,299 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Schema for Kubernetes bundle for Flanksource Mission Control",
+  "type": "object",
+  "properties": {
+    "nameOverride": {
+      "type": "string"
+    },
+    "fullnameOverride": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "clusterName": {
+      "type": "string"
+    },
+    "prometheusURL": {
+      "type": "string"
+    },
+    "topology": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "schedule": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "schedule",
+        "icon"
+      ]
+    },
+    "scraper": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "exclusions": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "array",
+              "items": {}
+            },
+            "namespace": {
+              "type": "array",
+              "items": {}
+            },
+            "kind": {
+              "type": "array",
+              "items": {}
+            },
+            "labels": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            }
+          },
+          "required": [
+          ]
+        },
+        "defaultExclusions": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "array",
+              "items": {}
+            },
+            "namespace": {
+              "type": "array",
+              "items": {}
+            },
+            "labels": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            },
+            "kind": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+
+          ]
+        },
+        "relationships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "object",
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "name": {
+                "type": "object",
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "namespace": {
+                "type": "object",
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": [
+              "kind",
+              "name"
+            ]
+          }
+        },
+        "defaultRelationships": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "object",
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "name": {
+                "type": "object",
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              },
+              "namespace": {
+                "type": "object",
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  }
+                },
+                "required": []
+              }
+            },
+            "required": [
+              "kind",
+              "name"
+            ]
+          }
+        },
+        "event": {
+          "type": "object",
+          "properties": {
+            "exclusions": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+              ]
+            },
+            "severityKeywords": {
+              "type": "object",
+              "properties": {
+                "error": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "warn": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "error",
+                "warn"
+              ]
+            }
+          },
+          "required": [
+            "exclusions",
+            "severityKeywords"
+          ]
+        },
+        "transform": {
+          "type": "object",
+          "properties": {
+            "changes": {
+              "type": "object",
+              "properties": {
+                "exclude": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+
+              ]
+            }
+          },
+          "required": [
+
+          ]
+        },
+        "retention": {
+          "type": "object",
+          "properties": {
+            "changes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "count": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "name",
+                  "count"
+                ]
+              }
+            }
+          },
+          "required": [
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "defaultExclusions",
+        "defaultRelationships"
+      ]
+    }
+  },
+  "required": [
+    "clusterName",
+    "prometheusURL",
+    "topology",
+    "scraper"
+  ]
+}

@@ -7,11 +7,13 @@ metadata:
 spec:
   kubernetes:
     - clusterName: {{ .Values.clusterName }}
-      exclusions: {{ toYaml (concat .Values.scraper.scrapeExclusions .Values.scraper.defaultScrapeExclusions) | nindent 8 }}
-      relationships: {{ .Values.scraper.relationships | toYaml | nindent 8 }}
+      exclusions:
+        name:  {{ concat .Values.scraper.defaultExclusions.name .Values.scraper.exclusions.name | default  (list) |toYaml | nindent 10 }}
+        kind:  {{ concat .Values.scraper.defaultExclusions.kind .Values.scraper.exclusions.kind | default  (list) | toYaml | nindent 10 }}
+        labels:  {{ toYaml (merge .Values.scraper.defaultExclusions.labels .Values.scraper.exclusions.labels) | nindent 10 }}
+        namespace:  {{ concat .Values.scraper.defaultExclusions.namespace .Values.scraper.exclusions.namespace | default  (list) | toYaml | nindent 10 }}
+      relationships: {{ ( concat .Values.scraper.relationships .Values.scraper.defaultRelationships) | toYaml | nindent 8 }}
       transform: {{ .Values.scraper.transform | toYaml | nindent 8 }}
-      event:
-        exclusions: {{ .Values.scraper.eventExclusions | toYaml | nindent 10 }}
-        severityKeywords: {{ .Values.scraper.severityKeywords | toYaml | nindent 10 }}
+      event:  {{ .Values.scraper.event | toYaml | nindent 8 }}
   retention:
     changes: {{ .Values.scraper.retention.changes | toYaml | nindent 6 }}
