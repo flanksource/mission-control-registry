@@ -46,7 +46,7 @@ scraper:
         value: 'Kustomization'
 
   eventExclusions:
-    names:
+    reason:
       - SuccessfulCreate
       - Created
       - DNSConfigForming
