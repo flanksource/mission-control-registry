@@ -2,11 +2,15 @@ nameOverride: ""
 fullnameOverride: ""
 labels: {}
 scraper:
-  name: aws
-  
+  name: azure
+
+subscriptionID: ''
+organisation: ''
+tenantID: ''
+
 connectionDetails:
   connection: ''
-  accessKey:
+  clientID:
     name: ''
     value: ''
     valueFrom:
@@ -21,7 +25,7 @@ connectionDetails:
         key: ''
         name: ''
 
-  secretKey:
+  clientSecret:
     name: ''
     value: ''
     valueFrom:
@@ -35,37 +39,11 @@ connectionDetails:
       secretKeyRef:
         key: ''
         name: ''
-  region: ''
-  endpoint: ''
-  skipTLSVerify: ''
-  assumeRole: ''
-
-cloudtrail:
-  maxAge: ''
-  exclude: []
-
-compliance: true
-
-# Scrape cost reports and match them with catalog items
-costReporting:
-  enabled: false
-  database: ''
-  region: ''
-  s3BucketPath: ''
-  table: ''
-
-inventory: true
-
-patchDetails: true
-
-patchStates: true
-
-trustedAdvisorCheck: false
-
-# AWS regions to pull from
-regions: []
 
 
-includeResources: []
-
-excludeResources: []
+exclusions:
+# ActivityLogs is a list of operations to exclude from activity logs.
+# Example:
+# - Microsoft.ContainerService/managedClusters/listClusterAdminCredential/action
+# - Microsoft.ContainerService/managedClusters/listClusterUserCredential/action
+  activityLogs: []

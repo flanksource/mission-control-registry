@@ -25,3 +25,5 @@ spec:
 
     include: {{ .Values.includeResources }}
     exclude: {{ .Values.excludeResources }}
+
+    {{ .Values.connectionDetails | toYaml | nindent 4 }}
