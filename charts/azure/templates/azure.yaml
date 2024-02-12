@@ -1,0 +1,15 @@
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: {{ .Values.scraper.name }}
+  labels:
+    {{- include "azure.labels" . | nindent 4 }}
+spec:
+  azure:
+  - subscriptionID: {{ .Values.subscriptionID | quote }}
+    organisation: {{ .Values.organisation | quote }}
+    tenantID: {{ .Values.tenantID | quote }}
+
+    exclusions: {{ .Values.exclusions | toYaml | nindent 8 }}
+
+    {{ .Values.connectionDetails | toYaml | nindent 4 }}
