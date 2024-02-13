@@ -12,4 +12,6 @@ spec:
 
     exclusions: {{ .Values.exclusions | toYaml | nindent 8 }}
 
-    {{ .Values.connectionDetails | toYaml | nindent 4 }}
+    {{- with .Values.connectionDetails }}
+    {{- toYaml . | nindent 4}}
+    {{- end }}

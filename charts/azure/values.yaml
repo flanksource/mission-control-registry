@@ -8,37 +8,38 @@ subscriptionID: ''
 organisation: ''
 tenantID: ''
 
-connectionDetails:
-  connection: ''
-  clientID:
-    name: ''
-    value: ''
-    valueFrom:
-      serviceAccount: ''
-      helmRef:
-        key: ''
-        name: ''
-      configMapKeyRef:
-        key: ''
-        name: ''
-      secretKeyRef:
-        key: ''
-        name: ''
+connectionDetails: {}
+# connectionDetails:
+#   connection: ''
+#   clientID:
+#     name: ''
+#     value: ''
+#     valueFrom:
+#       serviceAccount: ''
+#       helmRef:
+#         key: ''
+#         name: ''
+#       configMapKeyRef:
+#         key: ''
+#         name: ''
+#       secretKeyRef:
+#         key: ''
+#         name: ''
 
-  clientSecret:
-    name: ''
-    value: ''
-    valueFrom:
-      serviceAccount: ''
-      helmRef:
-        key: ''
-        name: ''
-      configMapKeyRef:
-        key: ''
-        name: ''
-      secretKeyRef:
-        key: ''
-        name: ''
+#   clientSecret:
+#     name: ''
+#     value: ''
+#     valueFrom:
+#       serviceAccount: ''
+#       helmRef:
+#         key: ''
+#         name: ''
+#       configMapKeyRef:
+#         key: ''
+#         name: ''
+#       secretKeyRef:
+#         key: ''
+#         name: ''
 
 
 exclusions:
