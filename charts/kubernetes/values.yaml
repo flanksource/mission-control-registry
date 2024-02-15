@@ -12,6 +12,7 @@ topology:
 
 scraper:
   name: kubernetes
+  schedule: "@every 5m"
   exclusions:
     name: []
     namespace: []

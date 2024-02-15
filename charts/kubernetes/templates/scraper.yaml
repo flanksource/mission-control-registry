@@ -5,6 +5,7 @@ metadata:
   labels:
     {{- include "kubernetes.labels" . | nindent 4 }}
 spec:
+  schedule: {{ .Values.scraper.schedule | quote }}
   kubernetes:
     - clusterName: {{ .Values.clusterName }}
       exclusions:
