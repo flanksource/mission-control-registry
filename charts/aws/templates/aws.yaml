@@ -8,8 +8,6 @@ spec:
   aws:
   - compliance: {{ .Values.compliance }}
 
-    region: {{ .Values.regions }}
-
     {{- if .Values.costReporting.enabled }}
     cost_reporting:
       database: {{.Values.costReporting.database}}
@@ -25,5 +23,7 @@ spec:
 
     include: {{ .Values.includeResources }}
     exclude: {{ .Values.excludeResources }}
+
+    transform: {{ .Values.transform | toYaml | nindent 8 }}
 
     {{ .Values.connectionDetails | toYaml | nindent 4 }}
