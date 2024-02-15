@@ -20,7 +20,8 @@ scraper:
   defaultExclusions:
     name: []
     namespace: []
-    labels: {}
+    labels:
+       canary-checker.flanksource.com/generated: "true"
     kind:
       - Secret
       - APIService
