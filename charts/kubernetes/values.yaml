@@ -64,7 +64,7 @@ scraper:
   event:
     exclusions:
       reason:
-        - SuccessfulCreate2
+        - SuccessfulCreate
         - Created
         - DNSConfigForming
 
@@ -81,6 +81,15 @@ scraper:
       exclude:
         - 'details.source.component == "canary-checker" && details.reason == "Failed"'
         - 'details.source.component == "canary-checker" && details.reason == "Succeeded"'
+
+    relationship:
+      # Link Pods to PVCs
+      - filter: config_type == 'Kubernetes::Pod'
+        expr: |
+          config.spec.volumes.
+            filter(item, has(item.persistentVolumeClaim)).
+            map(item, {"type": "Kubernetes::PersistentVolumeClaim", "name": item.persistentVolumeClaim.claimName}).
+            toJSON()
 
   retention:
     changes:
