@@ -475,6 +475,39 @@ spec:
     selectors:
     - labelSelector: app.kubernetes.io/name=kratos
 
+  - name: Jobs
+    type: Jobs
+    icon: clock
+    components:
+      - name: JobGroups
+        lookup:
+          postgres:
+          - connection: connection://postgres/mission-control
+            query: |
+              WITH ordered_history AS (
+                SELECT
+                  job_history.*,
+                  ROW_NUMBER() OVER (PARTITION by name, resource_type, resource_id ORDER BY created_at DESC) AS rn
+                FROM job_history
+                WHERE status NOT IN ('RUNNING', 'ABORTED')
+              )
+              SELECT * from ordered_history where rn = 1 and resource_id = '';
+            display:
+              expr: | 
+                results.rows.map(r, {
+                  'name': r.name,
+                  'icon': 'clock',
+                  'type': 'JobHistory',
+                  'status': r.status in ['SUCCESS', 'FINISHED'] ? 'healthy': 'unhealthy',
+                  'status_reason': r.status in ['SUCCESS', 'FINISHED'] ? '': r.details,
+                  'properties': [
+                    {'name': 'success_count', 'text': r.success_count, 'headline': true},
+                    {'name': 'error_count', 'text': r.error_count, 'headline': true},
+                    {'name': 'duration_ms', 'text': r.duration_millis},
+                    {'name': 'last_run', 'text': r.time_end},
+                  ],
+                }).toJSON()
+
   {{- if .Values.isAgent }}
   - name: Upstream Replication
     icon: helm
