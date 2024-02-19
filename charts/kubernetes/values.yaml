@@ -22,7 +22,7 @@ scraper:
     name: []
     namespace: []
     labels:
-       canary-checker.flanksource.com/generated: "true"
+      canary-checker.flanksource.com/generated: "true"
     kind:
       - Secret
       - APIService
@@ -79,8 +79,10 @@ scraper:
   transform:
     changes:
       exclude:
-        - 'details.source.component == "canary-checker" && details.reason == "Failed"'
-        - 'details.source.component == "canary-checker" && details.reason == "Succeeded"'
+        - 'config_type == "Kubernetes::Application" && details.message == "status.reconciledAt" && change_type == "diff" && details.involvedObject.apiVersion == "argoproj.io/v1alpha1"'
+        - 'config_type == "Kubernetes::Endpoints" && details.message == "metadata.annotations.endpoints.kubernetes.io/last-change-trigger-time"'
+        - 'config_type == "Kubernetes::Node" && details.message == "status.images"'
+        - 'details.source.component == "canary-checker" && (change_type == "Failed" || change_type == "Pass")'
 
     relationship:
       # Link Pods to PVCs

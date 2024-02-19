@@ -1,0 +1,7 @@
+# YAML files
+[*.{yml,yaml}]
+quote_type = double
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
