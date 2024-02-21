@@ -11,6 +11,7 @@ spec:
     tenantID: {{ .Values.tenantID | quote }}
 
     exclusions: {{ .Values.exclusions | toYaml | nindent 8 }}
+    transform: {{ .Values.transform | toYaml | nindent 8 }}
 
     {{- with .Values.connectionDetails }}
     {{- toYaml . | nindent 4}}
