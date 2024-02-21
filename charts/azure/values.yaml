@@ -4,9 +4,9 @@ labels: {}
 scraper:
   name: azure
 
-subscriptionID: ''
-organisation: ''
-tenantID: ''
+subscriptionID: ""
+organisation: ""
+tenantID: ""
 
 connectionDetails: {}
 # connectionDetails:
@@ -41,10 +41,32 @@ connectionDetails: {}
 #         key: ''
 #         name: ''
 
+transform:
+  relationship:
+    # Link AKS Cluster to Kubernetes Cluster
+    - filter: config_class == 'KubernetesCluster'
+      expr: |
+        [{
+          "type": "Kubernetes::Cluster",
+          "labels": {
+            "aks-nodeResourceGroup": config["properties"]["nodeResourceGroup"],
+            "azure/subscription-id": tags["azure-subscription-id"]
+          },
+        }].toJSON()
+    # Link Azure Virtual Machine Scale Sets to the Kubernetes Nodes
+    - filter: config_class == 'Node'
+      expr: |
+        [{
+          "type": "Kubernetes::Node",
+          "labels": {
+            "azure/vm-scale-set": name,
+            "azure/subscription-id": tags["azure-subscription-id"]
+          },
+        }].toJSON()
 
 exclusions:
-# ActivityLogs is a list of operations to exclude from activity logs.
-# Example:
-# - Microsoft.ContainerService/managedClusters/listClusterAdminCredential/action
-# - Microsoft.ContainerService/managedClusters/listClusterUserCredential/action
+  # ActivityLogs is a list of operations to exclude from activity logs.
+  # Example:
+  # - Microsoft.ContainerService/managedClusters/listClusterAdminCredential/action
+  # - Microsoft.ContainerService/managedClusters/listClusterUserCredential/action
   activityLogs: []
