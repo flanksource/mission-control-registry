@@ -118,7 +118,7 @@ spec:
                       resource_type = 'canary'
                   )
                   SELECT * FROM cte WHERE rn = 1;
-                connection: connection://postgres/mission-control/mission-control 
+                connection: connection://postgres/mission-control/mission-control
                 name: CanarySync Check
                 transform:
                   expr: |
@@ -147,7 +147,7 @@ spec:
                       resource_type = 'topology'
                   )
                   SELECT * FROM cte WHERE rn = 1;
-                connection: connection://postgres/mission-control/mission-control 
+                connection: connection://postgres/mission-control/mission-control
                 name: TopologyChecks
                 transform:
                   expr: |
@@ -234,7 +234,9 @@ spec:
             - query: SELECT count(*) FROM event_queue
               connection: connection://postgres/mission-control
               display:
-                expr: results.rows[0].count 
+                expr: results.rows[0].count
+              test:
+                expr:  results.rows[0].count < 200
     checks:
       - inline:
           postgres:
@@ -515,63 +517,67 @@ spec:
       - name: Check Status Backlog
         lookup:
           postgres:
-            - query: SELECT count(*) FROM check_statuses where is_pushed = false
+            - query: SELECT reltuples FROM  pg_class  WHERE relname ='check_statuses_is_pushed_idx'
               connection: connection://postgres/mission-control
               display:
-                expr: results.rows[0].count 
-      - name: Check Status Last Push
-        lookup:
-          postgres:
-            - query: SELECT max(time) FROM check_statuses where is_pushed = true
-              connection: connection://postgres/mission-control
-              display:
-                expr: results.rows[0].max
+                expr: results.rows[0].reltuples
+      # This is a very expensive query
+      # - name: Check Status Last Push
+      #   lookup:
+      #     postgres:
+      #       - query: SELECT max(time) FROM check_statuses where is_pushed is false
+      #         connection: connection://postgres/mission-control
+      #         display:
+      #           expr: results.rows[0].max
       - name: Config Analysis Backlog
         lookup:
           postgres:
-            - query: SELECT count(*) FROM config_analysis where is_pushed = false
+            - query: SELECT count(*) FROM config_analysis where is_pushed is false
               connection: connection://postgres/mission-control
               display:
-                expr: results.rows[0].count 
+                expr: results.rows[0].count
       - name: Config Analysis Last Push
         lookup:
           postgres:
-            - query: SELECT max(last_observed) FROM config_analysis where is_pushed = true
+            - query: SELECT max(last_observed) FROM config_analysis where is_pushed is true
               connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].max
       - name: Config Changes Backlog
         lookup:
           postgres:
-            - query: SELECT count(*) FROM config_changes where is_pushed = false
+            - query: SELECT count(*) FROM config_changes where is_pushed is false
               connection: connection://postgres/mission-control
               display:
-                expr: results.rows[0].count 
+                expr: results.rows[0].count
       - name: Config Changes Last Push
         lookup:
           postgres:
-            - query: SELECT max(created_at) FROM config_changes where is_pushed = true
+            - query: SELECT max(created_at) FROM config_changes where is_pushed is true
               connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].max
     checks:
       - inline:
           postgres:
-            - query: SELECT count(*) FROM check_statuses where is_pushed = false
+            - query: SELECT reltuples as count FROM  pg_class  WHERE relname ='check_statuses_is_pushed_idx'
               connection: connection://postgres/mission-control
-              name: Check status Backlog
+              name: Check Status Backlog
               display:
                 expr: results.rows[0].count
+              test:
+                expr: results.rows[0].count < 500
+
       - inline:
           postgres:
-            - query: SELECT count(*) FROM config_analysis where is_pushed = false
+            - query: SELECT count(*) FROM config_analysis where is_pushed is false
               connection: connection://postgres/mission-control
               name: Config Analysis Backlog
               display:
                 expr: results.rows[0].count
       - inline:
           postgres:
-            - query: SELECT count(*) FROM config_changes where is_pushed = false
+            - query: SELECT count(*) FROM config_changes where is_pushed is false
               connection: connection://postgres/mission-control
               name: Config Changes Backlog
               display:
