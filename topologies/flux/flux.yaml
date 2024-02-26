@@ -25,11 +25,12 @@ spec:
               display:
                 javascript: |
                   JSON.stringify(results.results.map(function(r) {
+                    var status = r.config.status.conditions[0].status === "True" ? "healthy" : "unhealthy"
                     return {
                       name: r.name,
                       icon: 'helm',
                       namespace: r.namespace,
-                      status: r.status,
+                      status: status,
                       status_reason: r.description,
                       selectors: [{
                         name: 'pods',
@@ -71,11 +72,12 @@ spec:
               display:
                 javascript: |
                   JSON.stringify(results.results.map(function(r) {
+                    var status = r.config.status.conditions[0].status === "True" ? "healthy" : "unhealthy"
                     return {
                       name: r.name,
                       icon: 'kustomize',
                       namespace: r.namespace,
-                      status: r.status,
+                      status: status,
                       status_reason: r.description,
                       selectors: [{
                         name: 'pods',
