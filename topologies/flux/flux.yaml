@@ -10,7 +10,8 @@ spec:
     - name: Controllers
       icon: pod
       selectors:
-        - name: pods
+        - types:
+            - Kubernetes::Pod
           labelSelector: 'namespace=flux-system'
     - name: Releases
       icon: helm
