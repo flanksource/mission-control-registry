@@ -40,7 +40,10 @@ spec:
                       configs: [
                         {
                           name: r.name,
-                          type: "HelmRelease",
+                          type: "Kubernetes::HelmRelease",
+                          tags: {
+                            "namespace": r.namespace,
+                          }
                         }
                       ],
                       properties: [
