@@ -60,6 +60,13 @@ scraper:
         label: "kustomize.toolkit.fluxcd.io/namespace"
       kind:
         value: "Kustomization"
+    # FluxCD Git relationships
+    - name:
+        expr: "has(spec.sourceRef) ? spec.sourceRef.name : '' "
+      namespace:
+        expr: "has(spec.sourceRef) && has(spec.sourceRef.namespace)  ? spec.sourceRef.namespace : metadata.namespace "
+      kind:
+        value: "GitRepository"
 
   event:
     exclusions:
