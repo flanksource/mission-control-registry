@@ -1,5 +1,0 @@
-resources:
-- flux
-- kubernetes
-- mission-control
-- prometheus
