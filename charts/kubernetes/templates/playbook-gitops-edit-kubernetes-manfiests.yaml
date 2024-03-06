@@ -1,0 +1,59 @@
+{{ if .Values.playbooks.edit_kubernetes_manifests.enabled -}}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: edit-kubernetes-manifests-gitops
+spec:
+  parameters:
+  - default: "chore: update resource $(.config.id)/$(.config.type)/$(.config.name) via playbook"
+    label: Commit Message
+    name: commit_message
+  - default: $(.config.config | neat | json | toYAML)
+    label: ""
+    name: yamlInput
+    properties:
+      size: large
+    type: code
+
+  # TODO: Update mission-control playbook listing logic
+  configs:
+    - type: Kubernetes::HelmRelease
+      tags:
+        kustomize.toolkit.fluxcd.io/name: aws-demo-infra
+
+  actions:
+    - name: set-vars
+      exec:
+        script: |
+          echo '{
+            "file_path": $(.config.config | json | jq `.metadata.annotations["config.kubernetes.io/origin"]` | yaml | toJSON | json | jq `.path` | quote),
+            "kustomization_id": $((catalog_traverse .config.id  "Kubernetes::Kustomization").ID | quote),
+            "kustomization_path": $((catalog_traverse .config.id  "Kubernetes::Kustomization").Config | json | jq `.spec.path` | quote),
+            "git_branch": $((catalog_traverse .config.id  "Kubernetes::Kustomization/Kubernetes::GitRepository").Config | json | jq `.spec.ref.branch` | quote),
+            "git_url": $((catalog_traverse .config.id  "Kubernetes::Kustomization/Kubernetes::GitRepository").Config | json | jq `.spec.url` | quote),
+          }'
+
+    - name: Create PR With Changes
+      gitops:
+        repo:
+          url: $((getAction "set-vars").result.stdout | json | jq `.git_url` | quote)
+          #connection: connection://github/mission-control/github-yash
+          connection: {{ .Values.playbooks.edit_kubernetes_manifests.git_connection }}
+          base: $((getAction "set-vars").result.stdout | json | jq `.git_branch` | quote)'
+          branch: edit-manifest-$(random.Alpha 8)
+        commit:
+          email: {{ .Values.playbooks.edit_kubernetes_manifests.git_commiter.email | quote }}
+          author: {{ .Values.playbooks.edit_kubernetes_manifests.git_commiter.author | quote }}
+          message: $(.params.commit_message | quote)
+        pr:
+          title: $(.params.commit_message | quote)
+        patches:
+          - path: '$(filepath.Join ((getAction "set-vars").result.stdout | json | jq `.kustomization_path`) ((getAction "set-vars").result.stdout | json | jq `.file_path`))'
+            yq: |
+              select(
+                .kind=="$(.config.config | json | jq `.kind`)" and
+                .metadata.name=="$(.config.config | json | jq `.metadata.name`)"
+              ) |= $(.params.yamlInput)
+
+
+{{ end }}

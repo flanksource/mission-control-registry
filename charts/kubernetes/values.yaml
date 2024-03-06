@@ -104,3 +104,11 @@ scraper:
     changes:
       - name: ReconciliationSucceeded
         count: 10
+
+playbooks:
+  edit_kubernetes_manifests:
+    enabled: true
+    git_connection: ""
+    git_commiter:
+      email: git@example.com
+      author: John Doe
