@@ -86,10 +86,23 @@ scraper:
   transform:
     changes:
       exclude:
-        - 'config_type == "Kubernetes::Application" && details.message == "status.reconciledAt" && change_type == "diff" && details.involvedObject.apiVersion == "argoproj.io/v1alpha1"'
-        - 'config_type == "Kubernetes::Endpoints" && has(details.message) && details.message == "metadata.annotations.endpoints.kubernetes.io/last-change-trigger-time"'
-        - 'config_type == "Kubernetes::Node" && details.message == "status.images"'
         - 'details.source.component == "canary-checker" && (change_type == "Failed" || change_type == "Pass")'
+        - 'config_type == "Kubernetes::Node" && has(details.message) && details.message == "status.images"'
+        - 'config_type == "Kubernetes::Node" && details.message == "status.images"'
+        - 'has(details.source) && details.source.component == "kustomize-controller" && details.reason == "ReconciliationSucceeded"'
+        - 'config_type.startsWith("Kubernetes::") && has(details.message) && details.message == "metadata.annotations.endpoints.kubernetes.io/last-change-trigger-time"'
+        - >
+          change_type == "diff" && summary == "status.reconciledAt" &&
+          config != null &&
+          has(config.apiVersion) && config.apiVersion == "argoproj.io/v1alpha1" &&
+          has(config.kind) && config.kind == "Application"
+      mapping:
+        - filter: >
+            change.change_type == 'diff' && change.summary == "status.containerStatuses" &&
+            patch != null && has(patch.status) && has(patch.status.containerStatuses) &&
+            patch.status.containerStatuses.size() > 0 &&
+            has(patch.status.containerStatuses[0].restartCount)
+          type: PodCrashLooping
 
     relationship:
       # Link Pods to PVCs
