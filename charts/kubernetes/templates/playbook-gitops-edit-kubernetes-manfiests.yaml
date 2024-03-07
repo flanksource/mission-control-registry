@@ -15,11 +15,8 @@ spec:
       size: large
     type: code
 
-  # TODO: Update mission-control playbook listing logic
   configs:
-    - type: Kubernetes::HelmRelease
-      tags:
-        kustomize.toolkit.fluxcd.io/name: aws-demo-infra
+    - labelSelector: 'kustomize.toolkit.fluxcd.io/name'
 
   actions:
     - name: set-vars
@@ -54,6 +51,5 @@ spec:
                 .kind=="$(.config.config | json | jq `.kind`)" and
                 .metadata.name=="$(.config.config | json | jq `.metadata.name`)"
               ) |= $(.params.yamlInput)
-
 
 {{ end }}
