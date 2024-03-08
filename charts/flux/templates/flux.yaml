@@ -55,7 +55,7 @@ spec:
                     'namespace': r.namespace,
                     'status': r.status,
                     'status_reason': r.description,
-                    'selectors': [{'labelSelector': kustomize.toolkit.fluxcd.io/name='+r.name + ',kustomize.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace}],
+                    'selectors': [{'labelSelector': 'kustomize.toolkit.fluxcd.io/name='+r.name + ',kustomize.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace}],
                     'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::Kustomization'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
@@ -74,33 +74,20 @@ spec:
             - name: config-db-check
               query: SELECT * FROM config_items WHERE config_class = 'HelmRepository'
               display:
-                javascript: |
-                  JSON.stringify(results.results.map(function(r) {
-                    var status = r.config.status.conditions[0].status === "True" ? "healthy" : "unhealthy"
-                    return {
-                      name: r.name,
-                      icon: 'helm',
-                      namespace: r.namespace,
-                      status: r.status,
-                      status_reason: r.description,
-                      configs: [
-                        {
-                          name: r.name,
-                          type: "HelmRepository",
-                        }
-                      ],
-                      properties: [
-                        {
-                          name: 'Message',
-                          text: r.config.status.conditions[0].message,
-                        },
-                        {
-                          name: 'State',
-                          text: r.config.status.conditions[0].type,
-                        }
-                      ]
-                    }
-                  }))
+                expr: |
+                  results.results.map(r, {
+                    'name': r.name,
+                    'icon': 'helm',
+                    'namespace': r.namespace,
+                    'status': r.status,
+                    'status_reason': r.description,
+                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::HelmRepository'}],
+                    'properties': [
+                      {'name': 'Message', 'text': r.config.status.conditions[0].message},
+                      {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
+                    ],
+                  }).toJSON()
+
     - name: Git
       icon: git
       components:
