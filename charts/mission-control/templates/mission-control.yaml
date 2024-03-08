@@ -392,6 +392,10 @@ spec:
     type: API
   - icon: postgres
     name: PostgreSQL
+    configs:
+      - namespace: mission-control
+        name: postgresql-0
+        type: Kubernetes::Pod
     properties:
     - lookup:
         postgres:
