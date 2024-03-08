@@ -29,8 +29,8 @@ spec:
                     'namespace': r.namespace,
                     'status': r.status,
                     'status_reason': r.description,
-                    'selectors': [{'labelSelector': 'app.kubernetes.io/instance='+r.name}]
-                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::HelmRelease'}]
+                    'selectors': [{'labelSelector': 'app.kubernetes.io/instance='+r.name}],
+                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::HelmRelease'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
                       {'name': 'Version', 'text': r.config.status.lastAppliedRevision, 'headline': true},
@@ -55,8 +55,8 @@ spec:
                     'namespace': r.namespace,
                     'status': r.status,
                     'status_reason': r.description,
-                    'selectors': [{'labelSelector': kustomize.toolkit.fluxcd.io/name='+r.name + ',kustomize.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace}]
-                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::Kustomization'}]
+                    'selectors': [{'labelSelector': kustomize.toolkit.fluxcd.io/name='+r.name + ',kustomize.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace}],
+                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::Kustomization'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
                       {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
