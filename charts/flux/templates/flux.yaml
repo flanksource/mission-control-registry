@@ -43,7 +43,6 @@ spec:
       components:
       - name: Kustomizations Component
         type: lookup
-        icon: kustomize
         lookup:
           configDB:
             - query: SELECT * FROM config_items WHERE config_class = 'Kustomization'
@@ -68,11 +67,9 @@ spec:
       components:
       - name: HelmRepo Component
         type: lookup
-        icon: group
         lookup:
           configDB:
-            - name: config-db-check
-              query: SELECT * FROM config_items WHERE config_class = 'HelmRepository'
+            - query: SELECT * FROM config_items WHERE config_class = 'HelmRepository'
               display:
                 expr: |
                   results.results.map(r, {
@@ -93,36 +90,20 @@ spec:
       components:
       - name: GitRepo Component
         type: lookup
-        icon: group
         lookup:
           configDB:
-            - name: config-db-check
-              query: SELECT * FROM config_items WHERE config_class = 'GitRepository'
+            - query: SELECT * FROM config_items WHERE config_class = 'GitRepository'
               display:
-                javascript: |
-                  JSON.stringify(results.results.map(function(r) {
-                    var status = r.config.status.conditions[0].status === "True" ? "healthy" : "unhealthy"
-                    return {
-                      name: r.name,
-                      icon: 'git',
-                      namespace: r.namespace,
-                      status: r.status,
-                      status_reason: r.description,
-                      configs: [
-                        {
-                          name: r.name,
-                          type: "GitRepository",
-                        }
-                      ],
-                      properties: [
-                        {
-                          name: 'Message',
-                          text: r.config.status.conditions[0].message,
-                        },
-                        {
-                          name: 'State',
-                          text: r.config.status.conditions[0].type,
-                        }
-                      ]
-                    }
-                  }))
+                expr: |
+                  results.results.map(r, {
+                    'name': r.name,
+                    'icon': 'git',
+                    'namespace': r.namespace,
+                    'status': r.status,
+                    'status_reason': r.description,
+                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::GitRepository'}],
+                    'properties': [
+                      {'name': 'Message', 'text': r.config.status.conditions[0].message},
+                      {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
+                    ],
+                  }).toJSON()
