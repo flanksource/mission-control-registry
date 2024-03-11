@@ -393,7 +393,7 @@ spec:
   - icon: postgres
     name: PostgreSQL
     configs:
-      - namespace: mission-control
+      - namespace: {{.Release.Namespace}}
         name: postgresql-0
         type: Kubernetes::Pod
     properties:
@@ -432,7 +432,7 @@ spec:
       name: Connections
     selectors:
     - labelSelector: app=postgresql
-      fieldSelector: namespace=mission-control
+      fieldSelector: namespace={{.Release.Namespace}}
     type: Database
   - icon: html
     name: UI
@@ -499,7 +499,7 @@ spec:
               )
               SELECT * from ordered_history where rn = 1 and resource_id = '';
             display:
-              expr: | 
+              expr: |
                 results.rows.map(r, {
                   'name': r.name,
                   'icon': 'clock',
