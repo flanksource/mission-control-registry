@@ -107,8 +107,8 @@ scraper:
 
 playbooks:
   edit_kubernetes_manifests:
-    enabled: true
-    git_connection: ""
+    enabled: false
+    git_connection: "connection://"
     git_commiter:
       email: git@example.com
       author: John Doe
