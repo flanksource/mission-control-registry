@@ -162,16 +162,16 @@ spec:
         postgres:
         - connection: connection://postgres/mission-control
           display:
-            javascript: |
-              JSON.stringify(results.rows.map(function(r) {return {
-                name: r.name,
-                properties: [
-                  { name: 'Last runtime', text: String(r.time_end)},
-                  { name: 'Duration', text: String(r.duration_millis), unit: 'ms', headline: true},
-                  { name: 'Success Count', value: r.success_count, headline: true},
-                  { name: 'Error Count', value: r.error_count, headline: true},
+            expr: |
+              results.rows.map(r, {
+                'name': r.name,
+                'properties': [
+                  { 'name': 'Last runtime', 'text': r.time_end != null ? string(r.time_end) : 'N/A' },
+                  { 'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
+                  { 'name': 'Success Count', 'value': r.success_count, 'headline': true},
+                  { 'name': 'Error Count', 'value': r.error_count, 'headline': true},
                 ],
-              }}))
+              }).toJSON()
           name: Topologies count query
           query: |
             SELECT * FROM (
@@ -236,7 +236,7 @@ spec:
               display:
                 expr: results.rows[0].count
               test:
-                expr:  int(results.rows[0].count) < 200
+                expr: results.rows[0].count < 200
     checks:
       - inline:
           postgres:
@@ -249,7 +249,8 @@ spec:
                   results.rows.map(r, {
                     'name': r.name,
                     'icon': 'switch',
-                    'pass': int(r.count) < 200,
+                    'message': string(r.count) + ' items in queue',
+                    'pass': r.count < 200,
                   }).toJSON()
 
   - name: APM Hub
