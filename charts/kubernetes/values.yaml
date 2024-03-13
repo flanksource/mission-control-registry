@@ -105,6 +105,13 @@ scraper:
           type: PodCrashLooping
 
     relationship:
+      # Link a service to a deployment (adjust the label selector accordingly)
+      - filter: config_type == "Kubernetes::Service"
+        type:
+          value: 'Kubernetes::Deployment'
+        name:
+          expr: |
+            has(config.spec.selector) && has(config.spec.selector.name) ? config.spec.selector.name : ''
       # Link Pods to PVCs
       - filter: config_type == 'Kubernetes::Pod'
         expr: |
@@ -112,7 +119,16 @@ scraper:
             filter(item, has(item.persistentVolumeClaim)).
             map(item, {"type": "Kubernetes::PersistentVolumeClaim", "name": item.persistentVolumeClaim.claimName}).
             toJSON()
-
+      # Link Argo Application to the resources
+      - filter: config_type == "Kubernetes::Application" && config.apiVersion == "argoproj.io/v1alpha1"
+        expr: |
+          config.status.resources.map(item, {
+            "type": "Kubernetes::" + item.kind,
+            "name": item.name,
+            "labels": {
+              "namespace": item.namespace,
+            },
+          }).toJSON()
   retention:
     changes:
       - name: ReconciliationSucceeded
