@@ -236,7 +236,7 @@ spec:
               display:
                 expr: results.rows[0].count
               test:
-                expr:  results.rows[0].count < 200
+                expr:  int(results.rows[0].count) < 200
     checks:
       - inline:
           postgres:
