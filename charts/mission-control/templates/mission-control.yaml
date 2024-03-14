@@ -114,7 +114,7 @@ spec:
                     FROM job_history
                     WHERE
                       resource_id in (select id::text from canaries where deleted_at is null) AND
-                      status != 'RUNNING' AND
+                      status NOT IN ('RUNNING', 'ABORTED') AND
                       resource_type = 'canary'
                   )
                   SELECT * FROM cte WHERE rn = 1;
@@ -123,10 +123,10 @@ spec:
                 transform:
                   expr: |
                     results.rows.map(r, {
-                      'name': r.name + ':' +r.resource_id,
+                      'name': r.name + ':' + r.resource_id,
                       'icon': 'canary-checker',
-                      'message': r.created_at + ' | ' r.details,
-                      'description': r.details,
+                      'message': r.created_at + ' | ' + r.details.toJSON(),
+                      'description': r.details.toJSON(),
                       'pass': r.status=='SUCCESS',
                     }).toJSON()
     - forEach:
@@ -143,7 +143,7 @@ spec:
                     FROM job_history
                     WHERE
                       resource_id in (select id::text from topologies where deleted_at is null) AND
-                      status != 'RUNNING' AND
+                      status NOT IN ('RUNNING', 'ABORTED') AND
                       resource_type = 'topology'
                   )
                   SELECT * FROM cte WHERE rn = 1;
@@ -152,26 +152,26 @@ spec:
                 transform:
                   expr: |
                     results.rows.map(r, {
-                      'name': r.name + ':' +r.resource_id,
+                      'name': r.name + ':' + r.resource_id,
                       'icon': 'traces',
-                      'message': r.created_at + ' | ' r.details,
-                      'description': r.details,
+                      'message': r.created_at + ' | ' + r.details.toJSON(),
+                      'description': r.details.toJSON(),
                       'pass': r.status=='SUCCESS',
                     }).toJSON()
       lookup:
         postgres:
         - connection: connection://postgres/mission-control
           display:
-            javascript: |
-              JSON.stringify(results.rows.map(function(r) {return {
-                name: r.name,
-                properties: [
-                  { name: 'Last runtime', text: r.time_end},
-                  { name: 'Duration', text: r.duration_millis, unit: 'ms', headline: true},
-                  { name: 'Success Count', text: r.success_count, headline: true},
-                  { name: 'Error Count', text: r.error_count, headline: true},
+            expr: |
+              results.rows.map(r, {
+                'name': r.name,
+                'properties': [
+                  { 'name': 'Last runtime', 'text': r.time_end != null ? string(r.time_end) : 'N/A' },
+                  { 'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
+                  { 'name': 'Success Count', 'value': r.success_count, 'headline': true},
+                  { 'name': 'Error Count', 'value': r.error_count, 'headline': true},
                 ],
-              }}))
+              }).toJSON()
           name: Topologies count query
           query: |
             SELECT * FROM (
@@ -236,7 +236,7 @@ spec:
               display:
                 expr: results.rows[0].count
               test:
-                expr:  int(results.rows[0].count) < 200
+                expr: results.rows[0].count < 200
     checks:
       - inline:
           postgres:
@@ -249,7 +249,8 @@ spec:
                   results.rows.map(r, {
                     'name': r.name,
                     'icon': 'switch',
-                    'pass': int(r.count) < 200,
+                    'message': string(r.count) + ' items in queue',
+                    'pass': r.count < 200,
                   }).toJSON()
 
   - name: APM Hub
@@ -300,7 +301,7 @@ spec:
                 FROM job_history
                 WHERE
                   resource_id in (select id::text from config_scrapers where deleted_at is null) AND
-                  status != 'RUNNING' AND
+                  status NOT IN ('RUNNING', 'ABORTED') AND
                   resource_type = 'config_scraper'
               )
               SELECT * FROM cte WHERE rn = 1
@@ -309,11 +310,11 @@ spec:
             transform:
               expr: |
                 results.rows.map(r, {
-                  'name': r.name + ':' +r.resource_id,
+                  'name': r.name + ':' + r.resource_id,
                   'icon': 'config',
-                  'message': r.created_at + ' | ' r.details,
-                  'description': r.details,
-                  'pass': r.status=='SUCCESS',
+                  'message': r.created_at + ' | ' + r.details.toJSON(),
+                  'description': r.details.toJSON(),
+                  'pass': r.status == 'SUCCESS' ,
                 }).toJSON()
 
     components:
@@ -328,22 +329,22 @@ spec:
                 properties: [
                 {
                   name: 'Last runtime',
-                  text: r.time_end,
+                  text: String(r.time_end),
                 },
                 {
                   name: 'Duration',
-                  text: r.duration_millis,
+                  text: String(r.duration_millis),
                   unit: 'ms',
                   headline: true,
                 },
                 {
                   name: 'Success Count',
-                  text: r.success_count,
+                  value: r.success_count,
                   headline: true,
                 },
                 {
                   name: 'Error Count',
-                  text: r.error_count,
+                  value: r.error_count,
                   headline: true,
                 },
               ],
@@ -505,17 +506,17 @@ spec:
                   'icon': 'clock',
                   'type': 'JobHistory',
                   'status': r.status in ['SUCCESS', 'FINISHED'] ? 'healthy': 'unhealthy',
-                  'status_reason': r.status in ['SUCCESS', 'FINISHED'] ? '': r.details,
+                  'status_reason': r.status in ['SUCCESS', 'FINISHED'] ? '': r.details.toJSON(),
                   'properties': [
-                    {'name': 'success_count', 'text': r.success_count, 'headline': true},
-                    {'name': 'error_count', 'text': r.error_count, 'headline': true},
-                    {'name': 'duration_ms', 'text': r.duration_millis},
-                    {'name': 'last_run', 'text': r.time_end},
+                    {'name': 'success_count', 'value': r.success_count, 'headline': true},
+                    {'name': 'error_count', 'value': r.error_count, 'headline': true},
+                    {'name': 'duration_ms', 'value': r.duration_millis},
+                    {'name': 'last_run', 'text': string(r.time_end)},
                   ],
                 }).toJSON()
 
   {{- if .Values.isAgent }}
-  - name: Upstream Replication
+  - name: Upstream Sync
     icon: helm
     properties:
       - name: Check Status Backlog
@@ -525,14 +526,6 @@ spec:
               connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].reltuples
-      # This is a very expensive query
-      # - name: Check Status Last Push
-      #   lookup:
-      #     postgres:
-      #       - query: SELECT max(time) FROM check_statuses where is_pushed is false
-      #         connection: connection://postgres/mission-control
-      #         display:
-      #           expr: results.rows[0].max
       - name: Config Analysis Backlog
         lookup:
           postgres:
@@ -540,13 +533,6 @@ spec:
               connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].count
-      - name: Config Analysis Last Push
-        lookup:
-          postgres:
-            - query: SELECT max(last_observed) FROM config_analysis where is_pushed is true
-              connection: connection://postgres/mission-control
-              display:
-                expr: results.rows[0].max
       - name: Config Changes Backlog
         lookup:
           postgres:
@@ -554,15 +540,21 @@ spec:
               connection: connection://postgres/mission-control
               display:
                 expr: results.rows[0].count
-      - name: Config Changes Last Push
-        lookup:
-          postgres:
-            - query: SELECT max(created_at) FROM config_changes where is_pushed is true
-              connection: connection://postgres/mission-control
-              display:
-                expr: results.rows[0].max
     checks:
       - inline:
+          schedule: '@every 30s'
+          postgres:
+            - query: SELECT time_end FROM job_history WHERE name = 'ReconcileAll' AND status = 'SUCCESS' LIMIT 1
+              connection: connection://postgres/mission-control
+              name: Last Full Reconcile
+              display:
+                expr: |
+                  results.count == 0 ? 'N/A' : results.rows[0].time_end
+              test:
+                expr: |
+                  results.count == 0 || time.Since(results.rows[0].time_end).getMinutes() > 2
+      - inline:
+          schedule: '@every 30s'
           postgres:
             - query: SELECT reltuples as count FROM  pg_class  WHERE relname ='check_statuses_is_pushed_idx'
               connection: connection://postgres/mission-control
@@ -571,20 +563,24 @@ spec:
                 expr: results.rows[0].count
               test:
                 expr: results.rows[0].count < 500
-
       - inline:
+          schedule: '@every 30s'
           postgres:
             - query: SELECT count(*) FROM config_analysis where is_pushed is false
               connection: connection://postgres/mission-control
               name: Config Analysis Backlog
               display:
                 expr: results.rows[0].count
+              test:
+                expr: results.rows[0].count < 200  
       - inline:
+          schedule: '@every 30s'
           postgres:
             - query: SELECT count(*) FROM config_changes where is_pushed is false
               connection: connection://postgres/mission-control
               name: Config Changes Backlog
               display:
                 expr: results.rows[0].count
-
+              test:
+                expr: results.rows[0].count < 200
   {{- end }}
