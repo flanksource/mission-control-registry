@@ -38,8 +38,8 @@ spec:
           base: '$(.env.git_branch)'
           branch: edit-manifest-$(random.Alpha 8)
         commit:
-          email: {{ .Values.playbooks.edit_kubernetes_manifests.git_commiter.email | quote }}
-          author: {{ .Values.playbooks.edit_kubernetes_manifests.git_commiter.author | quote }}
+          author: '$(.user.name)'
+          email: '$(.user.email)'
           message: $(.params.commit_message)
         pr:
           title: $(.params.commit_message)

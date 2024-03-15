@@ -109,6 +109,3 @@ playbooks:
   edit_kubernetes_manifests:
     enabled: false
     git_connection: "connection://"
-    git_commiter:
-      email: git@example.com
-      author: John Doe
