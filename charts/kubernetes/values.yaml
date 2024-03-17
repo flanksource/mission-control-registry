@@ -133,3 +133,8 @@ scraper:
     changes:
       - name: ReconciliationSucceeded
         count: 10
+
+playbooks:
+  edit_kubernetes_manifests:
+    enabled: false
+    git_connection: "connection://"
