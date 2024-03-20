@@ -4,4 +4,6 @@ labels: {}
 topologyName: mission-control
 connectionName: mission-control
 isAgent: false
-playbooks: true
+playbooks:
+  kubernetes: true
+  missionControl: true

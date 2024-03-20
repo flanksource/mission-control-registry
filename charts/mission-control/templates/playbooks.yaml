@@ -1,4 +1,39 @@
-{{-if .Values.playbooks }}
+{{- if .Values.playbooks.missionControl}}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: clear-event-queue
+  namespace: default
+spec:
+  parameters:
+    - name: max_age
+      label: Max Age (days)
+      default: '30'
+    - name: last_max_attempt
+      label: Reset attempts where last tried is before (days)
+      default: '7'
+  title: Clear Event Queue
+  category: Mission Control
+  description: Deletes old events and fully retried events
+  actions:
+    - name: Delete stale events
+      sql:
+        connection: connection://postgres/mission-control
+        driver: postgres
+        query: >-
+          DELETE FROM event_queue
+          WHERE created_at < NOW() - INTERVAL '{{.params.max_age}} day'
+    - name: Reset attempts
+      sql:
+        connection: connection://postgres/mission-control
+        driver: postgres
+        query: >-
+          UPDATE event_queue SET attempts = 0
+          WHERE attempts > 0 AND
+          last_attempt < NOW() - INTERVAL '{{.params.last_max_attempt}} day'
+{{- end }}
+{{- if .Values.playbooks.kubernetes }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -16,8 +51,8 @@ spec:
       exec:
         script: |
           path="/tmp/pod-snapshot/{{.component.name}}"
-          rm -rf $path 
-          mkdir -p $path 
+          rm -rf $path
+          mkdir -p $path
           kubectl logs {{.component.name}} -n {{.component.namespace}} > "$path/logs.txt"
           kubectl get pods -n {{.component.namespace}} {{.component.name}} -o yaml > "$path/manifest.yaml"
           kubectl get events --field-selector=involvedObject.kind=Pod,involvedObject.name={{.component.name}} \
@@ -137,12 +172,12 @@ spec:
         script: >-
           kubectl create role {{.params.role}}
           --verb="get,list,create,update,delete"
-          --resource=pods,services 
+          --resource=pods,services
           --namespace={{.config.name}}
     - name: Create RoleBinding
       exec:
         script: >-
-          kubectl create rolebinding {{.params.role}}-rolebinding 
+          kubectl create rolebinding {{.params.role}}-rolebinding
           --namespace={{.config.name}}
           --user={{.params.user}}
           --role={{.params.role}}
