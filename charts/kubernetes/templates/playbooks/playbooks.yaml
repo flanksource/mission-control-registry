@@ -42,14 +42,13 @@ spec:
     - name: replicas
       label: Replicas
       type: text
+      default: "$(.config.config.spec.replicas)"
   actions:
-    - name: get replicas
-      exec:
-        script: kubectl get deployments -n $(.config.namespace) $(.config.name) -o yaml | yq '.status.replicas'
     - name: Scale deployment
-      if: 'int(getLastAction().result.stdout) != parameters.replicas'
       exec:
-        script: kubectl scale deployment -n $(.config.namespace) $(.config.name) --replicas=$(.parameters.replicas)
+        script: >-
+          kubectl scale deployment -n $(.config.namespace)
+          $(.config.name) --replicas=$(.params.replicas)
 {{- end}}
 {{- if .Values.playbooks.restartDeployment }}
 ---
