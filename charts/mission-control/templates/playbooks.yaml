@@ -23,7 +23,7 @@ spec:
         driver: postgres
         query: >-
           DELETE FROM event_queue
-          WHERE created_at < NOW() - INTERVAL '{{.params.max_age}} day'
+          WHERE created_at < NOW() - INTERVAL '$(.params.max_age) day'
     - name: Reset attempts
       sql:
         connection: connection://postgres/mission-control
@@ -31,5 +31,5 @@ spec:
         query: >-
           UPDATE event_queue SET attempts = 0
           WHERE attempts > 0 AND
-          last_attempt < NOW() - INTERVAL '{{.params.last_max_attempt}} day'
+          last_attempt < NOW() - INTERVAL '$(.params.last_max_attempt) day'
 {{- end }}

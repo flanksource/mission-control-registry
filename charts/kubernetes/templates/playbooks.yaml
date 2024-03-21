@@ -15,15 +15,15 @@ spec:
     - name: Take snapshot
       exec:
         script: |
-          path="/tmp/pod-snapshot/{{.component.name}}"
+          path="/tmp/pod-snapshot/$(.component.name)"
           rm -rf $path
           mkdir -p $path
-          kubectl logs {{.component.name}} -n {{.component.namespace}} > "$path/logs.txt"
-          kubectl get pods -n {{.component.namespace}} {{.component.name}} -o yaml > "$path/manifest.yaml"
-          kubectl get events --field-selector=involvedObject.kind=Pod,involvedObject.name={{.component.name}} \
-            -n {{.component.namespace}} > "$path/events.txt"
+          kubectl logs $(.component.name) -n $(.component.namespace) > "$path/logs.txt"
+          kubectl get pods -n $(.component.namespace) $(.component.name) -o yaml > "$path/manifest.yaml"
+          kubectl get events --field-selector=involvedObject.kind=Pod,involvedObject.name=$(.component.name) \
+            -n $(.component.namespace) > "$path/events.txt"
         artifacts:
-          - path: "/tmp/pod-snapshot/{{.component.name}}/*"
+          - path: '/tmp/pod-snapshot/$(.component.name)/*'
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -48,11 +48,11 @@ spec:
   actions:
     - name: get replicas
       exec:
-        script: kubectl get deployments -n {{.config.namespace}} {{.config.name}} -o yaml | yq '.status.replicas'
+        script: kubectl get deployments -n $(.config.namespace) $(.config.name) -o yaml | yq '.status.replicas'
     - name: Scale deployment
-      if: "int(getLastAction().result.stdout) != parameters.replicas"
+      if: 'int(getLastAction().result.stdout) != parameters.replicas'
       exec:
-        script: kubectl scale deployment -n {{.config.namespace}} {{.config.name}} --replicas={{.parameters.replicas}}
+        script: kubectl scale deployment -n $(.config.namespace) $(.config.name) --replicas=$(.parameters.replicas)
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -68,7 +68,7 @@ spec:
   actions:
     - name: Scale deployment
       exec:
-        script: kubectl rollout release deployment -n {{.config.namespace}} {{.config.name}}
+        script: kubectl rollout release deployment -n $(.config.namespace) $(.config.name)
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -88,8 +88,8 @@ spec:
         - arsene
       exec:
         script: |
-          echo "{{.config.namespace}} {{.config.name}}";
-          kubectl delete pod -n {{.config.namespace}} {{.config.name}}
+          echo "$(.config.namespace) $(.config.name)";
+          kubectl delete pod -n $(.config.namespace) $(.config.name)
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -127,7 +127,7 @@ spec:
       label: User
     - name: role
       label: Role
-      default: "{{random.Alpha 8}}"
+      default: '$(random.Alpha 8)'
   configs:
     - types:
         - Kubernetes::Namespace
@@ -135,22 +135,22 @@ spec:
     - name: Create role
       exec:
         script: >-
-          kubectl create role {{.params.role}}
+          kubectl create role $(.params.role)
           --verb="get,list,create,update,delete"
           --resource=pods,services
-          --namespace={{.config.name}}
+          --namespace=$(.config.name)
     - name: Create RoleBinding
       exec:
         script: >-
-          kubectl create rolebinding {{.params.role}}-rolebinding
-          --namespace={{.config.name}}
-          --user={{.params.user}}
-          --role={{.params.role}}
+          kubectl create rolebinding $(.params.role)-rolebinding
+          --namespace=$(.config.name)
+          --user=$(.params.user)
+          --role=$(.params.role)
     - name: Clear role and role binding
       if: "success()"
       delay: "'5s'"
       exec:
         script: |
-          kubectl delete rolebinding {{.params.role}}-rolebinding --namespace={{.config.name}}
-          kubectl delete role {{.params.role}} --namespace={{.config.name}}
+          kubectl delete rolebinding $(.params.role)-rolebinding --namespace=$(.config.name)
+          kubectl delete role $(.params.role) --namespace=$(.config.name)
 {{- end}}
