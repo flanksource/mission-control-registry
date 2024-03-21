@@ -1,4 +1,4 @@
-{{- if .Values.playbooks.kubernetes }}
+{{- if .Values.playbooks.podSnapshot }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -24,6 +24,8 @@ spec:
             -n $(.component.namespace) > "$path/events.txt"
         artifacts:
           - path: '/tmp/pod-snapshot/$(.component.name)/*'
+{{- end}}
+{{- if .Values.playbooks.scaleDeployment }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -40,11 +42,6 @@ spec:
     - name: replicas
       label: Replicas
       type: text
-    - name: config
-      label: Config
-      type: config
-      properties:
-        filter: Kubernetes::Node
   actions:
     - name: get replicas
       exec:
@@ -53,6 +50,8 @@ spec:
       if: 'int(getLastAction().result.stdout) != parameters.replicas'
       exec:
         script: kubectl scale deployment -n $(.config.namespace) $(.config.name) --replicas=$(.parameters.replicas)
+{{- end}}
+{{- if .Values.playbooks.restartDeployment }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -69,27 +68,8 @@ spec:
     - name: Scale deployment
       exec:
         script: kubectl rollout release deployment -n $(.config.namespace) $(.config.name)
----
-apiVersion: mission-control.flanksource.com/v1
-kind: Playbook
-metadata:
-  name: delete-pod
-  namespace: default
-spec:
-  title: Delete Pod
-  category: Kubernetes
-  description: Deletes a kubernetes pod
-  configs:
-    - types:
-        - Kubernetes::Pod
-  actions:
-    - name: Delete the pod
-      runsOn:
-        - arsene
-      exec:
-        script: |
-          echo "$(.config.namespace) $(.config.name)";
-          kubectl delete pod -n $(.config.namespace) $(.config.name)
+{{- end}}
+{{- if .Values.playbooks.cleanupFailedPods }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -112,6 +92,8 @@ spec:
           while read -r namespace pod _; do
               kubectl delete pod "$pod" --namespace="$namespace"
           done
+{{- end}}
+{{- if .Values.playbooks.requestNamespaceAccess }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
