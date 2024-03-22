@@ -102,24 +102,16 @@ metadata:
 spec:
   title: Request Namespace Access
   category: Kubernetes
-  description: Adds a Rolebinding
+  description: Adds a Rolebinding to the given role
   parameters:
     - name: user
       label: User
     - name: role
       label: Role
-      default: '$(random.Alpha 8)'
   configs:
     - types:
         - Kubernetes::Namespace
   actions:
-    - name: Create role
-      exec:
-        script: >-
-          kubectl create role $(.params.role)
-          --verb="get,list,create,update,delete"
-          --resource=pods,services
-          --namespace=$(.config.name)
     - name: Create RoleBinding
       exec:
         script: >-
@@ -127,11 +119,10 @@ spec:
           --namespace=$(.config.name)
           --user=$(.params.user)
           --role=$(.params.role)
-    - name: Clear role and role binding
+    - name: Clear Rolebinding
       if: "success()"
-      delay: "'5s'"
+      delay: "'20m'"
       exec:
         script: |
           kubectl delete rolebinding $(.params.role)-rolebinding --namespace=$(.config.name)
-          kubectl delete role $(.params.role) --namespace=$(.config.name)
 {{- end}}
