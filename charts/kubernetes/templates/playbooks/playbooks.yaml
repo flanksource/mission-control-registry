@@ -4,7 +4,6 @@ apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: pod-snapshot
-  namespace: default
 spec:
   title: Pod Snapshot
   category: Kubernetes
@@ -31,7 +30,6 @@ apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: scale-deployment
-  namespace: default
 spec:
   title: Scale Deployment
   category: Kubernetes
@@ -46,9 +44,8 @@ spec:
   actions:
     - name: Scale deployment
       exec:
-        script: >-
-          kubectl scale deployment -n $(.config.namespace)
-          $(.config.name) --replicas=$(.params.replicas)
+        script: |
+          kubectl scale deployment -n $(.config.namespace) $(.config.name) --replicas=$(.params.replicas)
 {{- end}}
 {{- if .Values.playbooks.restartDeployment }}
 ---
@@ -56,7 +53,6 @@ apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: restart-deployment
-  namespace: default
 spec:
   title: Restart Deployment
   category: Kubernetes
@@ -74,7 +70,6 @@ apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: cleanup-failed-pod
-  namespace: default
 spec:
   title: Cleanup Failed Pods
   category: Kubernetes
@@ -98,7 +93,6 @@ apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: request-namespace-access
-  namespace: default
 spec:
   title: Request Namespace Access
   category: Kubernetes
