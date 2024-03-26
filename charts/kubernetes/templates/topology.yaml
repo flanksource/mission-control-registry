@@ -70,7 +70,7 @@ spec:
             - name: memory
               lookup:
                 prometheus:
-                - query: 'sum(container_memory_working_set_bytes{container!=""}) by (node)'
+                - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"} > 0) by (node)'
                   url: {{ .Values.prometheusURL | quote }}
                   display:
                     expr: |
@@ -178,7 +178,7 @@ spec:
             - name: memory
               lookup:
                 prometheus:
-                - query: 'sum(container_memory_working_set_bytes{container!=""}) by (namespace)'
+                - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"} > 0) by (namespace)'
                   url: {{ .Values.prometheusURL | quote }}
                   display:
                     expr: |
