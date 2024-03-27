@@ -102,6 +102,10 @@ spec:
       label: User
     - name: role
       label: Role
+      type: config
+      properties:
+        filter:
+          type: Kubernetes::Role
   configs:
     - types:
         - Kubernetes::Namespace
