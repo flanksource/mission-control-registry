@@ -19,11 +19,12 @@ spec:
       - name: HelmReleases Component
         type: lookup
         lookup:
-          configDB:
-            - query: SELECT * FROM config_items WHERE config_class = 'HelmRelease'
+          catalog:
+            - selector:
+                - types: ['Kubernetes::HelmRelease']
               display:
                 expr: |
-                  results.results.map(r, {
+                  dyn(results).map(r, {
                     'name': r.name,
                     'icon': 'helm',
                     'namespace': r.namespace,
@@ -44,11 +45,12 @@ spec:
       - name: Kustomizations Component
         type: lookup
         lookup:
-          configDB:
-            - query: SELECT * FROM config_items WHERE config_class = 'Kustomization'
+          catalog:
+            - selector:
+                - types: ['Kubernetes::Kustomization']
               display:
                 expr: |
-                  results.results.map(r, {
+                  dyn(results).map(r, {
                     'name': r.name,
                     'icon': 'kustomize',
                     'namespace': r.namespace,
@@ -68,11 +70,12 @@ spec:
       - name: HelmRepo Component
         type: lookup
         lookup:
-          configDB:
-            - query: SELECT * FROM config_items WHERE config_class = 'HelmRepository'
+          catalog:
+            - selector:
+                - types: ['Kubernetes::HelmRepository']
               display:
                 expr: |
-                  results.results.map(r, {
+                  dyn(results).map(r, {
                     'name': r.name,
                     'icon': 'helm',
                     'namespace': r.namespace,
@@ -91,11 +94,12 @@ spec:
       - name: GitRepo Component
         type: lookup
         lookup:
-          configDB:
-            - query: SELECT * FROM config_items WHERE config_class = 'GitRepository'
+          catalog:
+            - selector:
+                - types: ['Kubernetes::GitRepository']
               display:
                 expr: |
-                  results.results.map(r, {
+                  dyn(results).map(r, {
                     'name': r.name,
                     'icon': 'git',
                     'namespace': r.namespace,
