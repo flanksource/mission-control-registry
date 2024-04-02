@@ -40,6 +40,9 @@ spec:
             kubernetes:
               - kind: Node
                 name: k8s
+                {{- if not (empty .Values.topology.kubeconfig)}}
+                kubeconfig: {{ .Values.topology.kubeconfig | toYaml | nindent 18}}
+                {{- end}}
                 display:
                   expr: |
                     dyn(results).map(r, r.Object).map(r, {
@@ -97,6 +100,9 @@ spec:
       lookup:
         kubernetes:
           - kind: Pod
+            {{- if not (empty .Values.topology.kubeconfig)}}
+            kubeconfig: {{ .Values.topology.kubeconfig | toYaml | nindent 14}}
+            {{- end}}
             ready: false
             ignore:
               - junit-fail**
@@ -150,6 +156,9 @@ spec:
           lookup:
             kubernetes:
               - kind: Namespace
+                {{- if not (empty .Values.topology.kubeconfig)}}
+                kubeconfig: {{ .Values.topology.kubeconfig | toYaml | nindent 18}}
+                {{- end}}
                 display:
                   expr: |
                     dyn(results).map(r, r.Object).map(r, {
