@@ -14,7 +14,7 @@ spec:
     - name: Take snapshot
       exec:
         script: |
-          path="/tmp/pod-snapshot/$(.component.name)"
+          path="/tmp/pod-snapshot/$(.component.id)"
           rm -rf $path
           mkdir -p $path
           kubectl logs $(.component.name) -n $(.component.namespace) > "$path/logs.txt"
@@ -22,7 +22,7 @@ spec:
           kubectl get events --field-selector=involvedObject.kind=Pod,involvedObject.name=$(.component.name) \
             -n $(.component.namespace) > "$path/events.txt"
         artifacts:
-          - path: '/tmp/pod-snapshot/$(.component.name)/*'
+          - path: '/tmp/pod-snapshot/$(.component.id)/*'
 {{- end}}
 {{- if .Values.playbooks.scaleDeployment }}
 ---
