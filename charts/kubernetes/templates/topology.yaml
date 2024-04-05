@@ -127,8 +127,8 @@ spec:
                   'status_reason': k8s.getHealth(r).message,
                   'properties': [
                     {"name": "image", "text": r.spec.containers[0].image},
-                    {"name": "cpu", "max": k8s.podMaxCPUMillicores(r), "unit": "millicores", "headline": true},
-                    {"name": "memory", "max": k8s.podMaxMemoryBytes(r), "unit": "bytes", "headline": true},
+                    {"name": "cpu", "max": k8s.getResourcesLimit(r, "cpu"), "unit": "millicores", "headline": true},
+                    {"name": "memory", "max": k8s.getResourcesLimit(r, "memory"), "unit": "bytes", "headline": true},
                     {"name": "node", "text": r.spec.nodeName},
                     {"name": "created_at", "text": time.Parse('2006-01-02T15:04:05Z07:00', r.metadata.creationTimestamp)},
                     {"name": "namespace", "text": r.metadata.namespace},
