@@ -55,7 +55,12 @@ spec:
                       'selectors':[{'fieldSelector': 'node='+r.metadata.name}],
                       'status': k8s.getHealth(r).status == "Healthy" ? "healthy" : "unhealthy",
                       'status_reason': k8s.getHealth(r).message,
-                      'properties': k8s.nodeProperties(r),
+                      'properties': [
+                        {"name": "cpu", "max": k8s.cpuAsMillicores(r.status.allocatable["cpu"]), "unit": "millicores", "headline": true},
+                        {"name": "memory", "max": k8s.memoryAsBytes(r.status.allocatable["memory"]), "unit": "bytes", "headline": true},
+                        {"name": "ephemeral-storage", "max": k8s.memoryAsBytes(r.status.allocatable["ephemeral-storage"]), "unit": "bytes", "headline": true},
+                        {"name": "zone", "text": "topology.kubernetes.io/zone" in r.metadata.labels ? r.metadata.labels["topology.kubernetes.io/zone"]: ""},
+                      ]
                     }).toJSON()
 
           properties:
@@ -120,7 +125,14 @@ spec:
                   'logs': [{'name': 'Kubernetes', 'type': 'KubernetesPod'}],
                   'status': k8s.getHealth(r).status == "Healthy" ? "healthy" : "unhealthy",
                   'status_reason': k8s.getHealth(r).message,
-                  'properties': k8s.podProperties(r),
+                  'properties': [
+                    {"name": "image", "text": r.spec.containers[0].image},
+                    {"name": "cpu", "max": k8s.podMaxCPUMillicores(r), "unit": "millicores", "headline": true},
+                    {"name": "memory", "max": k8s.podMaxMemoryBytes(r), "unit": "bytes", "headline": true},
+                    {"name": "node", "text": r.spec.nodeName},
+                    {"name": "created_at", "text": time.Parse('2006-01-02T15:04:05Z07:00', r.metadata.creationTimestamp)},
+                    {"name": "namespace", "text": r.metadata.namespace},
+                  ]
                 }).toJSON()
 
       properties:
@@ -168,8 +180,8 @@ spec:
                       'labels': k8s.labels(r),
                       'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Namespace'}],
                       'properties': [
-                        {'name': 'memory', 'unit': 'bytes', 'headline': true},
                         {'name': 'cpu', 'unit': 'millicores', 'headline': true},
+                        {'name': 'memory', 'unit': 'bytes', 'headline': true},
                       ],
                     }).toJSON()
           properties:
