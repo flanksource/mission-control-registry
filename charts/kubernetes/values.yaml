@@ -137,6 +137,11 @@ scraper:
         count: 10
 
 playbooks:
+  cleanupFailedPods: true
+  podSnapshot: true
+  requestNamespaceAccess: true
+  restartDeployment: true
+  scaleDeployment: true
   edit_kubernetes_manifests:
     enabled: false
     git_connection: "connection://"
