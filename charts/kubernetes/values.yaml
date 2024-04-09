@@ -110,7 +110,7 @@ scraper:
       # Link a service to a deployment (adjust the label selector accordingly)
       - filter: config_type == "Kubernetes::Service"
         type:
-          value: 'Kubernetes::Deployment'
+          value: "Kubernetes::Deployment"
         name:
           expr: |
             has(config.spec.selector) && has(config.spec.selector.name) ? config.spec.selector.name : ''
@@ -134,7 +134,21 @@ scraper:
   retention:
     changes:
       - name: ReconciliationSucceeded
-        count: 10
+        age: 1d
+      - name: ArtifactUpToDate
+        age: 1d
+      - name: GarbageCollectionSucceeded
+        age: 1d
+      - name: Pulling
+        age: 1d
+      - name: Pulled
+        age: 1d
+      - name: Killing
+        age: 7d
+      - name: Scheduled
+        age: 7d
+      - name: Started
+        age: 7d
 
 playbooks:
   cleanupFailedPods: true

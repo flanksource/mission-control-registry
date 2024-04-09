@@ -268,13 +268,15 @@
                   "name": {
                     "type": "string"
                   },
+                  "age": {
+                    "type": "string"
+                  },
                   "count": {
                     "type": "number"
                   }
                 },
                 "required": [
-                  "name",
-                  "count"
+                  "name"
                 ]
               }
             }
