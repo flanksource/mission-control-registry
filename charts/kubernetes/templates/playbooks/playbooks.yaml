@@ -8,6 +8,7 @@ spec:
   title: Pod Snapshot
   category: Kubernetes
   description: Takes a snapshot of the pod (Logs, yaml, & events)
+  icon: add-snapshot
   components:
     - type: Kubernetes::Pod
   actions:
@@ -32,6 +33,7 @@ metadata:
   name: scale-deployment
 spec:
   title: Scale Deployment
+  icon: scale-out
   category: Kubernetes
   configs:
     - types:
@@ -55,6 +57,7 @@ metadata:
   name: restart-deployment
 spec:
   title: Restart Deployment
+  icon: reload
   category: Kubernetes
   configs:
     - types:
@@ -72,6 +75,7 @@ metadata:
   name: cleanup-failed-pod
 spec:
   title: Cleanup Failed Pods
+  icon: remove-trash
   category: Kubernetes
   description: Deletes all failed kubernetes pod
   configs:
@@ -95,6 +99,7 @@ metadata:
   name: request-namespace-access
 spec:
   title: Request Namespace Access
+  icon: add-shield
   category: Kubernetes
   description: Adds a Rolebinding to the given role
   parameters:
@@ -131,7 +136,7 @@ spec:
     - name: Create RoleBinding
       exec:
         script: >-
-          kubectl create rolebinding "playbook-{{run.id}}"
+          kubectl create rolebinding "playbook-$(.run.id)"
           --namespace=$(.config.name)
           --user=$(.params.user)
           --role=$(.params.role)
@@ -140,5 +145,5 @@ spec:
       delay: ".params.delay"
       exec:
         script: |
-          kubectl delete rolebinding "playbook-{{run.id}}" --namespace=$(.config.name)
+          kubectl delete rolebinding "playbook-$(.run.id)" --namespace=$(.config.name)
 {{- end}}
