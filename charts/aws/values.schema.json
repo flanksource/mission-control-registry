@@ -1,0 +1,316 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Schema for AWS bundle for Flanksource Mission Control",
+  "type": "object",
+  "properties": {
+    "nameOverride": {
+      "type": "string"
+    },
+    "fullnameOverride": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "object",
+      "properties": {},
+      "required": []
+    },
+    "scraper": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "connectionDetails": {
+      "type": "object",
+      "properties": {
+        "connection": {
+          "type": "string"
+        },
+        "accessKey": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "valueFrom": {
+              "type": "object",
+              "properties": {
+                "serviceAccount": {
+                  "type": "string"
+                },
+                "helmRef": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "name"
+                  ]
+                },
+                "configMapKeyRef": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "name"
+                  ]
+                },
+                "secretKeyRef": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "name"
+                  ]
+                }
+              },
+              "required": [
+              ]
+            }
+          },
+          "required": [
+          ]
+        },
+        "secretKey": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string"
+            },
+            "value": {
+              "type": "string"
+            },
+            "valueFrom": {
+              "type": "object",
+              "properties": {
+                "serviceAccount": {
+                  "type": "string"
+                },
+                "helmRef": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "name"
+                  ]
+                },
+                "configMapKeyRef": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "name"
+                  ]
+                },
+                "secretKeyRef": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "name"
+                  ]
+                }
+              },
+              "required": [
+                "serviceAccount",
+                "helmRef",
+                "configMapKeyRef",
+                "secretKeyRef"
+              ]
+            }
+          },
+          "required": [
+          ]
+        },
+        "region": {
+          "type": "array",
+          "items": {}
+        },
+        "endpoint": {
+          "type": "string"
+        },
+        "skipTLSVerify": {
+          "type": "boolean"
+        },
+        "assumeRole": {
+          "type": "string"
+        }
+      },
+      "required": [
+      ]
+    },
+    "cloudtrail": {
+      "type": "object",
+      "properties": {
+        "maxAge": {
+          "type": "string"
+        },
+        "exclude": {
+          "type": "array",
+          "items": {}
+        }
+      },
+      "required": [
+        "maxAge"
+      ]
+    },
+    "compliance": {
+      "type": "boolean"
+    },
+    "costReporting": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "database": {
+          "type": "string"
+        },
+        "region": {
+          "type": "string"
+        },
+        "s3BucketPath": {
+          "type": "string"
+        },
+        "table": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled",
+        "database",
+        "region",
+        "s3BucketPath",
+        "table"
+      ]
+    },
+    "includeResources": {
+      "type": "array",
+      "items": {}
+    },
+    "excludeResources": {
+      "type": "array",
+      "items": {}
+    },
+    "transform": {
+      "type": "object",
+      "properties": {
+        "changes": {
+          "type": "object",
+          "properties": {
+            "exclude": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "exclude"
+          ]
+        },
+        "relationship": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "filter": {
+                "type": "string"
+              },
+              "expr": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "filter",
+              "expr"
+            ]
+          }
+        }
+      },
+      "required": [
+        "changes",
+        "relationship"
+      ]
+    },
+    "retention": {
+      "type": "object",
+      "properties": {
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "age": {
+                "type": "string"
+              },
+              "count": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "name"
+            ]
+          }
+        }
+      },
+      "required": [
+        "changes"
+      ]
+    }
+  },
+  "required": [
+  ]
+}

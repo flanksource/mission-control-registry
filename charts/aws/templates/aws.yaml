@@ -13,16 +13,12 @@ spec:
       database: {{.Values.costReporting.database}}
       region: {{.Values.costReporting.region}}
       s3_bucket_path: {{.Values.costReporting.s3BucketPath}}
-      table: {{.Values.costReporting.table}} 
+      table: {{.Values.costReporting.table}}
     {{- end }}
-
-    inventory: {{ .Values.inventory }}
-    patch_details: {{ .Values.patchDetails }}
-    patch_states: {{ .Values.patchStates }}
-    trusted_advisor_check: {{ .Values.trustedAdvisorCheck }}
 
     include: {{ .Values.includeResources }}
     exclude: {{ .Values.excludeResources }}
+    retention: {{ .Values.retention | toYaml | nindent 8 }}
 
     transform: {{ .Values.transform | toYaml | nindent 8 }}
 
