@@ -2,6 +2,6 @@ nameOverride: ""
 fullnameOverride: ""
 labels: {}
 topologyName: mission-control
-connectionName: mission-control
+connectionName: mission-control-db
 isAgent: false
 playbooks: true
