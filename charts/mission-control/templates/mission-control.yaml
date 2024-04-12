@@ -4,19 +4,22 @@ kind: Connection
 metadata:
   name: {{ .Values.connectionName }}
 spec:
-  type: postgres
-  url:
-    value: 'postgres://$(username):$(password)@postgres/mission_control?sslmode=disable'
-  username:
-    valueFrom:
-      secretKeyRef:
-        name: incident-commander-postgres
-        key: POSTGRES_USER
-  password:
-    valueFrom:
-      secretKeyRef:
-        name: incident-commander-postgres
-        key: POSTGRES_PASSWORD
+  postgres:
+    database: 
+      value: mission-control
+    insecureTLS: true
+    host: 
+      value: postgres
+    username:
+      valueFrom:
+        secretKeyRef:
+          name: incident-commander-postgres
+          key: POSTGRES_USER
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: incident-commander-postgres
+          key: POSTGRES_PASSWORD
 ---
 apiVersion: canaries.flanksource.com/v1
 kind: Topology
@@ -45,7 +48,7 @@ spec:
     - icon: group
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: |
               JSON.stringify(results.rows.map(function(r) {return {name: r.name}}))
@@ -68,7 +71,7 @@ spec:
     - headline: true
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: results.rows[0].count
           name: Incident count query
@@ -118,7 +121,7 @@ spec:
                       resource_type = 'canary'
                   )
                   SELECT * FROM cte WHERE rn = 1;
-                connection: connection://postgres/mission-control/mission-control
+                connection: "connection://{{ .Values.connectionName }}"
                 name: CanarySync Check
                 transform:
                   expr: |
@@ -147,7 +150,7 @@ spec:
                       resource_type = 'topology'
                   )
                   SELECT * FROM cte WHERE rn = 1;
-                connection: connection://postgres/mission-control/mission-control
+                connection: "connection://{{ .Values.connectionName }}"
                 name: TopologyChecks
                 transform:
                   expr: |
@@ -160,7 +163,7 @@ spec:
                     }).toJSON()
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             expr: |
               results.rows.map(r, {
@@ -189,7 +192,7 @@ spec:
     - headline: true
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: results.rows[0].count
           name: Component count query
@@ -199,7 +202,7 @@ spec:
     - headline: true
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: results.rows[0].count
           name: Check count query
@@ -232,7 +235,7 @@ spec:
         lookup:
           postgres:
             - query: SELECT count(*) FROM event_queue
-              connection: connection://postgres/mission-control
+              connection: "connection://{{ .Values.connectionName }}"
               display:
                 expr: results.rows[0].count
               test:
@@ -241,7 +244,7 @@ spec:
       - inline:
           postgres:
             - query: SELECT distinct(name), count(*) FROM event_queue GROUP BY name
-              connection: connection://postgres/mission-control
+              connection: "connection://{{ .Values.connectionName }}"
               name: Event Queue Checks
               transformDeleteStrategy: MarkHealthy
               transform:
@@ -259,7 +262,7 @@ spec:
     - headline: true
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: results.rows[0].count
           name: Backends count query
@@ -305,7 +308,7 @@ spec:
                   resource_type = 'config_scraper'
               )
               SELECT * FROM cte WHERE rn = 1
-            connection: connection://postgres/mission-control
+            connection: "connection://{{ .Values.connectionName }}"
             name: Config Scraper Checks
             transform:
               expr: |
@@ -321,7 +324,7 @@ spec:
     - icon: k8s-customresourcedefinition
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: |
               JSON.stringify(results.rows.map(function(r) {return {
@@ -366,7 +369,7 @@ spec:
     - headline: true
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: results.rows[0].count
           name: Config Items count query
@@ -400,7 +403,7 @@ spec:
     properties:
     - lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: results.rows[0].version
           name: Version query
@@ -412,7 +415,7 @@ spec:
     - headline: true
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: results.rows[0].pg_size_pretty
           name: Size query
@@ -424,7 +427,7 @@ spec:
     - headline: true
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: results.rows[0].sum
           name: Active connections query
@@ -472,7 +475,7 @@ spec:
     - headline: true
       lookup:
         postgres:
-        - connection: connection://postgres/mission-control
+        - connection: "connection://{{ .Values.connectionName }}"
           display:
             javascript: results.rows[0].count
           name: Count
@@ -489,7 +492,7 @@ spec:
       - name: JobGroups
         lookup:
           postgres:
-          - connection: connection://postgres/mission-control
+          - connection: "connection://{{ .Values.connectionName }}"
             query: |
               WITH ordered_history AS (
                 SELECT
@@ -523,21 +526,21 @@ spec:
         lookup:
           postgres:
             - query: SELECT reltuples FROM  pg_class  WHERE relname ='check_statuses_is_pushed_idx'
-              connection: connection://postgres/mission-control
+              connection: "connection://{{ .Values.connectionName }}"
               display:
                 expr: results.rows[0].reltuples
       - name: Config Analysis Backlog
         lookup:
           postgres:
             - query: SELECT count(*) FROM config_analysis where is_pushed is false
-              connection: connection://postgres/mission-control
+              connection: "connection://{{ .Values.connectionName }}"
               display:
                 expr: results.rows[0].count
       - name: Config Changes Backlog
         lookup:
           postgres:
             - query: SELECT count(*) FROM config_changes where is_pushed is false
-              connection: connection://postgres/mission-control
+              connection: "connection://{{ .Values.connectionName }}"
               display:
                 expr: results.rows[0].count
     checks:
@@ -545,7 +548,7 @@ spec:
           schedule: '@every 30s'
           postgres:
             - query: SELECT time_end FROM job_history WHERE name = 'ReconcileAll' AND status = 'SUCCESS' LIMIT 1
-              connection: connection://postgres/mission-control
+              connection: "connection://{{ .Values.connectionName }}"
               name: Last Full Reconcile
               display:
                 expr: |
@@ -557,7 +560,7 @@ spec:
           schedule: '@every 30s'
           postgres:
             - query: SELECT reltuples as count FROM  pg_class  WHERE relname ='check_statuses_is_pushed_idx'
-              connection: connection://postgres/mission-control
+              connection: "connection://{{ .Values.connectionName }}"
               name: Check Status Backlog
               display:
                 expr: results.rows[0].count
@@ -567,17 +570,17 @@ spec:
           schedule: '@every 30s'
           postgres:
             - query: SELECT count(*) FROM config_analysis where is_pushed is false
-              connection: connection://postgres/mission-control
+              connection: "connection://{{ .Values.connectionName }}"
               name: Config Analysis Backlog
               display:
                 expr: results.rows[0].count
               test:
-                expr: results.rows[0].count < 200  
+                expr: results.rows[0].count < 200
       - inline:
           schedule: '@every 30s'
           postgres:
             - query: SELECT count(*) FROM config_changes where is_pushed is false
-              connection: connection://postgres/mission-control
+              connection: "connection://{{ .Values.connectionName }}"
               name: Config Changes Backlog
               display:
                 expr: results.rows[0].count
