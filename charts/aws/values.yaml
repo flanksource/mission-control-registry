@@ -68,8 +68,8 @@ transform:
     - filter: config_type == 'AWS::EKS::Cluster'
       expr: |
         [
-          {"type": "Kubernetes::Cluster","labels": {"aws/account-id": tags['account'],"eks-cluster-name": tags["alpha.eksctl.io/cluster-name"]}},
-          {"type": "Kubernetes::Node","labels": {"aws/account-id": tags['account'],"alpha.eksctl.io/cluster-name": tags["alpha.eksctl.io/cluster-name"]}}
+          {"type": "Kubernetes::Cluster", "labels": {"account": labels['account'], "eks-cluster-name": labels["alpha.eksctl.io/cluster-name"]}},
+          {"type": "Kubernetes::Node", "labels": {"account": labels['account'], "alpha.eksctl.io/cluster-name": labels["alpha.eksctl.io/cluster-name"]}}
         ].toJSON()
 
     # EC2 Instance to kubernetes node
@@ -86,7 +86,7 @@ transform:
     - filter: config_type == 'AWS::AvailabilityZone'
       expr: |
         [
-          {"type": "Kubernetes::Node", "labels": {"aws/account-id": tags['account'], "topology.kubernetes.io/zone": name}},
+          {"type": "Kubernetes::Node", "labels": {"account": labels['account'], "topology.kubernetes.io/zone": name}},
           {"type": "AWS::AvailabilityZoneID", "name": config["ZoneId"]}
         ].toJSON()
 
