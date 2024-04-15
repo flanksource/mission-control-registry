@@ -21,3 +21,6 @@ spec:
       event:  {{ .Values.scraper.event | toYaml | nindent 8 }}
   retention:
     changes: {{ .Values.scraper.retention.changes | toYaml | nindent 6 }}
+    {{- with .Values.scraper.retention.staleItemAge }}
+    staleItemAge: {{ . }}
+    {{- end }}

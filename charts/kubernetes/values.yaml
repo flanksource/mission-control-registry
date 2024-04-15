@@ -132,6 +132,7 @@ scraper:
             },
           }).toJSON()
   retention:
+    staleItemAge: ""
     changes:
       - name: ReconciliationSucceeded
         age: 1d
