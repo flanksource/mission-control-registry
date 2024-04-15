@@ -18,12 +18,36 @@ spec:
       components:
       - name: Certificate Component
         type: lookup
+        forEach:
+          components:
+            - name: Certificate Requests Component
+              type: lookup
+              lookup:
+                configDB:
+                  - query: | 
+                      SELECT name FROM config_items WHERE config_class = 'CertificateRequest' AND config->'metadata'->'annotations' @>'{"cert-manager.io/certificate-name": "{{ .name }}"}'
+                    display:
+                      expr: |
+                        dyn(results).map(r, {
+                          'name': r.name,
+                          'icon': 'certificate',
+                          'namespace': r.namespace,
+                          'status': r.status,
+                          'status_reason': r.description,
+                          'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::CertificateRequest'}],
+                          'properties': [
+                            {'name': 'Message', 'text': r.config.status.conditions[0].message},
+                            {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
+                          ],
+                        }).toJSON()
         lookup:
-          configDB:
-            - query: SELECT * FROM config_items WHERE config_class = 'Certificate'
+          catalog:
+            - selector:
+              - types:
+                - Kubernetes::Certificate
               display:
                 expr: |
-                  results.results.map(r, {
+                  dyn(results).map(r, {
                     'name': r.name,
                     'icon': 'git',
                     'namespace': r.namespace,
