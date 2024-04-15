@@ -24,11 +24,11 @@ spec:
     - name: file_path
       value: {{ "'{{" }} (.config.config | jq `.metadata.annotations["config.kubernetes.io/origin"]` | yaml).path {{ "}}'" }}
     - name: kustomization_path
-      value: {{ "'{{" }} (catalog_traverse .config.id  "Kubernetes::Kustomization").Config | json | jq `.spec.path` {{ "}}'" }}
+      value: {{ "'{{" }} (index (catalog_traverse .config.id  "Kubernetes::Kustomization" "incoming") 0).Config | json | jq `.spec.path` {{ "}}'" }}
     - name: git_url
-      value: {{ "'{{" }} (catalog_traverse .config.id  "Kubernetes::Kustomization/Kubernetes::GitRepository").Config | json | jq `.spec.url` {{ "}}'" }}
+      value: {{ "'{{" }} (index (catalog_traverse .config.id  "Kubernetes::Kustomization/Kubernetes::GitRepository" "incoming") 0).Config | json | jq `.spec.url` {{ "}}'" }}
     - name: git_branch
-      value: {{ "'{{" }} (catalog_traverse .config.id  "Kubernetes::Kustomization/Kubernetes::GitRepository").Config | json | jq `.spec.ref.branch` {{ "}}'" }}
+      value: {{ "'{{" }} (index (catalog_traverse .config.id  "Kubernetes::Kustomization/Kubernetes::GitRepository" "incoming") 0).Config | json | jq `.spec.ref.branch` {{ "}}'" }}
 
   actions:
     - name: Create Pull Request With Changes

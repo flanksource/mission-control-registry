@@ -1,79 +1,75 @@
-nameOverride: ''
-fullnameOverride: ''
+nameOverride: ""
+fullnameOverride: ""
 labels: {}
 scraper:
   name: aws
 
 connectionDetails:
-  connection: ''
+  connection: ""
   accessKey:
-    name: ''
-    value: ''
+    name: ""
+    value: ""
     valueFrom:
-      serviceAccount: ''
+      serviceAccount: ""
       helmRef:
-        key: ''
-        name: ''
+        key: ""
+        name: ""
       configMapKeyRef:
-        key: ''
-        name: ''
+        key: ""
+        name: ""
       secretKeyRef:
-        key: ''
-        name: ''
+        key: ""
+        name: ""
 
   secretKey:
-    name: ''
-    value: ''
+    name: ""
+    value: ""
     valueFrom:
-      serviceAccount: ''
+      serviceAccount: ""
       helmRef:
-        key: ''
-        name: ''
+        key: ""
+        name: ""
       configMapKeyRef:
-        key: ''
-        name: ''
+        key: ""
+        name: ""
       secretKeyRef:
-        key: ''
-        name: ''
+        key: ""
+        name: ""
   region: [] # AWS regions to pull from
-  endpoint: ''
+  endpoint: ""
   skipTLSVerify: false
-  assumeRole: ''
+  assumeRole: ""
 
 cloudtrail:
-  maxAge: ''
+  maxAge: 7d
   exclude: []
 
+# Import AWS Config Rule failures as insights
 compliance: true
 
 # Scrape cost reports and match them with catalog items
 costReporting:
   enabled: false
-  database: ''
-  region: ''
-  s3BucketPath: ''
-  table: ''
-
-inventory: true
-
-patchDetails: true
-
-patchStates: true
-
-trustedAdvisorCheck: false
+  database: ""
+  region: ""
+  s3BucketPath: ""
+  table: ""
 
 includeResources: []
 
 excludeResources: []
 
 transform:
+  changes:
+    exclude:
+      - change_type == 'AttachNetworkInterface' || change_type == 'CreateNetworkInterface'
   relationship:
     # EKS Cluster to Kubernetes Cluster & Kubernetes Node
     - filter: config_type == 'AWS::EKS::Cluster'
       expr: |
         [
-          {"type": "Kubernetes::Cluster","labels": {"aws/account-id": tags['account'],"eks-cluster-name": tags["alpha.eksctl.io/cluster-name"]}},
-          {"type": "Kubernetes::Node","labels": {"aws/account-id": tags['account'],"alpha.eksctl.io/cluster-name": tags["alpha.eksctl.io/cluster-name"]}}
+          {"type": "Kubernetes::Cluster", "labels": {"account": labels['account'], "eks-cluster-name": labels["alpha.eksctl.io/cluster-name"]}},
+          {"type": "Kubernetes::Node", "labels": {"account": labels['account'], "alpha.eksctl.io/cluster-name": labels["alpha.eksctl.io/cluster-name"]}}
         ].toJSON()
 
     # EC2 Instance to kubernetes node
@@ -90,7 +86,7 @@ transform:
     - filter: config_type == 'AWS::AvailabilityZone'
       expr: |
         [
-          {"type": "Kubernetes::Node", "labels": {"aws/account-id": tags['account'], "topology.kubernetes.io/zone": name}},
+          {"type": "Kubernetes::Node", "labels": {"account": labels['account'], "topology.kubernetes.io/zone": name}},
           {"type": "AWS::AvailabilityZoneID", "name": config["ZoneId"]}
         ].toJSON()
 

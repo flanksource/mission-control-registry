@@ -1,0 +1,35 @@
+{{- if .Values.playbooks}}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: clear-event-queue
+  namespace: default
+spec:
+  parameters:
+    - name: max_age
+      label: Max Age (days)
+      default: '30'
+    - name: last_max_attempt
+      label: Reset attempts where last tried is before (days)
+      default: '7'
+  title: Clear Event Queue
+  category: Mission Control
+  description: Deletes old events and fully retried events
+  actions:
+    - name: Delete stale events
+      sql:
+        connection: "connection://{{ .Values.connectionName }}"
+        driver: postgres
+        query: >-
+          DELETE FROM event_queue
+          WHERE created_at < NOW() - INTERVAL '$(.params.max_age) day'
+    - name: Reset attempts
+      sql:
+        connection: "connection://{{ .Values.connectionName }}"
+        driver: postgres
+        query: >-
+          UPDATE event_queue SET attempts = 0
+          WHERE attempts > 0 AND
+          last_attempt < NOW() - INTERVAL '$(.params.last_max_attempt) day'
+{{- end }}

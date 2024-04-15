@@ -50,7 +50,7 @@ transform:
           "type": "Kubernetes::Cluster",
           "labels": {
             "aks-nodeResourceGroup": config["properties"]["nodeResourceGroup"],
-            "azure/subscription-id": tags["azure-subscription-id"]
+            "subscriptionID": labels["subscriptionID"]
           },
         }].toJSON()
     # Link Azure Virtual Machine Scale Sets to the Kubernetes Nodes
@@ -60,7 +60,7 @@ transform:
           "type": "Kubernetes::Node",
           "labels": {
             "azure/vm-scale-set": name,
-            "azure/subscription-id": tags["azure-subscription-id"]
+            "subscriptionID": labels["subscriptionID"]
           },
         }].toJSON()
 
