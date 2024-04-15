@@ -1,0 +1,133 @@
+apiVersion: canaries.flanksource.com/v1
+kind: Topology
+metadata:
+  name: {{ .Values.topologyName }}
+spec:
+  icon: cert-manager
+  type: Topology
+  schedule: "@every 5m"
+  components:
+    - name: Controllers
+      icon: pod
+      selectors:
+        - types:
+            - Kubernetes::Pod
+          labelSelector: 'namespace=cert-manager'
+    - name: Certificate
+      icon: certificate
+      components:
+      - name: Certificate Component
+        type: lookup
+        forEach:
+          components:
+            - name: Certificate Requests Component
+              type: lookup
+              lookup:
+                configDB:
+                  - query: | 
+                      SELECT name FROM config_items WHERE config_class = 'CertificateRequest' AND config->'metadata'->'annotations' @>'{"cert-manager.io/certificate-name": "{{ .name }}"}'
+                    display:
+                      expr: |
+                        dyn(results).map(r, {
+                          'name': r.name,
+                          'icon': 'certificate',
+                          'namespace': r.namespace,
+                          'status': r.status,
+                          'status_reason': r.description,
+                          'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::CertificateRequest'}],
+                          'properties': [
+                            {'name': 'Message', 'text': r.config.status.conditions[0].message},
+                            {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
+                          ],
+                        }).toJSON()
+        lookup:
+          catalog:
+            - selector:
+              - types:
+                - Kubernetes::Certificate
+              display:
+                expr: |
+                  dyn(results).map(r, {
+                    'name': r.name,
+                    'icon': 'git',
+                    'namespace': r.namespace,
+                    'status': r.status,
+                    'status_reason': r.description,
+                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::Certificate'}],
+                    'properties': [
+                      {'name': 'Message', 'text': r.config.status.conditions[0].message},
+                      {'name': 'DNSName', 'text': r.config.spec.dnsNames[0]},
+                      {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
+                    ],
+                  }).toJSON()
+
+    - name: Certificate Requests
+      icon: certificate
+      components:
+      - name: Certificate Requests Component
+        type: lookup
+        lookup:
+          configDB:
+            - query: SELECT * FROM config_items WHERE config_class = 'CertificateRequest'
+              display:
+                expr: |
+                  results.results.map(r, {
+                    'name': r.name,
+                    'icon': 'git',
+                    'namespace': r.namespace,
+                    'status': r.status,
+                    'status_reason': r.description,
+                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::CertificateRequest'}],
+                    'properties': [
+                      {'name': 'Message', 'text': r.config.status.conditions[0].message},
+                      {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
+                    ],
+                  }).toJSON()
+
+    - name: Orders
+      icon: certificate
+      components:
+      - name: Orders Component
+        type: lookup
+        lookup:
+          configDB:
+            - query: SELECT * FROM config_items WHERE config_class = 'Order'
+              display:
+                expr: |
+                  results.results.map(r, {
+                    'name': r.name,
+                    'icon': 'git',
+                    'namespace': r.namespace,
+                    'status': r.status,
+                    'status_reason': r.description,
+                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::Order'}],
+                    'properties': [
+                      {'name': 'DNS Name', 'text': r.config.spec.dnsNames[0]},
+                      {'name': 'State', 'text': r.config.status.state, 'headline': true},
+                    ],
+                  }).toJSON()
+
+    - name: Challenges
+      icon: certificate
+      components:
+      - name: Challenges Component
+        type: lookup
+        lookup:
+          configDB:
+            - query: SELECT * FROM config_items WHERE config_class = 'Challenge'
+              display:
+                expr: |
+                  results.results.map(r, {
+                    'name': r.name,
+                    'icon': 'git',
+                    'namespace': r.namespace,
+                    'status': r.status,
+                    'status_reason': r.description,
+                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::Challenge'}],
+                    'properties': [
+                      {'name': 'Message', 'text': r.config.status.reason},
+                      {'name': 'DNS Name', 'text': r.config.spec.dnsName},
+                      {'name': 'State', 'text': r.config.status.state, 'headline': true},
+                    ],
+                  }).toJSON()
+---
