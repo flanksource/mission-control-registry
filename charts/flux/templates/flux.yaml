@@ -27,11 +27,11 @@ spec:
                   dyn(results).map(r, {
                     'name': r.name,
                     'icon': 'helm',
-                    'namespace': r.namespace,
+                    'namespace': r.config.metadata.namespace,
                     'status': r.status,
                     'status_reason': r.description,
                     'selectors': [{'labelSelector': 'app.kubernetes.io/instance='+r.name}],
-                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::HelmRelease'}],
+                    'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::HelmRelease'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
                       {'name': 'Version', 'text': r.config.status.lastAppliedRevision, 'headline': true},
@@ -53,11 +53,11 @@ spec:
                   dyn(results).map(r, {
                     'name': r.name,
                     'icon': 'kustomize',
-                    'namespace': r.namespace,
+                    'namespace': r.config.metadata.namespace,
                     'status': r.status,
                     'status_reason': r.description,
                     'selectors': [{'labelSelector': 'kustomize.toolkit.fluxcd.io/name='+r.name + ',kustomize.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace}],
-                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::Kustomization'}],
+                    'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::Kustomization'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
                       {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
@@ -78,10 +78,10 @@ spec:
                   dyn(results).map(r, {
                     'name': r.name,
                     'icon': 'helm',
-                    'namespace': r.namespace,
+                    'namespace': r.config.metadata.namespace,
                     'status': r.status,
                     'status_reason': r.description,
-                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::HelmRepository'}],
+                    'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::HelmRepository'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
                       {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
@@ -102,10 +102,10 @@ spec:
                   dyn(results).map(r, {
                     'name': r.name,
                     'icon': 'git',
-                    'namespace': r.namespace,
+                    'namespace': r.config.metadata.namespace,
                     'status': r.status,
                     'status_reason': r.description,
-                    'configs': [{'name': r.name, 'namespace': r.namespace, 'type': 'Kubernetes::GitRepository'}],
+                    'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::GitRepository'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
                       {'name': 'State', 'text': r.config.status.conditions[0].type, 'headline': true},
