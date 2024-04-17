@@ -34,8 +34,8 @@ spec:
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::HelmRelease'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
-                      {'name': 'Version', 'text': r.config.status.lastAppliedRevision, 'headline': true},
-                      {'name': 'Last attempted version', 'text': r.config.status.lastAttemptedRevision, 'headline': true},
+                      {'name': 'Version', 'text': has(r.config.status.lastAppliedRevision) ? r.config.status.lastAppliedRevision : '', 'headline': true},
+                      {'name': 'Last attempted version', 'text': has(r.config.status.lastAttemptedRevision) ? r.config.status.lastAttemptedRevision : '', 'headline': true},
                     ],
                   }).toJSON()
 
