@@ -2,6 +2,6 @@
 nameOverride: ""
 fullnameOverride: ""
 labels: {}
-topologyName: ArgoCD
+topologyName: argocd
 argocd:
   namespace: argocd
