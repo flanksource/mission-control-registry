@@ -1,0 +1,64 @@
+apiVersion: canaries.flanksource.com/v1
+kind: Topology
+metadata:
+  name: {{ .Values.topologyName }}
+spec:
+  icon: argo
+  type: Topology
+  schedule: "@every 5m"
+  components:
+    - name: Controllers
+      icon: pod
+      selectors:
+        - types:
+            - Kubernetes::Pod
+          labelSelector: 'namespace={{.Values.argocd.namespace}}'
+    - name: Application
+      icon: argo
+      components:
+      - name: Application Component
+        type: lookup
+        lookup:
+          catalog:
+            - selector:
+                - types: ['Kubernetes::Application']
+              display:
+                expr: |
+                  dyn(results).map(r, {
+                    'name': r.name,
+                    'icon': 'argo',
+                    'namespace': r.config.metadata.namespace,
+                    'status': r.status,
+                    'type': 'Kubernetes::Application',
+                    'status_reason': r.description,
+                    'selectors': [{'labelSelector': 'argocd.argoproj.io/instance='+r.name}],
+                    'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::Application'}],
+                    'properties': [
+                      {'name': 'Message', 'text': r.config.status.sync.status},
+                      {'name': 'Revision', 'text': r.config.status.sync.revision, 'headline': true},
+                    ],
+                  }).toJSON()
+    - name: AppProject
+      icon: argo
+      components:
+      - name: AppProject Component
+        type: lookup
+        lookup:
+          catalog:
+            - selector:
+                - types: ['Kubernetes::AppProject']
+              display:
+                expr: |
+                  dyn(results).map(r, {
+                    'name': r.name,
+                    'icon': 'argo',
+                    'type': 'Kubernetes::AppProject',
+                    'namespace': r.config.metadata.namespace,
+                    'status': r.status,
+                    'status_reason': r.description,
+                    'selectors': [{'labelSelector': 'argocd.argoproj.io/instance='+r.name}],
+                    'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::AppProject'}],
+                    'properties': [
+                      {'name': 'Source Repos', 'text': r.config.spec.sourceRepos},
+                    ],
+                  }).toJSON()
