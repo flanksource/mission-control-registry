@@ -28,9 +28,9 @@ spec:
                     'name': r.name,
                     'icon': 'argo',
                     'namespace': r.config.metadata.namespace,
-                    'status': r.status,
                     'type': 'Kubernetes::Application',
-                    'status_reason': r.description,
+                    'status': r.status,
+                    'status_reason': has(r.description) ? r.description : '',
                     'selectors': [{'labelSelector': 'argocd.argoproj.io/instance='+r.name}],
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::Application'}],
                     'properties': [
@@ -55,7 +55,7 @@ spec:
                     'type': 'Kubernetes::AppProject',
                     'namespace': r.config.metadata.namespace,
                     'status': r.status,
-                    'status_reason': r.description,
+                    'status_reason': has(r.description) ? r.description : '',
                     'selectors': [{'labelSelector': 'argocd.argoproj.io/instance='+r.name}],
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::AppProject'}],
                     'properties': [
