@@ -53,8 +53,8 @@ spec:
                       'logs': [{'name': 'Kubernetes', 'type': 'KubernetesNode'}],
                       'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Node'}],
                       'selectors':[{'fieldSelector': 'node='+r.metadata.name}],
-                      'status': k8s.getHealth(r).status == "Healthy" ? "healthy" : "unhealthy",
-                      'status_reason': k8s.getHealth(r).message,
+                      'status': k8s.getHealth(r).ok ? "healthy" : "unhealthy",
+                      'status_reason': k8s.getHealth(r).status + ':' + k8s.getHealth(r).message,
                       'properties': [
                         {"name": "cpu", "max": k8s.cpuAsMillicores(r.status.allocatable["cpu"]), "unit": "millicores", "headline": true},
                         {"name": "memory", "max": k8s.memoryAsBytes(r.status.allocatable["memory"]), "unit": "bytes", "headline": true},
@@ -123,8 +123,8 @@ spec:
                   'labels': k8s.labels(r),
                   'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Pod'}],
                   'logs': [{'name': 'Kubernetes', 'type': 'KubernetesPod'}],
-                  'status': k8s.getHealth(r).status == "Healthy" ? "healthy" : "unhealthy",
-                  'status_reason': k8s.getHealth(r).message,
+                  'status': k8s.getHealth(r).ok ? "healthy" : "unhealthy",
+                  'status_reason': k8s.getHealth(r).status + ':' + k8s.getHealth(r).message,
                   'properties': [
                     {"name": "image", "text": r.spec.containers[0].image},
                     {"name": "cpu", "max": k8s.getResourcesLimit(r, "cpu"), "unit": "millicores", "headline": true},
