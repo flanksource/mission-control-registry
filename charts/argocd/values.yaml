@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=./values.schema.json
+nameOverride: ""
+fullnameOverride: ""
+labels: {}
+topologyName: ArgoCD
+argocd:
+  namespace: argocd
