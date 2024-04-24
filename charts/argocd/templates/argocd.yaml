@@ -59,6 +59,6 @@ spec:
                     'selectors': [{'labelSelector': 'argocd.argoproj.io/instance='+r.name}],
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::AppProject'}],
                     'properties': [
-                      {'name': 'Source Repos', 'text': r.config.spec.sourceRepos},
+                      {'name': 'Source Repos', 'text': r.config.spec.sourceRepos.toJSON()},
                     ],
                   }).toJSON()
