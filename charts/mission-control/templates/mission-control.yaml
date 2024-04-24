@@ -117,7 +117,7 @@ spec:
                     FROM job_history
                     WHERE
                       resource_id in (select id::text from canaries where deleted_at is null) AND
-                      status NOT IN ('RUNNING', 'ABORTED') AND
+                      status NOT IN ('RUNNING', 'SKIPPED') AND
                       resource_type = 'canary'
                   )
                   SELECT * FROM cte WHERE rn = 1;
@@ -146,7 +146,7 @@ spec:
                     FROM job_history
                     WHERE
                       resource_id in (select id::text from topologies where deleted_at is null) AND
-                      status NOT IN ('RUNNING', 'ABORTED') AND
+                      status NOT IN ('RUNNING', 'SKIPPED') AND
                       resource_type = 'topology'
                   )
                   SELECT * FROM cte WHERE rn = 1;
@@ -304,7 +304,7 @@ spec:
                 FROM job_history
                 WHERE
                   resource_id in (select id::text from config_scrapers where deleted_at is null) AND
-                  status NOT IN ('RUNNING', 'ABORTED') AND
+                  status NOT IN ('RUNNING', 'SKIPPED') AND
                   resource_type = 'config_scraper'
               )
               SELECT * FROM cte WHERE rn = 1
@@ -499,7 +499,7 @@ spec:
                   job_history.*,
                   ROW_NUMBER() OVER (PARTITION by name, resource_type, resource_id ORDER BY created_at DESC) AS rn
                 FROM job_history
-                WHERE status NOT IN ('RUNNING', 'ABORTED')
+                WHERE status NOT IN ('RUNNING', 'SKIPPED')
               )
               SELECT * from ordered_history where rn = 1 and resource_id = '';
             display:
