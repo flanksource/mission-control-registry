@@ -173,7 +173,10 @@
         },
         "region": {
           "type": "array",
-          "items": {}
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
         },
         "endpoint": {
           "type": "string"
