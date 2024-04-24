@@ -5,10 +5,10 @@ metadata:
   name: {{ .Values.connectionName }}
 spec:
   postgres:
-    database: 
+    database:
       value: mission-control
     insecureTLS: true
-    host: 
+    host:
       value: postgres
     username:
       valueFrom:
@@ -470,7 +470,7 @@ spec:
             app.kubernetes.io/name: kratos
           type: Kubernetes::Deployment
         display:
-          javascript: tags['app.kubernetes.io/version']
+          javascript: labels['app.kubernetes.io/version']
       headline: true
     - headline: true
       lookup:
