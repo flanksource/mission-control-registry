@@ -3,4 +3,5 @@ nameOverride: ""
 fullnameOverride: ""
 labels: {}
 topologyName: prometheus
+prometheusNamespace: monitoring
 # prometheusURL: http://prometheus.monitoring.svc:9090
