@@ -89,8 +89,7 @@ scraper:
     changes:
       exclude:
         - 'details.source.component == "canary-checker" && (change_type == "Failed" || change_type == "Pass")'
-        - 'config_type == "Kubernetes::Node" && has(details.message) && details.message == "status.images"'
-        - 'config_type == "Kubernetes::Node" && details.message == "status.images"'
+        - 'config_type == "Kubernetes::Node" && details.?message.orValue("") == "status.images"'
         - 'has(details.source) && details.source.component == "kustomize-controller" && details.reason == "ReconciliationSucceeded"'
         - 'config_type.startsWith("Kubernetes::") && has(details.message) && details.message == "metadata.annotations.endpoints.kubernetes.io/last-change-trigger-time"'
         - >
