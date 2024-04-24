@@ -12,8 +12,9 @@ spec:
     - name: pods
       icon: pods
       selectors:
-        - labelSelector: 'namespace=monitoring'
-          fieldSelector: 'type=Kubernetes::Pod'
+        - namespace: {{.Values.prometheusNamespace}}
+          types:
+            - Kubernetes::Pod
   properties:
   - name: Metrics
     headline: true
@@ -22,7 +23,7 @@ spec:
         - query: 'count({__name__=~".+"})'
           url: {{ .Values.prometheusURL | quote }}
           display:
-            expr: results[0].value 
+            expr: results[0].value
   - name: Disk
     lookup:
       prometheus:
