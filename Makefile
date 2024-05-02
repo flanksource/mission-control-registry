@@ -4,3 +4,6 @@ chart: $(CHARTS_DIR)/*
 	@for chart in $^ ; do \
     	helm package $${chart} ; \
 	done
+
+test:
+	./test_charts.sh
