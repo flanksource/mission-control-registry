@@ -61,6 +61,9 @@ excludeResources: []
 
 transform:
   changes:
+    mapping:
+      - filter: change.change_type == 'TerminateInstances'
+        action: delete
     exclude:
       - change_type == 'AttachNetworkInterface' || change_type == 'CreateNetworkInterface'
   relationship:
