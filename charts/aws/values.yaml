@@ -35,7 +35,7 @@ connectionDetails:
       secretKeyRef:
         key: ""
         name: ""
-  region: [] # AWS regions to pull from
+  region: []  # AWS regions to pull from
   endpoint: ""
   skipTLSVerify: false
   assumeRole: ""

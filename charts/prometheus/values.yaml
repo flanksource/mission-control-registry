@@ -3,5 +3,9 @@ nameOverride: ""
 fullnameOverride: ""
 labels: {}
 topologyName: prometheus
+
+# Namespace in which prometheus pods are running
 prometheusNamespace: monitoring
-# prometheusURL: http://prometheus.monitoring.svc:9090
+
+# URL to access prometheus
+prometheusURL: http://prometheus.monitoring.svc:9090
