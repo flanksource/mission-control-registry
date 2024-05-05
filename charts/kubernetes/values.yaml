@@ -13,7 +13,7 @@ topology:
 
 scraper:
   name: kubernetes
-  schedule: "@every 5m"
+  schedule: "@every 15m"
   kubeconfig: {}
   exclusions:
     name: []
@@ -25,6 +25,7 @@ scraper:
     namespace: []
     labels:
       canary-checker.flanksource.com/generated: "true"
+      canary-checker.flanksource.com/check: "*"
     kind:
       - Secret
       - APIService
