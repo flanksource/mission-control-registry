@@ -1,4 +1,4 @@
-{{ if .Values.playbooks.edit_kubernetes_manifests.enabled -}}
+{{ if and (.Values.playbooks.enabled .Values.playbooks.edit_kubernetes_manifests.enabled) -}}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
