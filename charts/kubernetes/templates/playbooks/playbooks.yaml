@@ -1,4 +1,4 @@
-{{- if .Values.playbooks.podSnapshot }}
+{{- if and (.Values.playbooks.enabled .Values.playbooks.podSnapshot) }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -25,7 +25,8 @@ spec:
         artifacts:
           - path: '/tmp/pod-snapshot/$(.component.id)/*'
 {{- end}}
-{{- if .Values.playbooks.scaleDeployment }}
+
+{{- if and (.Values.playbooks.enabled .Values.playbooks.scaleDeployment) }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -49,7 +50,8 @@ spec:
         script: |
           kubectl scale deployment -n $(.config.namespace) $(.config.name) --replicas=$(.params.replicas)
 {{- end}}
-{{- if .Values.playbooks.restartDeployment }}
+
+{{- if and (.Values.playbooks.enabled .Values.playbooks.restartDeployment) }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -67,7 +69,8 @@ spec:
       exec:
         script: kubectl rollout release deployment -n $(.config.namespace) $(.config.name)
 {{- end}}
-{{- if .Values.playbooks.cleanupFailedPods }}
+
+{{- if and (.Values.playbooks.enabled .Values.playbooks.cleanupFailedPods) }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -91,7 +94,8 @@ spec:
               kubectl delete pod "$pod" --namespace="$namespace"
           done
 {{- end}}
-{{- if .Values.playbooks.requestNamespaceAccess }}
+
+{{- if and (.Values.playbooks.enabled .Values.playbooks.requestNamespaceAccess) }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook

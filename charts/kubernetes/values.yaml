@@ -152,6 +152,10 @@ scraper:
         age: 7d
 
 playbooks:
+  # If this is set to false, no playbooks will be created
+  # If true, all individual playbook values will be honored
+  enabled: true
+
   cleanupFailedPods: true
   podSnapshot: true
   requestNamespaceAccess: true
