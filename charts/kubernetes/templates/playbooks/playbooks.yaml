@@ -1,4 +1,4 @@
-{{- if and (.Values.playbooks.enabled .Values.playbooks.podSnapshot) }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.podSnapshot }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -26,7 +26,7 @@ spec:
           - path: '/tmp/pod-snapshot/$(.component.id)/*'
 {{- end}}
 
-{{- if and (.Values.playbooks.enabled .Values.playbooks.scaleDeployment) }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.scaleDeployment }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -51,7 +51,7 @@ spec:
           kubectl scale deployment -n $(.config.namespace) $(.config.name) --replicas=$(.params.replicas)
 {{- end}}
 
-{{- if and (.Values.playbooks.enabled .Values.playbooks.restartDeployment) }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.restartDeployment }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -70,7 +70,7 @@ spec:
         script: kubectl rollout release deployment -n $(.config.namespace) $(.config.name)
 {{- end}}
 
-{{- if and (.Values.playbooks.enabled .Values.playbooks.cleanupFailedPods) }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.cleanupFailedPods }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -95,7 +95,7 @@ spec:
           done
 {{- end}}
 
-{{- if and (.Values.playbooks.enabled .Values.playbooks.requestNamespaceAccess) }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.requestNamespaceAccess }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
