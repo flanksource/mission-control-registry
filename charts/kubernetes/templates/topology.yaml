@@ -40,8 +40,8 @@ spec:
             kubernetes:
               - kind: Node
                 name: k8s
-                {{- if not (empty .Values.topology.kubeconfig)}}
-                kubeconfig: {{ .Values.topology.kubeconfig | toYaml | nindent 18}}
+                {{- with .Values.kubeconfig }}
+                kubeconfig: {{ toYaml . | nindent 18}}
                 {{- end}}
                 display:
                   expr: |

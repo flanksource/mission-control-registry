@@ -8,8 +8,8 @@ spec:
   schedule: {{ .Values.scraper.schedule | quote }}
   kubernetes:
     - clusterName: {{ .Values.clusterName }}
-      {{- if not (empty .Values.scraper.kubeconfig)}}
-      kubeconfig: {{ .Values.scraper.kubeconfig | toYaml | nindent 8}}
+      {{- with .Values.kubeconfig }}
+      kubeconfig: {{ toYaml . | nindent 8}}
       {{- end}}
       exclusions:
         name:  {{ concat .Values.scraper.defaultExclusions.name .Values.scraper.exclusions.name | default  (list) |toYaml | nindent 10 }}
