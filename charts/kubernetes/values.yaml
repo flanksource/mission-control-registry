@@ -3,18 +3,18 @@ nameOverride: ""
 fullnameOverride: ""
 labels: {}
 
+kubeconfig: {}
+
 clusterName: kubernetes
 prometheusURL: ""
 topology:
   name: cluster
   schedule: "@every 5m"
   icon: kubernetes
-  kubeconfig: {}
 
 scraper:
   name: kubernetes
   schedule: "@every 15m"
-  kubeconfig: {}
   exclusions:
     name: []
     namespace: []
