@@ -1,7 +1,7 @@
 apiVersion: canaries.flanksource.com/v1
 kind: Topology
 metadata:
-  name: {{ .Values.topologyName }}
+  name: {{ .Values.topology.name }}
 spec:
   icon: aws
   type: Topology
