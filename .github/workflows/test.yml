@@ -17,8 +17,11 @@ jobs:
 
       - name: Lint chart
         run: |
+          # For AWS Chart, region is a required value
           for chart in $(ls charts); do
-              ct lint --charts charts/$chart
+              ct lint \
+                --helm-lint-extra-args='--set connectionDetails.region={"eu-west-1"}' \
+                --charts charts/$chart
           done
 
       - name: Run tests

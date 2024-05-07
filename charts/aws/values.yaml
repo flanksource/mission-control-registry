@@ -1,6 +1,9 @@
 nameOverride: ""
 fullnameOverride: ""
 labels: {}
+
+topology:
+  name: aws
 scraper:
   name: aws
 
