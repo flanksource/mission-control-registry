@@ -156,6 +156,7 @@ playbooks:
   # If true, all individual playbook values will be honored
   enabled: true
 
+  deletePod: true
   cleanupFailedPods: true
   podSnapshot: true
   requestNamespaceAccess: true
