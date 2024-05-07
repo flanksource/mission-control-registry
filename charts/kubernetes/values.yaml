@@ -133,7 +133,7 @@ scraper:
           }).toJSON()
   retention:
     staleItemAge: ""
-    changes:
+    defaultChanges:
       - name: ReconciliationSucceeded
         age: 1d
       - name: ArtifactUpToDate
@@ -150,7 +150,9 @@ scraper:
         age: 7d
       - name: Started
         age: 7d
-    extraChanges: []
+    changes:
+      - name: vibhor
+        age: 7d
 playbooks:
   # If this is set to false, no playbooks will be created
   # If true, all individual playbook values will be honored
