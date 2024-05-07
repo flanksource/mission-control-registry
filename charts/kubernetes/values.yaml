@@ -150,7 +150,7 @@ scraper:
         age: 7d
       - name: Started
         age: 7d
-
+    extraChanges: []
 playbooks:
   # If this is set to false, no playbooks will be created
   # If true, all individual playbook values will be honored
