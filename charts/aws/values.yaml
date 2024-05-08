@@ -68,7 +68,7 @@ transform:
       - filter: change.change_type == 'TerminateInstances'
         action: delete
     exclude:
-      - change_type == 'AttachNetworkInterface' || change_type == 'CreateNetworkInterface'
+      - change_type in ['AttachNetworkInterface', 'CreateNetworkInterface', 'DeregisterInstancesFromLoadBalancer', 'RegisterInstancesWithLoadBalancer']
   relationship:
     # EKS Cluster to Kubernetes Cluster & Kubernetes Node
     - filter: config_type == 'AWS::EKS::Cluster'
