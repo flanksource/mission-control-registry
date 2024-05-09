@@ -515,8 +515,47 @@ spec:
                     {'name': 'error_count', 'value': r.error_count, 'headline': true},
                     {'name': 'duration_ms', 'value': r.duration_millis},
                     {'name': 'last_run', 'text': string(r.time_end)},
+                    {'name': 'count'},
+                    {'name': 'rate/hr'},
+                    {'name': 'pass rate'},
                   ],
                 }).toJSON()
+
+        properties:
+          - name: count
+            lookup:
+              prometheus:
+              - query: 'count by (name) (job)'
+                url: {{ .Values.prometheusURL | quote }}
+                display:
+                  expr: |
+                    dyn(results).map(r, {
+                      'name': r.name,
+                      'properties': [{'name': 'count', 'value': int(r.value)}]
+                    }).toJSON()
+          - name: rate
+            lookup:
+              prometheus:
+              - query: 'sum(increase(job[1h])) by (name)'
+                url: {{ .Values.prometheusURL | quote }}
+                display:
+                  expr: |
+                    dyn(results).map(r, {
+                      'name': r.name,
+                      'properties': [{'name': 'rate/hr', 'value': math.Ceil(int(r.value))}]
+                    }).toJSON()
+
+          - name: pass-rate
+            lookup:
+              prometheus:
+              - query: '100 * sum by (name) (count_over_time(job{status=~"FINISHED|SUCCESS"}[1h])) / sum by (name) (count_over_time(job{}[1h]))'
+                url: {{ .Values.prometheusURL | quote }}
+                display:
+                  expr: |
+                    dyn(results).map(r, {
+                      'name': r.name,
+                      'properties': [{'name': 'pass rate', 'value': int(r.value)}]
+                    }).toJSON()
 
   {{- if .Values.isAgent }}
   - name: Upstream Sync
