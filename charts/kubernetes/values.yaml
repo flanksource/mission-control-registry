@@ -85,8 +85,8 @@ scraper:
       warn:
         - backoff
         - nodeoutofmemory
-
-  transform:
+  transform: {}
+  defaultTransform:
     changes:
       exclude:
         - 'details.source.component == "canary-checker" && (change_type == "Failed" || change_type == "Pass")'
