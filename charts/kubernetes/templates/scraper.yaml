@@ -17,8 +17,12 @@ spec:
         labels:  {{ toYaml (merge .Values.scraper.defaultExclusions.labels .Values.scraper.exclusions.labels) | nindent 10 }}
         namespace:  {{ concat .Values.scraper.defaultExclusions.namespace .Values.scraper.exclusions.namespace | default  (list) | toYaml | nindent 10 }}
       relationships: {{ ( concat .Values.scraper.relationships .Values.scraper.defaultRelationships) | toYaml | nindent 8 }}
-      transform: {{ toYaml (merge .Values.scraper.defaultTransform .Values.scraper.transform) | nindent 8 }}
-      event:  {{ .Values.scraper.event | toYaml | nindent 8 }}
+      transform:
+        changes:
+          exclude: {{ concat .Values.scraper.defaultTransform.changes.exclude .Values.scraper.transform.changes.exclude | default (list) | toYaml | nindent 12 }}
+        mapping:
+          {{ concat .Values.scraper.defaultTransform.changes.mapping .Values.scraper.transform.changes.mapping | default (list) | toYaml | nindent 8 }}
+      event:  {{ .Values.scraper.event | toYaml | nindent 12 }}
   retention:
     changes: {{ concat .Values.scraper.retention.defaultChanges .Values.scraper.retention.changes | default  (list) | toYaml | nindent 6 }}
     {{- with .Values.scraper.retention.staleItemAge }}

@@ -85,7 +85,10 @@ scraper:
       warn:
         - backoff
         - nodeoutofmemory
-  transform: {}
+  transform:
+    changes:
+      exclude: []
+      mapping: []
   defaultTransform:
     changes:
       exclude:
