@@ -86,10 +86,16 @@ scraper:
         - backoff
         - nodeoutofmemory
   transform:
+    exclude: []
+    mask: []
     changes:
       exclude: []
       mapping: []
+    expr: ""
+    relationship: []
   defaultTransform:
+    exclude: []
+    mask: []
     changes:
       exclude:
         - 'details.source.component == "canary-checker" && (change_type == "Failed" || change_type == "Pass")'

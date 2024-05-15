@@ -18,10 +18,15 @@ spec:
         namespace:  {{ concat .Values.scraper.defaultExclusions.namespace .Values.scraper.exclusions.namespace | default  (list) | toYaml | nindent 10 }}
       relationships: {{ ( concat .Values.scraper.relationships .Values.scraper.defaultRelationships) | toYaml | nindent 8 }}
       transform:
+        exclude: {{ concat .Values.scraper.defaultTransform.exclude .Values.scraper.transform.exclude | default (list) | toYaml | nindent 10 }}
+        mask: {{ concat .Values.scraper.defaultTransform.mask .Values.scraper.transform.mask | default (list) | toYaml | nindent 10 }}
         changes:
           exclude: {{ concat .Values.scraper.defaultTransform.changes.exclude .Values.scraper.transform.changes.exclude | default (list) | toYaml | nindent 12 }}
-        mapping:
-          {{ concat .Values.scraper.defaultTransform.changes.mapping .Values.scraper.transform.changes.mapping | default (list) | toYaml | nindent 8 }}
+          mapping: {{ concat .Values.scraper.defaultTransform.changes.mapping .Values.scraper.transform.changes.mapping | default (list) | toYaml | nindent 12 }}
+        relationship: {{ concat .Values.scraper.defaultTransform.relationship .Values.scraper.transform.relationship | default (list) | toYaml | nindent 10 }}
+        {{- with .Values.scraper.transform.expr }}
+        expr: {{ . }}
+        {{- end }}
       event:  {{ .Values.scraper.event | toYaml | nindent 12 }}
   retention:
     changes: {{ concat .Values.scraper.retention.defaultChanges .Values.scraper.retention.changes | default  (list) | toYaml | nindent 6 }}
