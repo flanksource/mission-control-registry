@@ -47,7 +47,7 @@ jobs:
         run: |
           cd charts/${{ matrix.chart }}
           yq -i e '.version |= (split(".") | .[-1] |= ((. tag = "!!int") + 1) | join("."))' Chart.yaml
-          helm package .
+          helm package -d ../.. .
       - name: Clone charts repo
         uses: actions/checkout@v3
         with:
