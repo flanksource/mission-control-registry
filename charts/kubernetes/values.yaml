@@ -167,7 +167,7 @@ playbooks:
 
   deletePod: true
   cleanupFailedPods: true
-  podSnapshot: true
+  podSnapshot: false
   requestNamespaceAccess: true
   restartDeployment: true
   scaleDeployment: true

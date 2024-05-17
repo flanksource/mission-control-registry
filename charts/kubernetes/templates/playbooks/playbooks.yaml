@@ -7,23 +7,24 @@ metadata:
 spec:
   title: Pod Snapshot
   category: Kubernetes
-  description: Takes a snapshot of the pod (Logs, yaml, & events)
+  description: Takes a snapshot of the pod (logs, manifest, events)
   icon: add-snapshot
-  components:
-    - type: Kubernetes::Pod
+  configs:
+    - types:
+        - Kubernetes::Pod
   actions:
     - name: Take snapshot
       exec:
         script: |
-          path="/tmp/pod-snapshot/$(.component.id)"
+          path="/tmp/pod-snapshot/$(.config.id)"
           rm -rf $path
           mkdir -p $path
-          kubectl logs $(.component.name) -n $(.component.namespace) > "$path/logs.txt"
-          kubectl get pods -n $(.component.namespace) $(.component.name) -o yaml > "$path/manifest.yaml"
-          kubectl get events --field-selector=involvedObject.kind=Pod,involvedObject.name=$(.component.name) \
-            -n $(.component.namespace) > "$path/events.txt"
+          kubectl logs $(.config.name) -n $(.config.tags.namespace) > "$path/logs.txt"
+          kubectl get pods $(.config.name) -n $(.config.tags.namespace) -o yaml > "$path/manifest.yaml"
+          kubectl get events --field-selector=involvedObject.kind=Pod,involvedObject.name=$(.config.name) \
+            -n $(.config.tags.namespace) > "$path/events.txt"
         artifacts:
-          - path: '/tmp/pod-snapshot/$(.component.id)/*'
+          - path: '/tmp/pod-snapshot/$(.config.id)/*'
 {{- end}}
 
 {{- if and .Values.playbooks.enabled .Values.playbooks.scaleDeployment }}
