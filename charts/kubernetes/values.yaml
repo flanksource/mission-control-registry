@@ -124,7 +124,7 @@ scraper:
           expr: |
             has(config.spec.selector) && has(config.spec.selector.name) ? config.spec.selector.name : ''
       # Link Pods to PVCs
-      - filter: config_type == 'Kubernetes::Pod'
+      - filter: config_type == 'Kubernetes::Pod' && has(config.spec) && has(config.spec.volumes)
         expr: |
           config.spec.volumes.
             filter(item, has(item.persistentVolumeClaim)).
