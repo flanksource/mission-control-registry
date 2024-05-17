@@ -5,7 +5,37 @@ on:
       - main
 
 jobs:
-  helm:
+  changes:
+    runs-on: ubuntu-latest
+    # Required permissions
+    permissions:
+      pull-requests: read
+    outputs:
+      # Expose matched filters as job 'packages' output variable
+      charts: ${{ steps.filter.outputs.changes }}
+    steps:
+      # For pull requests it's not necessary to checkout the code
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            argocd: charts/argocd
+            aws: charts/aws
+            azure: charts/azure
+            kubernetes: charts/kubernetes
+            mission-control: charts/mission-control
+            flux: charts/awfluxs
+            prometheus: charts/prometheus
+
+  # JOB to build and test each of modified packages
+  build:
+    needs: changes
+    strategy:
+      matrix:
+        # Parse JSON array containing names of all filters matching any of changed files
+        # e.g. ['package1', 'package2'] if both package folders contains changes
+        chart: ${{ fromJSON(needs.changes.outputs.charts) }}
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -15,7 +45,9 @@ jobs:
           version: v3.12.0
       - name: Package Helm chart
         run: |
-          make chart
+          cd chart/${{ matrix.chart }}
+          yq ei '.version |= (split(".") | .[-1] |= ((. tag = "!!int") + 1) | join("."))' Chart.yaml
+          helm package .
       - name: Clone charts repo
         uses: actions/checkout@v3
         with:
@@ -30,6 +62,6 @@ jobs:
       - name: Push changes to chart repo
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Release ${{ needs.semantic-release.outputs.release-version }} of ${{ github.repository }}"
+          commit_message: "Release ${{ needs.semantic-release.outputs.release-version }} of mission-control-${{ matrix.chart }}"
           branch: gh-pages
           repository: ./chart-index
