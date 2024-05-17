@@ -77,6 +77,8 @@ scraper:
         - SuccessfulCreate
         - Created
         - DNSConfigForming
+        - ArtifactUpToDate
+        - GarbageCollectionSucceeded
 
     severityKeywords:
       error:
