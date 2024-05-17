@@ -19,13 +19,13 @@ jobs:
         id: filter
         with:
           filters: |
-            argocd: charts/argocd
-            aws: charts/aws
-            azure: charts/azure
-            kubernetes: charts/kubernetes
-            mission-control: charts/mission-control
-            flux: charts/awfluxs
-            prometheus: charts/prometheus
+            argocd: charts/argocd/**
+            aws: charts/aws/**
+            azure: charts/azure/**
+            kubernetes: charts/kubernetes/**
+            mission-control: charts/mission-control/**
+            flux: charts/flux/**
+            prometheus: charts/prometheus/**
 
   # JOB to build and test each of modified packages
   build:
