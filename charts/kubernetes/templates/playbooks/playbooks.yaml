@@ -49,7 +49,7 @@ spec:
     - name: Scale deployment
       exec:
         script: |
-          kubectl scale deployment -n $(.config.namespace) $(.config.name) --replicas=$(.params.replicas)
+          kubectl scale deployment -n $(.config.tags.namespace) $(.config.name) --replicas=$(.params.replicas)
 {{- end}}
 
 {{- if and .Values.playbooks.enabled .Values.playbooks.restartDeployment }}
@@ -68,7 +68,7 @@ spec:
   actions:
     - name: Scale deployment
       exec:
-        script: kubectl rollout release deployment -n $(.config.namespace) $(.config.name)
+        script: kubectl rollout release deployment -n $(.config.tags.namespace) $(.config.name)
 {{- end}}
 
 {{- if and .Values.playbooks.enabled .Values.playbooks.cleanupFailedPods }}
