@@ -7,7 +7,7 @@ metadata:
 spec:
   title: Pod Snapshot
   category: Kubernetes
-  description: Takes a snapshot of the pod (logs, manifest, events)
+  description: Takes a snapshot of a pod (logs, manifest and events)
   icon: add-snapshot
   configs:
     - types:
