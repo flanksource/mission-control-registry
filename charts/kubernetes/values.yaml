@@ -101,9 +101,10 @@ scraper:
     changes:
       exclude:
         - 'details.source.component == "canary-checker" && (change_type == "Failed" || change_type == "Pass")'
-        - 'config_type == "Kubernetes::Node" && details.?message.orValue("") == "status.images"'
+        - 'change_type == "diff" && config_type == "Kubernetes::Canary" && summary.startsWith("status.")'
+        - 'config_type == "Kubernetes::Node" && summary == "status.images"'
         - 'has(details.source) && details.source.component == "kustomize-controller" && details.reason == "ReconciliationSucceeded"'
-        - 'config_type.startsWith("Kubernetes::") && has(details.message) && details.message == "metadata.annotations.endpoints.kubernetes.io/last-change-trigger-time"'
+        - 'config_type.startsWith("Kubernetes::") && summary == "metadata.annotations.endpoints.kubernetes.io/last-change-trigger-time"'
         - >
           change_type == "diff" && summary == "status.reconciledAt" &&
           config != null &&
