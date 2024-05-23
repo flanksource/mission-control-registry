@@ -237,9 +237,9 @@ spec:
         commit:
           email: '$(.params.author_email)'
           author: '$(.params.author_name)'
-          message: 'add new rolebinding on namespace $(.config.name) to role $(.params.role.name) for user $(.params.user)'
+          message: 'chore(rbac): grant $(.params.user) $(.params.role.name) on $(.config.name)'
         pr:
-          title: 'add new rolebinding on namespace $(.config.name) to role $(.params.role.name) for user $(.params.user)'
+          title:  'Grant $(.params.user) $(.params.role.name) on $(.config.name)'
         files:
           - path: '$(.params.path)'
             content: |
