@@ -1,0 +1,24 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.scaleDeployment }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: scale-deployment
+spec:
+  title: Scale Deployment
+  icon: scale-out
+  category: Kubernetes
+  configs:
+    - types:
+        - Kubernetes::Deployment
+  parameters:
+    - name: replicas
+      label: Replicas
+      type: text
+      default: "$(.config.config.spec.replicas)"
+  actions:
+    - name: Scale deployment
+      exec:
+        script: |
+          kubectl scale deployment -n $(.config.tags.namespace) $(.config.name) --replicas=$(.params.replicas)
+{{- end}}
