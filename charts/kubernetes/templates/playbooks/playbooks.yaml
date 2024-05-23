@@ -165,7 +165,7 @@ spec:
           kubectl create rolebinding "playbook-$(.run.id)"
           --namespace=$(.config.name)
           --user=$(.params.user)
-          --role=$(.params.role)
+          --role=$(.params.role.name)
     - name: Clear Rolebinding
       if: "success()"
       delay: ".params.delay"
