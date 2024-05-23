@@ -174,7 +174,7 @@ spec:
           kubectl delete rolebinding "playbook-$(.run.id)" --namespace=$(.config.name)
 {{- end}}
 
-{{- if and .Values.playbooks .Values.playbooks.requestNamespaceAccessGitops }}
+{{- if and .Values.playbooks .Values.playbooks.edit_kubernetes_manifests.enabled }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -192,12 +192,9 @@ spec:
       label: Repository URL
     - name: base_branch
       label: Base branch
-    - name: author_name
-      label: Commit author
-    - name: author_email
-      label: Commit author Email
     - name: connection
       label: Repository Auth connection
+      default: "{{.Values.playbooks.edit_kubernetes_manifests.git_connection}}"
     - name: path
       label: Path of the file
     - name: user
@@ -235,8 +232,8 @@ spec:
           branch: 'request-namespace-access-$(.config.name)-$(.params.role.name)-$(.run.id)'
           type: 'github'
         commit:
-          email: '$(.params.author_email)'
-          author: '$(.params.author_name)'
+          email: '$(.user.email)'
+          author: '$(.user.name)'
           message: 'chore(rbac): grant $(.params.user) $(.params.role.name) on $(.config.name)'
         pr:
           title:  'Grant $(.params.user) $(.params.role.name) on $(.config.name)'
@@ -266,11 +263,11 @@ spec:
           base: '$(.params.base_branch)'
           branch: 'request-namespace-access-$(.config.name)-$(.params.role.name)-$(.run.id)'
         commit:
-          email: '$(.params.author_email)'
-          author: '$(.params.author_name)'
-          message: 'remove rolebinding on namespace $(.config.name) to role $(.params.role.name) for user $(.params.user)'
+          email: '$(.user.email)'
+          author: '$(.user.name)'
+          message: 'chore(rbac): revoke $(.params.user) $(.params.role.name) on $(.config.name)'
         pr:
-          title: 'remove rolebinding on namespace $(.config.name) to role $(.params.role.name) for user $(.params.user)'
+          title: 'Revoke $(.params.user) $(.params.role.name) on $(.config.name)'
         files:
           - path: '$(.params.path)'
             content: '$delete'
