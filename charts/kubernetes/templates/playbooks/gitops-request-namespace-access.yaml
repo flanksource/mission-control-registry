@@ -21,24 +21,28 @@ spec:
       default: "{{.Values.playbooks.edit_kubernetes_manifests.git_connection}}"
     - name: path
       label: Path of the file
+      default: '$(.config.tags.cluster)/rolebinding-$(.config.name).yaml'
     - name: user
       label: Role Subject User
     - name: delay
       label: Expires after
-      default: "'30m'"
       type: list
       properties:
         options:
-          - label: '30 minutes'
-            value: '30m'
-          - label: '1 hour'
-            value: '1h'
-          - label: '5 hour'
-            value: '5h'
-          - label: '12 hours'
-            value: '12h'
-          - label: '1 day'
-            value: '1d'
+          - label: "4 hours"
+            value: '4h'
+          - label: "8 hours"
+            value: '8h'
+          - label: "3 days"
+            value: "3d"
+          - label: "10 days"
+            value: "10d"
+          - label: "2 weeks"
+            value: "14d"
+          - label: "30 days"
+            value: "30d"
+          - label: "Indefinitely"
+            value: "0"
     - name: role
       label: Role
       type: config
@@ -78,7 +82,7 @@ spec:
                   kind: User
                   name: $(.params.user)
     - name: Clear Rolebinding
-      if: 'success()'
+      if: 'success() && params.delay != "0"'
       delay: '.params.delay'
       gitops:
         repo:
