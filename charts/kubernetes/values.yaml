@@ -172,6 +172,7 @@ playbooks:
   cleanupFailedPods: true
   podSnapshot: false
   requestNamespaceAccess: true
+  requestNamespaceAccessGitops: true
   restartDeployment: true
   scaleDeployment: true
   edit_kubernetes_manifests:

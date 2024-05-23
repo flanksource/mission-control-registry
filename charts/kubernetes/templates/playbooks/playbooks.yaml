@@ -173,3 +173,105 @@ spec:
         script: |
           kubectl delete rolebinding "playbook-$(.run.id)" --namespace=$(.config.name)
 {{- end}}
+
+{{- if and .Values.playbooks .Values.playbooks.requestNamespaceAccessGitops }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: request-namespace-access-gitops
+spec:
+  configs:
+    - types:
+        - Kubernetes::Namespace
+  title: Request Namespace Access (GitOps)
+  category: Kubernetes
+  description: Adds a Rolebinding to the given role in the selected Namespace
+  parameters:
+    - name: repo
+      label: Repository URL
+    - name: base_branch
+      label: Base branch
+    - name: author_name
+      label: Commit author
+    - name: author_email
+      label: Commit author Email
+    - name: connection
+      label: Repository Auth connection
+    - name: path
+      label: Path of the file
+    - name: user
+      label: Role Subject User
+    - name: delay
+      label: Expires after
+      default: "'30m'"
+      type: list
+      properties:
+        options:
+          - label: '30 minutes'
+            value: '30m'
+          - label: '1 hour'
+            value: '1h'
+          - label: '5 hour'
+            value: '5h'
+          - label: '12 hours'
+            value: '12h'
+          - label: '1 day'
+            value: '1d'
+    - name: role
+      label: Role
+      type: config
+      properties:
+        filter:
+          - types:
+              - Kubernetes::ClusterRole
+  actions:
+    - name: Create RoleBinding
+      gitops:
+        repo:
+          url: '$(.params.repo)'
+          connection: '$(.params.connection)'
+          base: '$(.params.base_branch)'
+          branch: 'request-namespace-access-$(.config.name)-$(.params.role.name)-$(.run.id)'
+          type: 'github'
+        commit:
+          email: '$(.params.author_email)'
+          author: '$(.params.author_name)'
+          message: 'add new rolebinding on namespace $(.config.name) to role $(.params.role.name) for user $(.params.user)'
+        pr:
+          title: 'add new rolebinding on namespace $(.config.name) to role $(.params.role.name) for user $(.params.user)'
+        files:
+          - path: '$(.params.path)'
+            content: |
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: RoleBinding
+              metadata:
+                name: playbook-$(.run.id)
+                namespace: default
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: Role
+                name: $(.params.role.name)
+              subjects:
+                - apiGroup: rbac.authorization.k8s.io
+                  kind: User
+                  name: $(.params.user)
+    - name: Clear Rolebinding
+      if: 'success()'
+      delay: '.params.delay'
+      gitops:
+        repo:
+          url: '$(.params.repo)'
+          connection: '$(.params.connection)'
+          base: '$(.params.base_branch)'
+          branch: 'request-namespace-access-$(.config.name)-$(.params.role.name)-$(.run.id)'
+        commit:
+          email: '$(.params.author_email)'
+          author: '$(.params.author_name)'
+          message: 'remove rolebinding on namespace $(.config.name) to role $(.params.role.name) for user $(.params.user)'
+        pr:
+          title: 'remove rolebinding on namespace $(.config.name) to role $(.params.role.name) for user $(.params.user)'
+        files:
+          - path: '$(.params.path)'
+            content: '$delete'
+{{- end}}
