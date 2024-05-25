@@ -14,6 +14,8 @@ spec:
   icon: add-shield
   description: Adds a Rolebinding to the given role in the selected Namespace
   env:
+    - name: file_path
+      value: {{ "'{{" }} (.config.config | jq `.metadata.annotations["config.kubernetes.io/origin"]` | yaml).path {{ "}}'" }}
     - name: git_url
       value: {{ "'{{" }} (index (catalog_traverse .config.id "Kubernetes::Kustomization/Kubernetes::GitRepository" "incoming") 0).Config | json | jq `.spec.url` {{ "}}'" }}
     - name: git_branch
@@ -53,9 +55,6 @@ spec:
           - types:
               - Kubernetes::ClusterRole
   actions:
-    - name: debug
-      exec:
-        script: 'echo git_url: $(.env.git_url) branch:$(.env.git_branch) kustomization_path: $(.env.kustomization_path)'
     - name: Create RoleBinding
       gitops:
         repo:
@@ -68,14 +67,17 @@ spec:
           author: '$(.user.name)'
           message: 'chore(rbac): grant $(.params.user) $(.params.role.name) on $(.config.name)'
         pr:
-          title:  'Grant $(.params.user) $(.params.role.name) on $(.config.name)'
+          title: 'Grant $(.params.user) $(.params.role.name) on $(.config.name)'
+        patches:
+          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomization_path .env.file_path)) "kustomization.yaml" {{ "}}'" }}
+            yq: .resources += "rolebinding-$(.config.name).yaml"
         files:
-          - path: '$(.env.kustomization_path)/rolebinding-$(.config.name).yaml'
+          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomization_path .env.file_path)) "rolebinding-$(.config.name).yaml" {{ "}}'" }}
             content: |
               apiVersion: rbac.authorization.k8s.io/v1
               kind: RoleBinding
               metadata:
-                name: "$(.params.role.name)-$(.run.id)
+                name: "$(.params.role.name)-$(.run.id)"
                 namespace: default
               roleRef:
                 apiGroup: rbac.authorization.k8s.io
@@ -86,7 +88,7 @@ spec:
                   kind: User
                   name: $(.params.user)
     - name: Clear Rolebinding
-      if: 'success() && params.delay != "0"'
+      if: 'success() && .params.delay != "0"'
       delay: '.params.delay'
       gitops:
         repo:
@@ -100,6 +102,9 @@ spec:
           message: 'chore(rbac): revoke $(.params.user) $(.params.role.name) on $(.config.name)'
         pr:
           title: 'Revoke $(.params.user) $(.params.role.name) on $(.config.name)'
+        patches:
+          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomization_path .env.file_path)) "kustomization.yaml" {{ "}}'" }}
+            yq: .resources -= "del(.resources[] | select(. == "rolebinding-$(.config.name).yaml"))'"
         files:
           - path: '$(.env.kustomization_path)/rolebinding-$(.config.name).yaml'
             content: '$delete'
