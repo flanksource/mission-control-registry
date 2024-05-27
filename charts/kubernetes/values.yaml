@@ -140,7 +140,7 @@ scraper:
             "type": "Kubernetes::" + item.kind,
             "name": item.name,
             "labels": {
-              "namespace": item.namespace,
+              "namespace": item.?namespace.orValue(''),
             },
           }).toJSON()
   retention:
