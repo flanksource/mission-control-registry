@@ -1,0 +1,58 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.requestNamespaceAccess }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: request-namespace-access
+spec:
+  title: Request Namespace Access
+  icon: add-shield
+  category: Kubernetes
+  description: Adds a Rolebinding to the given role
+  parameters:
+    - name: user
+      label: User
+    - name: delay
+      label: Expires after
+      type: list
+      properties:
+        options:
+          - label: "4 hours"
+            value: '4h'
+          - label: "8 hours"
+            value: '8h'
+          - label: "3 days"
+            value: "3d"
+          - label: "10 days"
+            value: "10d"
+          - label: "2 weeks"
+            value: "14d"
+          - label: "30 days"
+            value: "30d"
+          - label: "Indefinitely"
+            value: "0"
+    - name: role
+      label: Role
+      type: config
+      properties:
+        filter:
+          - types:
+              - Kubernetes::ClusterRole
+  configs:
+    - types:
+        - Kubernetes::Namespace
+  actions:
+    - name: Create RoleBinding
+      exec:
+        script: >-
+          kubectl create rolebinding "playbook-$(.run.id)"
+          --namespace=$(.config.name)
+          --user=$(.params.user)
+          --role=$(.params.role.name)
+    - name: Clear Rolebinding
+      if: 'success() && params.delay != "0"'
+      delay: ".params.delay"
+      exec:
+        script: |
+          kubectl delete rolebinding "playbook-$(.run.id)" --namespace=$(.config.name)
+{{- end}}
