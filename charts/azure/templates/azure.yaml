@@ -13,6 +13,6 @@ spec:
     exclusions: {{ .Values.exclusions | toYaml | nindent 8 }}
     transform: {{ .Values.transform | toYaml | nindent 8 }}
 
-    {{- with .Values.connectionDetails }}
-    {{- toYaml . | nindent 4}}
-    {{- end }}
+    connection: "{{.Values.connection}}"
+    clientID: {{.Values.clientID |toYaml | nindent 6}}
+    clientSecret: {{.Values.clientSecret |toYaml | nindent 6}}
