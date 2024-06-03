@@ -1,4 +1,4 @@
-{{- if and .Values.playbooks .Values.playbooks.edit_kubernetes_manifests.enabled }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.edit_kubernetes_manifests.enabled }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -13,15 +13,6 @@ spec:
   category: Kubernetes
   icon: add-shield
   description: Adds a Rolebinding to the given role in the selected Namespace
-  env:
-    - name: file_path
-      value: {{ "'{{" }} (.config.config | jq `.metadata.annotations["config.kubernetes.io/origin"]` | yaml).path {{ "}}'" }}
-    - name: git_url
-      value: {{ "'{{" }} (index (catalog_traverse .config.id "Kubernetes::Kustomization/Kubernetes::GitRepository" "incoming") 0).Config | json | jq `.spec.url` {{ "}}'" }}
-    - name: git_branch
-      value: {{ "'{{" }} (index (catalog_traverse .config.id "Kubernetes::Kustomization/Kubernetes::GitRepository" "incoming") 0).Config | json | jq `.spec.ref.branch` {{ "}}'" }}
-    - name: kustomization_path
-      value: {{ "'{{" }} (index (catalog_traverse .config.id "Kubernetes::Kustomization" "incoming") 0).Config | json | jq `.spec.path` {{ "}}'" }}
   parameters:
     - name: user
       label: Role Subject User
@@ -56,9 +47,9 @@ spec:
     - name: Create RoleBinding
       gitops:
         repo:
-          url: '$(.env.git_url)'
+          url: '$(.env.git.url)'
           connection: "{{.Values.playbooks.edit_kubernetes_manifests.git_connection}}"
-          base: '$(.env.git_branch)'
+          base: '$(.env.git.branch)'
           branch: 'grant-namespace-access-$(.run.id)'
         commit:
           email: '$(.user.email)'
@@ -67,10 +58,10 @@ spec:
         pr:
           title: 'Grant $(.params.user) $(.params.role.name) on $(.config.name)'
         patches:
-          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomization_path .env.file_path)) "kustomization.yaml" {{ "}}'" }}
+          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomize.path .env.git.file)) "kustomization.yaml" {{ "}}'" }}
             yq: .resources += "rolebinding-$(.config.name)-$(run.id).yaml"
         files:
-          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomization_path .env.file_path)) "rolebinding-$(.config.name)-$(run.id).yaml" {{ "}}'" }}
+          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomize.path .env.git.file)) "rolebinding-$(.config.name)-$(run.id).yaml" {{ "}}'" }}
             content: |
               apiVersion: rbac.authorization.k8s.io/v1
               kind: RoleBinding
@@ -90,9 +81,9 @@ spec:
       delay: '.params.delay'
       gitops:
         repo:
-          url: '$(.env.git_url)'
+          url: '$(.env.git.url)'
           connection: "{{.Values.playbooks.edit_kubernetes_manifests.git_connection}}"
-          base: '$(.env.git_branch)'
+          base: '$(.env.git.branch)'
           branch: 'revoke-namespace-access-$(.run.id)'
         commit:
           email: '$(.user.email)'
@@ -101,9 +92,9 @@ spec:
         pr:
           title: 'Revoke $(.params.user) $(.params.role.name) on $(.config.name)'
         patches:
-          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomization_path .env.file_path)) "kustomization.yaml" {{ "}}'" }}
+          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomize.path .env.git.file)) "kustomization.yaml" {{ "}}'" }}
             yq: .resources -= "del(.resources[] | select(. == "rolebinding-$(.config.name).yaml"))'"
         files:
-          - path: '$(.env.kustomization_path)/rolebinding-$(.config.name)-$(run.id).yaml'
+          - path: '$(.env.kustomize.path)/rolebinding-$(.config.name)-$(run.id).yaml'
             content: '$delete'
 {{- end}}
