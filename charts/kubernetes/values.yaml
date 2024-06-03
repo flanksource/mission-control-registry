@@ -25,7 +25,7 @@ scraper:
     namespace: []
     labels:
       canary-checker.flanksource.com/generated: "true"
-      canary-checker.flanksource.com/check: "*"
+      canary-checker.flanksource.com/check-id: "*"
     kind:
       - Secret
       - APIService
