@@ -1,0 +1,117 @@
+{{ if and .Values.playbooks.enabled .Values.playbooks.edit_kubernetes_manifests.enabled -}}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: provision-postgres-gitops
+spec:
+  category: Kubernetes (GitOps)
+  description: Provisions a postgres statefulset 
+  icon: postgres
+  title: Provision Postgres (GitOps)
+  configs:
+    - labelSelector: kustomize.toolkit.fluxcd.io/name
+      types:
+        - Kubernetes::Namespace
+  parameters:
+    - default: postgres
+      label: Container image
+      name: image
+    - default: "14"
+      label: Version
+      name: version
+    - default: "1"
+      label: Number of replicas
+      name: replicas
+    - label: Secret Key Name
+      name: secretKeyName
+  actions:
+    - name: "Create manifest for Postgresql Statefulset"
+      gitops:
+        commit:
+          author: $(.user.name)
+          email: $(.user.email)
+          message: "chore(sts): deploy $(.params.image):$(.params.version) statefulset in $(.config.name) namespace"
+        files:
+          - content: |
+              apiVersion: apps/v1
+              kind: StatefulSet
+              metadata:
+                name: "postgresql-$(.run.id)"
+                namespace: "$(.config.name)"
+              spec:
+                serviceName: "postgresql-$(.run.id)"
+                selector:
+                  matchLabels:
+                    app: postgresql
+                replicas: $(.params.replicas)
+                template:
+                  metadata:
+                    labels:
+                      app: postgresql
+                  spec:
+                    initContainers:
+                      - command:
+                          - sh
+                          - -c
+                          - mkdir -p /postgres && chmod -R 0750 /postgres && chown 999:999 -R /postgres
+                            &&  chmod -R 777 /dev/shm
+                        image: busybox
+                        imagePullPolicy: Always
+                        name: postgres-perms
+                        volumeMounts:
+                          - mountPath: /postgres
+                            name: postgresql
+                          - mountPath: /dev/shm
+                            name: dshm
+                    containers:
+                      - name: postgresql
+                        image: "$(.params.image):$(.params.version)"
+                        resources:
+                          requests:
+                            memory: 4Gi
+                        envFrom:
+                          - secretRef:
+                              name: "$(.params.secretKeyName)"
+                        env:
+                          - name: PGDATA
+                            value: /var/lib/postgresql/data
+                          - name: POSTGRES_DB
+                            value: mission_control
+                        volumeMounts:
+                          - mountPath: /dev/shm
+                            name: dshm
+                          - mountPath: /var/lib/postgresql/data
+                            name: postgresql
+                            subPath: postgres
+                          - mountPath: /var/log/postgresql
+                            name: logs
+                    volumes:
+                      - emptyDir:
+                          medium: Memory
+                          sizeLimit: 256Mi
+                        name: dshm
+                      - emptyDir: {}
+                        name: logs
+                volumeClaimTemplates:
+                  - apiVersion: v1
+                    kind: PersistentVolumeClaim
+                    metadata:
+                      name: "postgresql"
+                    spec:
+                      accessModes: ["ReadWriteOnce"]
+                      resources:
+                        requests:
+                          storage: 5Gi
+            path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomize.path .env.git.file)) "postgres-sts-$(.run.id).yaml" {{ "}}'" }}
+        patches:
+          - path: {{ "'{{" }} filepath.Join (filepath.Dir (filepath.Join .env.kustomize.path .env.git.file)) "kustomization.yaml" {{ "}}'" }}
+            yq: '.resources += "postgres-sts-$(.run.id).yaml"'
+        pr:
+          title: 'Deploy $(.params.image):$(.params.version) statefulset in $(.config.name) namespace'
+        repo:
+          base: '$(.env.git.branch)'
+          branch: 'deploy-postgres-statefulset-$(.run.id)'
+          connection: "{{.Values.playbooks.edit_kubernetes_manifests.git_connection}}"
+          url: '$(.env.git.url)'
+{{ end }}

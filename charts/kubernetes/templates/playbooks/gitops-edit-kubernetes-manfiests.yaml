@@ -20,23 +20,13 @@ spec:
   configs:
     - labelSelector: 'kustomize.toolkit.fluxcd.io/name'
 
-  env:
-    - name: file_path
-      value: {{ "'{{" }} (.config.config | jq `.metadata.annotations["config.kubernetes.io/origin"]` | yaml).path {{ "}}'" }}
-    - name: kustomization_path
-      value: {{ "'{{" }} (index (catalog_traverse .config.id  "Kubernetes::Kustomization" "incoming") 0).Config | json | jq `.spec.path` {{ "}}'" }}
-    - name: git_url
-      value: {{ "'{{" }} (index (catalog_traverse .config.id  "Kubernetes::Kustomization/Kubernetes::GitRepository" "incoming") 0).Config | json | jq `.spec.url` {{ "}}'" }}
-    - name: git_branch
-      value: {{ "'{{" }} (index (catalog_traverse .config.id  "Kubernetes::Kustomization/Kubernetes::GitRepository" "incoming") 0).Config | json | jq `.spec.ref.branch` {{ "}}'" }}
-
   actions:
     - name: Create Pull Request With Changes
       gitops:
         repo:
-          url: '$(.env.git_url)'
+          url: '$(.env.git.url)'
           connection: {{ .Values.playbooks.edit_kubernetes_manifests.git_connection }}
-          base: '$(.env.git_branch)'
+          base: '$(.env.git.branch)'
           branch: edit-manifest-$(random.Alpha 8)
         commit:
           author: '$(.user.name)'
@@ -45,7 +35,7 @@ spec:
         pr:
           title: $(.params.commit_message)
         patches:
-          - path: '$(filepath.Join .env.kustomization_path .env.file_path)'
+          - path: '$(filepath.Join .env.kustomize.path .env.git.file)'
             yq: |
               select(
                 .kind=="$(.config.config | jq `.kind`)" and
