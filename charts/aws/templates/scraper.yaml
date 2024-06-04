@@ -18,7 +18,9 @@ spec:
 
     include: {{ .Values.includeResources }}
     exclude: {{ .Values.excludeResources }}
-    retention: {{ .Values.retention | toYaml | nindent 8 }}
+    {{- if .Values.retention }}
+    retention: {{ .Values.retention | default dict | toYaml | nindent 8 }}
+    {{- end }}
 
     transform: {{ .Values.transform | toYaml | nindent 8 }}
 
@@ -32,6 +34,12 @@ spec:
     {{- end }}
 
     region: {{.Values.region}}
-    endpoint: "{{.Values.endpoint}}"
     skipTLSVerify: {{.Values.skipTLSVerify}}
+
+    {{- if .Values.endpoint }}
+    endpoint: "{{.Values.endpoint}}"
+    {{- end }}
+
+    {{- if .Values.assumeRole }}
     assumeRole: "{{.Values.assumeRole}}"
+    {{- end }}
