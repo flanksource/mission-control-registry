@@ -22,9 +22,15 @@ spec:
 
     transform: {{ .Values.transform | toYaml | nindent 8 }}
 
-    connection: "{{.Values.connection}}"
-    accessKey: {{.Values.accessKey |toYaml | nindent 6}}
-    secretKey: {{.Values.secretKey |toYaml | nindent 6}}
+    {{- if .Values.connection }}
+    connection: {{ .Values.connection }}
+    {{- end }}
+
+    {{- if and .Values.accessKey .Values.secretKey }}
+    accessKey: {{.Values.accessKey | default dict | toYaml | nindent 6}}
+    secretKey: {{.Values.secretKey | default dict | toYaml | nindent 6}}
+    {{- end }}
+
     region: {{.Values.region}}
     endpoint: "{{.Values.endpoint}}"
     skipTLSVerify: {{.Values.skipTLSVerify}}

@@ -7,36 +7,37 @@ topology:
 scraper:
   name: aws
 
-connection: ""
-accessKey:
-  name: ""
-  value: ""
-  valueFrom:
-    serviceAccount: ""
-    helmRef:
-      key: ""
-      name: ""
-    configMapKeyRef:
-      key: ""
-      name: ""
-    secretKeyRef:
-      key: ""
-      name: ""
+# connection: ""
+# accessKey:
+#   name: ""
+#   value: ""
+#   valueFrom:
+#     serviceAccount: ""
+#     helmRef:
+#       key: ""
+#       name: ""
+#     configMapKeyRef:
+#       key: ""
+#       name: ""
+#     secretKeyRef:
+#       key: ""
+#       name: ""
 
-secretKey:
-  name: ""
-  value: ""
-  valueFrom:
-    serviceAccount: ""
-    helmRef:
-      key: ""
-      name: ""
-    configMapKeyRef:
-      key: ""
-      name: ""
-    secretKeyRef:
-      key: ""
-      name: ""
+# secretKey:
+#   name: ""
+#   value: ""
+#   valueFrom:
+#     serviceAccount: ""
+#     helmRef:
+#       key: ""
+#       name: ""
+#     configMapKeyRef:
+#       key: ""
+#       name: ""
+#     secretKeyRef:
+#       key: ""
+#       name: ""
+
 region: []  # AWS regions to pull from
 endpoint: ""
 skipTLSVerify: false
