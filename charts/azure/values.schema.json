@@ -30,111 +30,106 @@
     "tenantID": {
       "type": "string"
     },
-    "connectionDetails": {
+    "connection": {
+      "type": "string"
+    },
+    "clientID": {
       "type": "object",
       "properties": {
-        "connection": {
+        "name": {
           "type": "string"
         },
-        "clientID": {
+        "value": {
+          "type": "string"
+        },
+        "valueFrom": {
           "type": "object",
           "properties": {
-            "name": {
+            "serviceAccount": {
               "type": "string"
             },
-            "value": {
-              "type": "string"
-            },
-            "valueFrom": {
+            "helmRef": {
               "type": "object",
               "properties": {
-                "serviceAccount": {
+                "key": {
                   "type": "string"
                 },
-                "helmRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  }
+                "name": {
+                  "type": "string"
+                }
+              }
+            },
+            "configMapKeyRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
                 },
-                "configMapKeyRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  }
+                "name": {
+                  "type": "string"
+                }
+              }
+            },
+            "secretKeyRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
                 },
-                "secretKeyRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  }
+                "name": {
+                  "type": "string"
                 }
               }
             }
           }
+        }
+      }
+    },
+    "clientSecret": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
         },
-        "clientSecret": {
+        "value": {
+          "type": "string"
+        },
+        "valueFrom": {
           "type": "object",
           "properties": {
-            "name": {
+            "serviceAccount": {
               "type": "string"
             },
-            "value": {
-              "type": "string"
-            },
-            "valueFrom": {
+            "helmRef": {
               "type": "object",
               "properties": {
-                "serviceAccount": {
+                "key": {
                   "type": "string"
                 },
-                "helmRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  }
+                "name": {
+                  "type": "string"
+                }
+              }
+            },
+            "configMapKeyRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
                 },
-                "configMapKeyRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  }
+                "name": {
+                  "type": "string"
+                }
+              }
+            },
+            "secretKeyRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
                 },
-                "secretKeyRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  }
+                "name": {
+                  "type": "string"
                 }
               }
             }
