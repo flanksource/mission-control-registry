@@ -39,9 +39,9 @@ scraper:
 #       name: ""
 
 region: []  # AWS regions to pull from
-endpoint: ""
+# endpoint: 
+# assumeRole: 
 skipTLSVerify: false
-assumeRole: ""
 
 cloudtrail:
   maxAge: 7d
