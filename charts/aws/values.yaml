@@ -39,8 +39,8 @@ scraper:
 #       name: ""
 
 region: []  # AWS regions to pull from
-# endpoint: 
-# assumeRole: 
+# endpoint:
+# assumeRole:
 skipTLSVerify: false
 
 cloudtrail:
