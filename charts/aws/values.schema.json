@@ -25,171 +25,164 @@
         "name"
       ]
     },
-    "connectionDetails": {
+    "connection": {
+      "type": "string"
+    },
+    "accessKey": {
       "type": "object",
       "properties": {
-        "connection": {
+        "name": {
           "type": "string"
         },
-        "accessKey": {
+        "value": {
+          "type": "string"
+        },
+        "valueFrom": {
           "type": "object",
           "properties": {
-            "name": {
+            "serviceAccount": {
               "type": "string"
             },
-            "value": {
-              "type": "string"
-            },
-            "valueFrom": {
+            "helmRef": {
               "type": "object",
               "properties": {
-                "serviceAccount": {
+                "key": {
                   "type": "string"
                 },
-                "helmRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "key",
-                    "name"
-                  ]
-                },
-                "configMapKeyRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "key",
-                    "name"
-                  ]
-                },
-                "secretKeyRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "key",
-                    "name"
-                  ]
+                "name": {
+                  "type": "string"
                 }
               },
               "required": [
+                "key",
+                "name"
+              ]
+            },
+            "configMapKeyRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ]
+            },
+            "secretKeyRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
               ]
             }
           },
           "required": [
           ]
-        },
-        "secretKey": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "value": {
-              "type": "string"
-            },
-            "valueFrom": {
-              "type": "object",
-              "properties": {
-                "serviceAccount": {
-                  "type": "string"
-                },
-                "helmRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "key",
-                    "name"
-                  ]
-                },
-                "configMapKeyRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "key",
-                    "name"
-                  ]
-                },
-                "secretKeyRef": {
-                  "type": "object",
-                  "properties": {
-                    "key": {
-                      "type": "string"
-                    },
-                    "name": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "key",
-                    "name"
-                  ]
-                }
-              },
-              "required": [
-                "serviceAccount",
-                "helmRef",
-                "configMapKeyRef",
-                "secretKeyRef"
-              ]
-            }
-          },
-          "required": [
-          ]
-        },
-        "region": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "minItems": 1
-        },
-        "endpoint": {
-          "type": "string"
-        },
-        "skipTLSVerify": {
-          "type": "boolean"
-        },
-        "assumeRole": {
-          "type": "string"
         }
       },
       "required": [
       ]
+    },
+    "secretKey": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        },
+        "valueFrom": {
+          "type": "object",
+          "properties": {
+            "serviceAccount": {
+              "type": "string"
+            },
+            "helmRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ]
+            },
+            "configMapKeyRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ]
+            },
+            "secretKeyRef": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ]
+            }
+          },
+          "required": [
+            "serviceAccount",
+            "helmRef",
+            "configMapKeyRef",
+            "secretKeyRef"
+          ]
+        }
+      },
+      "required": [
+      ]
+    },
+    "region": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "endpoint": {
+      "type": "string"
+    },
+    "skipTLSVerify": {
+      "type": "boolean"
+    },
+    "assumeRole": {
+      "type": "string"
     },
     "cloudtrail": {
       "type": "object",
