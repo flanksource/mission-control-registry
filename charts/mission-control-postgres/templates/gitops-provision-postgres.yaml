@@ -1,4 +1,3 @@
-{{ if and .Values.playbooks.enabled .Values.playbooks.edit_kubernetes_manifests.enabled -}}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -6,7 +5,7 @@ metadata:
   name: provision-postgres-gitops
 spec:
   category: Kubernetes (GitOps)
-  description: Provisions a postgres statefulset 
+  description: Provisions a postgres statefulset
   icon: postgres
   title: Provision Postgres (GitOps)
   configs:
@@ -112,6 +111,5 @@ spec:
         repo:
           base: '$(.env.git.branch)'
           branch: 'deploy-postgres-statefulset-$(.run.id)'
-          connection: "{{.Values.playbooks.edit_kubernetes_manifests.git_connection}}"
+          connection: "{{.Values.git_connection}}"
           url: '$(.env.git.url)'
-{{ end }}

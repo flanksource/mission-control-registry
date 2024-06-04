@@ -24,6 +24,7 @@ jobs:
             azure: charts/azure/**
             kubernetes: charts/kubernetes/**
             mission-control: charts/mission-control/**
+            mission-control-postgres: charts/mission-control-postgres/**
             flux: charts/flux/**
             prometheus: charts/prometheus/**
 
