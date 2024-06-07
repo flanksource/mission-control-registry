@@ -24,8 +24,8 @@ jobs:
             azure: charts/azure/**
             kubernetes: charts/kubernetes/**
             mission-control: charts/mission-control/**
-            mission-control-postgres: charts/mission-control-postgres/**
             flux: charts/flux/**
+            postgres: charts/postgres/**
             prometheus: charts/prometheus/**
 
   # JOB to build and test each of modified packages
