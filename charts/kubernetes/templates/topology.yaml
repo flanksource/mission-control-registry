@@ -9,23 +9,7 @@ spec:
   icon: "{{ .Values.topology.icon }}"
   schedule: "{{ .Values.topology.schedule }}"
   properties:
-  - name: cpu
-    lookup:
-      prometheus:
-      - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
-        url: {{ .Values.prometheusURL | quote }}
-        display:
-          expr: |
-            [{'name': 'cpu', 'value': int(results[0].value), 'headline': true, 'unit': 'millicores'}].toJSON()
-  - name: memory
-    lookup:
-      prometheus:
-      - query: 'sum(container_memory_working_set_bytes{container!=""})'
-        url: {{ .Values.prometheusURL | quote }}
-        display:
-          expr: |
-            [{'name': 'memory', 'value': int(results[0].value), 'headline': true, 'unit': 'bytes'}].toJSON()
-
+    {{- include "kubernetes.topology.metricProperties.cluster" . | nindent 4 }}
   components:
     - name: nodes
       icon: server
@@ -33,71 +17,38 @@ spec:
         javascript: properties.zone + "/" + self.name
       type: Kubernetes::Node
       components:
-        - name: NodesGroup
-          type: virtual
-          icon: server
-          lookup:
-            kubernetes:
-              - kind: Node
-                name: k8s
-                {{- with .Values.kubeconfig }}
-                kubeconfig: {{ toYaml . | nindent 18}}
-                {{- end}}
-                display:
-                  expr: |
-                    dyn(results).map(r, r.Object).map(r, {
-                      'name': r.metadata.name,
-                      'type': 'Kubernetes::Node',
-                      'labels': k8s.labels(r),
-                      'external_id': r.metadata.name,
-                      'logs': [{'name': 'Kubernetes', 'type': 'KubernetesNode'}],
-                      'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Node'}],
-                      'selectors':[{'fieldSelector': 'node='+r.metadata.name}],
-                      'status': k8s.getHealth(r).health,
-                      'status_reason': k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message,
-                      'properties': [
-                        {"name": "cpu", "max": k8s.cpuAsMillicores(r.status.allocatable["cpu"]), "unit": "millicores", "headline": true},
-                        {"name": "memory", "max": k8s.memoryAsBytes(r.status.allocatable["memory"]), "unit": "bytes", "headline": true},
-                        {"name": "ephemeral-storage", "max": k8s.memoryAsBytes(r.status.allocatable["ephemeral-storage"]), "unit": "bytes", "headline": true},
-                        {"name": "zone", "text": "topology.kubernetes.io/zone" in r.metadata.labels ? r.metadata.labels["topology.kubernetes.io/zone"]: ""},
-                      ]
-                    }).toJSON()
+      - name: NodesGroup
+        type: virtual
+        icon: server
+        lookup:
+          kubernetes:
+            - kind: Node
+              name: k8s
+              {{- with .Values.kubeconfig }}
+              kubeconfig: {{ toYaml . | nindent 18}}
+              {{- end}}
+              display:
+                expr: |
+                  dyn(results).map(r, r.Object).map(r, {
+                    'name': r.metadata.name,
+                    'type': 'Kubernetes::Node',
+                    'labels': k8s.labels(r),
+                    'external_id': r.metadata.name,
+                    'logs': [{'name': 'Kubernetes', 'type': 'KubernetesNode'}],
+                    'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Node'}],
+                    'selectors':[{'fieldSelector': 'node='+r.metadata.name}],
+                    'status': k8s.getHealth(r).health,
+                    'status_reason': k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message,
+                    'properties': [
+                      {"name": "cpu", "max": k8s.cpuAsMillicores(r.status.allocatable["cpu"]), "unit": "millicores", "headline": true},
+                      {"name": "memory", "max": k8s.memoryAsBytes(r.status.allocatable["memory"]), "unit": "bytes", "headline": true},
+                      {"name": "ephemeral-storage", "max": k8s.memoryAsBytes(r.status.allocatable["ephemeral-storage"]), "unit": "bytes", "headline": true},
+                      {"name": "zone", "text": "topology.kubernetes.io/zone" in r.metadata.labels ? r.metadata.labels["topology.kubernetes.io/zone"]: ""},
+                    ]
+                  }).toJSON()
 
-          properties:
-            - name: cpu
-              lookup:
-                prometheus:
-                - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (node)'
-                  url: {{ .Values.prometheusURL | quote }}
-                  display:
-                    expr: |
-                      dyn(results).map(r, {
-                        'name': r.node,
-                        'properties': [{'name': 'cpu', 'value': math.Ceil(int(r.value))}]
-                      }).toJSON()
-            - name: memory
-              lookup:
-                prometheus:
-                - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"} > 0) by (node)'
-                  url: {{ .Values.prometheusURL | quote }}
-                  display:
-                    expr: |
-                      dyn(results).map(r, {
-                        'name': r.node,
-                        'properties': [{'name': 'memory', 'value': int(r.value)}]
-                      }).toJSON()
-
-            - name: ephemeral-storage
-              lookup:
-                prometheus:
-                - query: 'max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"}[5m]))'
-                  url: {{ .Values.prometheusURL | quote }}
-                  display:
-                    expr: |
-                      dyn(results).map(r, {
-                        'name': r.instance,
-                        'properties': [{'name': 'memory', 'value': int(r.value)}]
-                      }).toJSON()
+        properties:
+          {{- include "kubernetes.topology.metricProperties.node" . | nindent 8 }}
 
     - name: PodGroup
       icon: pods
@@ -136,74 +87,32 @@ spec:
                 }).toJSON()
 
       properties:
-        - name: cpu
-          lookup:
-            prometheus:
-            - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (pod)'
-              url: {{ .Values.prometheusURL | quote }}
-              display:
-                expr: |
-                  dyn(results).map(r, {
-                    'name': r.pod,
-                    'properties': [{'name': 'cpu', 'value': math.Ceil(int(r.value))}]
-                  }).toJSON()
-        - name: memory
-          lookup:
-            prometheus:
-            - query: 'sum(container_memory_working_set_bytes{container!=""}) by (pod)'
-              url: {{ .Values.prometheusURL | quote }}
-              display:
-                expr: |
-                  dyn(results).map(r, {
-                    'name': r.pod,
-                    'properties': [{'name': 'memory', 'value': int(r.value)}]
-                    }).toJSON()
+        {{- include "kubernetes.topology.metricProperties.pod" . | nindent 6 }}
 
     - name: Namespaces
       icon: namespace
       type: Kubernetes::Namespaces
       components:
-        - name: NamespaceGroup
-          type: virtual
-          lookup:
-            kubernetes:
-              - kind: Namespace
-                {{- if not (empty .Values.topology.kubeconfig)}}
-                kubeconfig: {{ .Values.topology.kubeconfig | toYaml | nindent 18}}
-                {{- end}}
-                display:
-                  expr: |
-                    dyn(results).map(r, r.Object).map(r, {
-                      'name': r.metadata.name,
-                      'type': 'Kubernetes::Namespace',
-                      'external_id': r.metadata.name,
-                      'labels': k8s.labels(r),
-                      'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Namespace'}],
-                      'properties': [
-                        {'name': 'cpu', 'unit': 'millicores', 'headline': true},
-                        {'name': 'memory', 'unit': 'bytes', 'headline': true},
-                      ],
-                    }).toJSON()
-          properties:
-            - name: cpu
-              lookup:
-                prometheus:
-                - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (namespace)'
-                  url: {{ .Values.prometheusURL | quote }}
-                  display:
-                    expr: |
-                      dyn(results).map(r, {
-                        'name': r.namespace,
-                        'properties': [{'name': 'cpu', 'value': math.Ceil(int(r.value))}]
-                      }).toJSON()
-            - name: memory
-              lookup:
-                prometheus:
-                - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"} > 0) by (namespace)'
-                  url: {{ .Values.prometheusURL | quote }}
-                  display:
-                    expr: |
-                      dyn(results).map(r, {
-                        'name': r.namespace,
-                        'properties': [{'name': 'memory', 'value': int(r.value)}]
-                      }).toJSON()
+      - name: NamespaceGroup
+        type: virtual
+        lookup:
+          kubernetes:
+            - kind: Namespace
+              {{- if not (empty .Values.topology.kubeconfig)}}
+              kubeconfig: {{ .Values.topology.kubeconfig | toYaml | nindent 18}}
+              {{- end}}
+              display:
+                expr: |
+                  dyn(results).map(r, r.Object).map(r, {
+                    'name': r.metadata.name,
+                    'type': 'Kubernetes::Namespace',
+                    'external_id': r.metadata.name,
+                    'labels': k8s.labels(r),
+                    'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Namespace'}],
+                    'properties': [
+                      {'name': 'cpu', 'unit': 'millicores', 'headline': true},
+                      {'name': 'memory', 'unit': 'bytes', 'headline': true},
+                    ],
+                  }).toJSON()
+        properties:
+          {{- include "kubernetes.topology.metricProperties.namespace" . | nindent 8 }}
