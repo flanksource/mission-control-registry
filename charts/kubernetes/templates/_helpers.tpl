@@ -71,7 +71,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m]))'
+    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheusLabels}}}[5m]))'
       url: {{ .Values.prometheusURL | quote }}
       display:
         expr: |
@@ -79,7 +79,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: 'sum(container_memory_working_set_bytes{container!=""})'
+    - query: 'sum(container_memory_working_set_bytes{container!=""{{.Values.prometheusLabels}}})'
       url: {{ .Values.prometheusURL | quote }}
       display:
         expr: |
@@ -92,7 +92,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (node)'
+    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheusLabels}}}[5m])) by (node)'
       url: {{ .Values.prometheusURL | quote }}
       display:
         expr: |
@@ -103,7 +103,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"} > 0) by (node)'
+    - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""{{.Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"{{.Values.prometheusLabels}}} > 0) by (node)'
       url: {{ .Values.prometheusURL | quote }}
       display:
         expr: |
@@ -115,7 +115,7 @@ Metrics
 - name: ephemeral-storage
   lookup:
     prometheus:
-    - query: 'max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"}[5m]))'
+    - query: 'max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"{{.Values.prometheusLabels}}}[5m]))'
       url: {{ .Values.prometheusURL | quote }}
       display:
         expr: |
@@ -130,7 +130,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (pod)'
+    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheusLabels}}}[5m])) by (pod)'
       url: {{ .Values.prometheusURL | quote }}
       display:
         expr: |
@@ -141,7 +141,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: 'sum(container_memory_working_set_bytes{container!=""}) by (pod)'
+    - query: 'sum(container_memory_working_set_bytes{container!=""{{.Values.prometheusLabels}}}) by (pod)'
       url: {{ .Values.prometheusURL | quote }}
       display:
         expr: |
@@ -156,7 +156,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""}[5m])) by (namespace)'
+    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheusLabels}}}[5m])) by (namespace)'
       url: {{ .Values.prometheusURL | quote }}
       display:
         expr: |
@@ -167,7 +167,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"} > 0) by (namespace)'
+    - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""{{.Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"{{.Values.prometheusLabels}}} > 0) by (namespace)'
       url: {{ .Values.prometheusURL | quote }}
       display:
         expr: |

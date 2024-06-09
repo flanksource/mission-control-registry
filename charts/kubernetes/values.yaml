@@ -7,6 +7,8 @@ kubeconfig: {}
 
 clusterName: kubernetes
 prometheusURL: ""
+# prometheusLabels to inject: "label1=key1,label2=key2,label3=~key3"
+prometheusLabels: ""
 topology:
   name: cluster
   schedule: "@every 5m"
