@@ -499,7 +499,7 @@ spec:
                   job_history.*,
                   ROW_NUMBER() OVER (PARTITION by name, resource_type, resource_id ORDER BY created_at DESC) AS rn
                 FROM job_history
-                WHERE status NOT IN ('RUNNING', 'SKIPPED')
+                WHERE status NOT IN ('RUNNING', 'SKIPPED', 'STALE')
               )
               SELECT * from ordered_history where rn = 1 and resource_id = '';
             display:
