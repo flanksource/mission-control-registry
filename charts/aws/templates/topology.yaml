@@ -50,7 +50,7 @@ spec:
                     'status_reason': c.description,
                     'labels': c.labels,
                     'properties': [
-                      {'name': 'NodeGroup', 'text': c.labels['eksctl.io/v1alpha2/nodegroup-name']}
+                      {'name': 'NodeGroup', 'text': 'eksctl.io/v1alpha2/nodegroup-name' in c.labels ? c.labels['eksctl.io/v1alpha2/nodegroup-name'] : ''}
                     ],
                   }).toJSON()
 
