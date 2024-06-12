@@ -6,10 +6,16 @@ metadata:
 spec:
   postgres:
     database:
-      value: mission-control
+      valueFrom:
+        secretKeyRef:
+          name: incident-commander-postgres
+          key: DATABASE
     insecureTLS: true
     host:
-      value: postgres
+      valueFrom:
+        secretKeyRef:
+          name: incident-commander-postgres
+          key: POSTGRES_HOST
     username:
       valueFrom:
         secretKeyRef:
