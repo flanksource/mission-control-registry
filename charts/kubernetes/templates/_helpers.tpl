@@ -241,7 +241,7 @@ Metrics
 {{- define "kubernetes.topology.metricProperties.cluster" -}}
 {{- if .Values.prometheusURL }}
 {{- include "kubernetes.topology.metricProperties.prometheus.cluster" . }}
-{{- else }}
+{{- else if .Values.metrics.enabled }}
 {{- include "kubernetes.topology.metricProperties.k8sMetrics.cluster" . }}
 {{- end }}
 {{- end }}
@@ -249,7 +249,7 @@ Metrics
 {{- define "kubernetes.topology.metricProperties.node" -}}
 {{- if .Values.prometheusURL }}
 {{- include "kubernetes.topology.metricProperties.prometheus.node" . }}
-{{- else }}
+{{- else if .Values.metrics.enabled }}
 {{- include "kubernetes.topology.metricProperties.k8sMetrics.node" . }}
 {{- end }}
 {{- end }}
@@ -257,7 +257,7 @@ Metrics
 {{- define "kubernetes.topology.metricProperties.pod" -}}
 {{- if .Values.prometheusURL }}
 {{- include "kubernetes.topology.metricProperties.prometheus.pod" . }}
-{{- else }}
+{{- else if .Values.metrics.enabled }}
 {{- include "kubernetes.topology.metricProperties.k8sMetrics.pod" . }}
 {{- end }}
 {{- end }}
@@ -265,7 +265,7 @@ Metrics
 {{- define "kubernetes.topology.metricProperties.namespace" -}}
 {{- if .Values.prometheusURL }}
 {{- include "kubernetes.topology.metricProperties.prometheus.namespace" . }}
-{{- else }}
+{{- else if .Values.metrics.enabled }}
 {{- include "kubernetes.topology.metricProperties.k8sMetrics.namespace" . }}
 {{- end }}
 {{- end }}
