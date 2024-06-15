@@ -6,12 +6,52 @@ labels: {}
 kubeconfig: {}
 
 clusterName: kubernetes
-prometheusURL: ""
-# prometheusLabels to inject: "label1=key1,label2=key2,label3=~key3"
-prometheusLabels: ""
 
 metrics:
   enabled: true
+
+# Deprecated: use prometheus.url instead
+prometheusURL: ""
+
+# Deprecated: use prometheus.labels instead
+prometheusLabels: ""
+
+prometheus:
+  connection: prometheus
+  url: ''
+  # prometheus labels to inject: "label1=key1,label2=key2,label3=~key3"
+  labels: ''
+  # Leave auth blank or use one of [username+password / bearer / oauth]
+  auth:
+#   username:
+#     valueFrom:
+#       secretKeyRef:
+#         name:
+#         key:
+#   password:
+#     valueFrom:
+#       secretKeyRef:
+#         name:
+#         key:
+#   bearer:
+#     valueFrom:
+#       secretKeyRef:
+#         name:
+#         key:
+#   oauth:
+#     username:
+#       valueFrom:
+#         secretKeyRef:
+#           name:
+#           key:
+#     password:
+#       valueFrom:
+#         secretKeyRef:
+#           name:
+#           key:
+#     scopes: []
+#     tokenURL: ''
+#     params: {}
 
 topology:
   name: cluster
