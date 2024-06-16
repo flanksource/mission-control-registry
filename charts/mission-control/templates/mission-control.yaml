@@ -123,7 +123,7 @@ spec:
                     FROM job_history
                     WHERE
                       resource_id in (select id::text from canaries where deleted_at is null) AND
-                      status NOT IN ('RUNNING', 'SKIPPED') AND
+                      status NOT IN ('RUNNING', 'SKIPPED', 'STALE') AND
                       resource_type = 'canary'
                   )
                   SELECT * FROM cte WHERE rn = 1;
@@ -152,7 +152,7 @@ spec:
                     FROM job_history
                     WHERE
                       resource_id in (select id::text from topologies where deleted_at is null) AND
-                      status NOT IN ('RUNNING', 'SKIPPED') AND
+                      status NOT IN ('RUNNING', 'SKIPPED', 'STALE') AND
                       resource_type = 'topology'
                   )
                   SELECT * FROM cte WHERE rn = 1;
@@ -188,7 +188,9 @@ spec:
                 ROW_NUMBER() OVER (PARTITION BY t.name ORDER BY time_end DESC) AS rn, t.name, jh.status, jh.success_count,
                 jh.error_count, jh.duration_millis, jh.time_end
               FROM topologies t
-              INNER JOIN job_history jh ON t.id::text = jh.resource_id) AS s WHERE rn = 1
+              INNER JOIN job_history jh ON t.id::text = jh.resource_id
+              WHERE jh.status NOT in ('RUNNING', 'STALE', 'SKIPPED')
+            ) AS s WHERE rn = 1
           results: 1
       name: Topologies
       type: lookup
@@ -310,7 +312,7 @@ spec:
                 FROM job_history
                 WHERE
                   resource_id in (select id::text from config_scrapers where deleted_at is null) AND
-                  status NOT IN ('RUNNING', 'SKIPPED') AND
+                  status NOT IN ('RUNNING', 'SKIPPED', 'STALE') AND
                   resource_type = 'config_scraper'
               )
               SELECT * FROM cte WHERE rn = 1
@@ -365,7 +367,9 @@ spec:
                 ROW_NUMBER() OVER (PARTITION BY c.name ORDER BY time_end DESC) AS rn, c.name, jh.status, jh.success_count,
                 jh.error_count, jh.duration_millis, jh.time_end
               FROM config_scrapers c
-              INNER JOIN job_history jh ON c.id::text = jh.resource_id) AS s WHERE rn = 1
+              INNER JOIN job_history jh ON c.id::text = jh.resource_id
+              WHERE jh.status NOT in ('RUNNING', 'STALE', 'SKIPPED')
+            ) AS s WHERE rn = 1
           results: 1
       name: ConfigScrapers
       type: lookup
