@@ -1,301 +1,393 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Schema for Kubernetes bundle for Flanksource Mission Control",
-  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "properties": {
-    "nameOverride": {
+    "clusterName": {
       "type": "string"
     },
     "fullnameOverride": {
       "type": "string"
     },
-    "labels": {
-      "type": "object",
+    "kubeconfig": {
       "properties": {},
-      "required": []
+      "type": "object"
     },
-    "clusterName": {
+    "labels": {
+      "properties": {},
+      "type": "object"
+    },
+    "metrics": {
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "queries": {
+          "properties": {
+            "gke": {
+              "properties": {
+                "node_cpu": {
+                  "type": "null"
+                }
+              },
+              "type": "object"
+            },
+            "prometheus": {
+              "properties": {
+                "cluster_cpu": {
+                  "type": "string"
+                },
+                "cluster_memory": {
+                  "type": "string"
+                },
+                "namespace_cpu": {
+                  "type": "string"
+                },
+                "namespace_memory": {
+                  "type": "string"
+                },
+                "node_cpu": {
+                  "type": "string"
+                },
+                "node_memory": {
+                  "type": "string"
+                },
+                "node_storage": {
+                  "type": "string"
+                },
+                "pod_cpu": {
+                  "type": "string"
+                },
+                "pod_memory": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "type": {
+          "pattern": "^(gke|prometheus)$",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "nameOverride": {
       "type": "string"
     },
-    "prometheusURL": {
-      "type": "string"
+    "playbooks": {
+      "properties": {
+        "cleanupFailedPods": {
+          "type": "boolean"
+        },
+        "deletePod": {
+          "type": "boolean"
+        },
+        "edit_kubernetes_manifests": {
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "git_connection": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "podSnapshot": {
+          "type": "boolean"
+        },
+        "requestNamespaceAccess": {
+          "type": "boolean"
+        },
+        "restartDeployment": {
+          "type": "boolean"
+        },
+        "scaleDeployment": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "prometheus": {
+      "properties": {
+        "auth": {
+          "type": "null"
+        },
+        "connection": {
+          "type": "string"
+        },
+        "createConnection": {
+          "type": "boolean"
+        },
+        "labels": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "scraper": {
+      "properties": {
+        "defaultExclusions": {
+          "properties": {
+            "kind": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "labels": {
+              "properties": {
+                "canary-checker.flanksource.com/check-id": {
+                  "type": "string"
+                },
+                "canary-checker.flanksource.com/generated": {
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "name": {
+              "type": "array"
+            },
+            "namespace": {
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "defaultRelationships": {
+          "items": {
+            "properties": {
+              "kind": {
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "name": {
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "namespace": {
+                "properties": {
+                  "expr": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            },
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "defaultTransform": {
+          "properties": {
+            "changes": {
+              "properties": {
+                "exclude": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "mapping": {
+                  "items": {
+                    "properties": {
+                      "filter": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "exclude": {
+              "type": "array"
+            },
+            "mask": {
+              "type": "array"
+            },
+            "relationship": {
+              "items": {
+                "properties": {
+                  "filter": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "properties": {
+                      "expr": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  },
+                  "type": {
+                    "properties": {
+                      "value": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "event": {
+          "properties": {
+            "exclusions": {
+              "properties": {
+                "reason": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "severityKeywords": {
+              "properties": {
+                "error": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "warn": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            }
+          },
+          "type": "object"
+        },
+        "exclusions": {
+          "properties": {
+            "kind": {
+              "type": "array"
+            },
+            "labels": {
+              "properties": {},
+              "type": "object"
+            },
+            "name": {
+              "type": "array"
+            },
+            "namespace": {
+              "type": "array"
+            }
+          },
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        },
+        "relationships": {
+          "type": "array"
+        },
+        "retention": {
+          "properties": {
+            "changes": {
+              "type": "array"
+            },
+            "defaultChanges": {
+              "items": {
+                "properties": {
+                  "age": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "staleItemAge": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "schedule": {
+          "type": "string"
+        },
+        "transform": {
+          "properties": {
+            "changes": {
+              "properties": {
+                "exclude": {
+                  "type": "array"
+                },
+                "mapping": {
+                  "type": "array"
+                }
+              },
+              "type": "object"
+            },
+            "exclude": {
+              "type": "array"
+            },
+            "expr": {
+              "type": "string"
+            },
+            "mask": {
+              "type": "array"
+            },
+            "relationship": {
+              "type": "array"
+            }
+          },
+          "type": "object"
+        }
+      },
+      "type": "object"
     },
     "topology": {
-      "type": "object",
       "properties": {
+        "icon": {
+          "type": "string"
+        },
         "name": {
           "type": "string"
         },
         "schedule": {
           "type": "string"
-        },
-        "icon": {
-          "type": "string"
         }
       },
-      "required": [
-        "name",
-        "schedule",
-        "icon"
-      ]
-    },
-    "scraper": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "exclusions": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "array",
-              "items": {}
-            },
-            "namespace": {
-              "type": "array",
-              "items": {}
-            },
-            "kind": {
-              "type": "array",
-              "items": {}
-            },
-            "labels": {
-              "type": "object",
-              "properties": {},
-              "required": []
-            }
-          },
-          "required": [
-          ]
-        },
-        "defaultExclusions": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "array",
-              "items": {}
-            },
-            "namespace": {
-              "type": "array",
-              "items": {}
-            },
-            "labels": {
-              "type": "object",
-              "properties": {},
-              "required": []
-            },
-            "kind": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "required": [
-
-          ]
-        },
-        "relationships": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "object",
-                "properties": {
-                  "expr": {
-                    "type": "string"
-                  },
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "required": []
-              },
-              "name": {
-                "type": "object",
-                "properties": {
-                  "expr": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  }
-                },
-                "required": []
-              },
-              "namespace": {
-                "type": "object",
-                "properties": {
-                  "expr": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  }
-                },
-                "required": []
-              }
-            },
-            "required": [
-              "kind",
-              "name"
-            ]
-          }
-        },
-        "defaultRelationships": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "kind": {
-                "type": "object",
-                "properties": {
-                  "expr": {
-                    "type": "string"
-                  },
-                  "value": {
-                    "type": "string"
-                  }
-                },
-                "required": []
-              },
-              "name": {
-                "type": "object",
-                "properties": {
-                  "expr": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  }
-                },
-                "required": []
-              },
-              "namespace": {
-                "type": "object",
-                "properties": {
-                  "expr": {
-                    "type": "string"
-                  },
-                  "label": {
-                    "type": "string"
-                  }
-                },
-                "required": []
-              }
-            },
-            "required": [
-              "kind",
-              "name"
-            ]
-          }
-        },
-        "event": {
-          "type": "object",
-          "properties": {
-            "exclusions": {
-              "type": "object",
-              "properties": {
-                "reason": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": [
-              ]
-            },
-            "severityKeywords": {
-              "type": "object",
-              "properties": {
-                "error": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                "warn": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": [
-                "error",
-                "warn"
-              ]
-            }
-          },
-          "required": [
-            "exclusions",
-            "severityKeywords"
-          ]
-        },
-        "transform": {
-          "type": "object",
-          "properties": {
-            "changes": {
-              "type": "object",
-              "properties": {
-                "exclude": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "required": [
-
-              ]
-            }
-          },
-          "required": [
-
-          ]
-        },
-        "retention": {
-          "type": "object",
-          "properties": {
-            "changes": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "age": {
-                    "type": "string"
-                  },
-                  "count": {
-                    "type": "number"
-                  }
-                },
-                "required": [
-                  "name"
-                ]
-              }
-            }
-          },
-          "required": [
-          ]
-        }
-      },
-      "required": [
-        "name",
-        "defaultExclusions",
-        "defaultRelationships"
-      ]
+      "type": "object"
     }
   },
-  "required": [
-    "clusterName",
-    "prometheusURL",
-    "topology",
-    "scraper"
-  ]
+  "title": "Schema for Kubernetes bundle for Flanksource Mission Control",
+  "type": "object"
 }
