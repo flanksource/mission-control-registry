@@ -1,15 +1,17 @@
 ---
+{{- if and .Values.prometheus.createConnection .Values.prometheus.url }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Connection
 metadata:
   name: {{ .Values.prometheus.connection }}
 spec:
   prometheus:
-    url: {{ .Values.prometheus.url | default .Values.prometheusURL }}
+    url: {{ .Values.prometheus.url }}
     {{- if .Values.prometheus.auth }}
     auth:
       {{ .Values.prometheus.auth | toYaml | nindent 6}}
     {{- end }}
+{{- end }}
 ---
 apiVersion: canaries.flanksource.com/v1
 kind: Topology

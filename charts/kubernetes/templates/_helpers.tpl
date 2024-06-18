@@ -71,7 +71,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m]))'
+    - query: {{tpl .Values.metrics.queries.prometheus.cluster_cpu .}}
       connection: {{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -79,7 +79,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: 'sum(container_memory_working_set_bytes{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}})'
+    - query: {{tpl .Values.metrics.queries.prometheus.cluster_memory .}}
       connection: {{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -92,7 +92,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (node)'
+    - query: {{tpl .Values.metrics.queries.prometheus.node_cpu .}}
       connection: {{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -103,7 +103,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} > 0) by (node)'
+    - query: {{tpl .Values.metrics.queries.prometheus.node_memory .}}
       connection: {{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -115,7 +115,7 @@ Metrics
 - name: ephemeral-storage
   lookup:
     prometheus:
-    - query: 'max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m]))'
+    - query: {{tpl .Values.metrics.queries.prometheus.node_storage .}}
       connection: {{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -130,7 +130,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (pod)'
+    - query: {{tpl .Values.metrics.queries.prometheus.pod_cpu .}}
       connection: {{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -141,7 +141,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: 'sum(container_memory_working_set_bytes{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}) by (pod)'
+    - query: {{tpl .Values.metrics.queries.prometheus.pod_memory .}}
       connection: {{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -156,7 +156,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (namespace)'
+    - query: {{tpl .Values.metrics.queries.prometheus.namespace_cpu .}}
       connection: {{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -167,7 +167,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: 'sum(container_memory_working_set_bytes{container!="",pod!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} > 0) by (namespace)'
+    - query: {{tpl .Values.metrics.queries.prometheus.namespace_memory .}}
       connection: {{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -251,7 +251,7 @@ Metrics
 {{- end }}
 
 {{- define "kubernetes.topology.metricProperties.cluster" -}}
-{{- if (.Values.prometheus.url | default .Values.prometheusURL) }}
+{{- if .Values.prometheus.url }}
 {{- include "kubernetes.topology.metricProperties.prometheus.cluster" . }}
 {{- else if .Values.metrics.enabled }}
 {{- include "kubernetes.topology.metricProperties.k8sMetrics.cluster" . }}
@@ -259,7 +259,7 @@ Metrics
 {{- end }}
 
 {{- define "kubernetes.topology.metricProperties.node" -}}
-{{- if (.Values.prometheus.url | default .Values.prometheusURL) }}
+{{- if .Values.prometheus.url }}
 {{- include "kubernetes.topology.metricProperties.prometheus.node" . }}
 {{- else if .Values.metrics.enabled }}
 {{- include "kubernetes.topology.metricProperties.k8sMetrics.node" . }}
@@ -267,7 +267,7 @@ Metrics
 {{- end }}
 
 {{- define "kubernetes.topology.metricProperties.pod" -}}
-{{- if (.Values.prometheus.url | default .Values.prometheusURL) }}
+{{- if .Values.prometheus.url }}
 {{- include "kubernetes.topology.metricProperties.prometheus.pod" . }}
 {{- else if .Values.metrics.enabled }}
 {{- include "kubernetes.topology.metricProperties.k8sMetrics.pod" . }}
@@ -275,7 +275,7 @@ Metrics
 {{- end }}
 
 {{- define "kubernetes.topology.metricProperties.namespace" -}}
-{{- if (.Values.prometheus.url | default .Values.prometheusURL) }}
+{{- if .Values.prometheus.url }}
 {{- include "kubernetes.topology.metricProperties.prometheus.namespace" . }}
 {{- else if .Values.metrics.enabled }}
 {{- include "kubernetes.topology.metricProperties.k8sMetrics.namespace" . }}

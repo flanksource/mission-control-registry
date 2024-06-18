@@ -7,19 +7,12 @@ kubeconfig: {}
 
 clusterName: kubernetes
 
-metrics:
-  enabled: true
-
-# Deprecated: use prometheus.url instead
-prometheusURL: ""
-
-# Deprecated: use prometheus.labels instead
-prometheusLabels: ""
-
 prometheus:
+  createConnection: true
   connection: prometheus
   url: ''
-  # prometheus labels to inject: "label1=key1,label2=key2,label3=~key3"
+  # prometheus labels to inject: "\,label1=key1\,label2=key2\,label3=~key3"
+  # Note: comma(,) needs to be escaped as /, and prometheus.labels should always start with '/,' to work with existing labels
   labels: ''
   # Leave auth blank or use one of [username+password / bearer / oauth]
   auth:
@@ -52,6 +45,26 @@ prometheus:
 #     scopes: []
 #     tokenURL: ''
 #     params: {}
+
+metrics:
+  enabled: true
+  # Allowed: [prometheus|gke]
+  type: prometheus  # @schema pattern:^(gke|prometheus)$
+
+  queries:
+    prometheus:
+      cluster_cpu: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels}}}[5m]))'
+      cluster_memory: 'sum(container_memory_working_set_bytes{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}})'
+      node_cpu: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (node)'
+      node_memory: 'sum(container_memory_working_set_bytes{container!="",pod!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} > 0) by (node)'
+      node_storage: 'max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint="/",fstype!="rootfs"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m]))'
+      pod_cpu: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (pod)'
+      pod_memory: 'sum(container_memory_working_set_bytes{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}) by (pod)'
+      namespace_cpu: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (namespace)'
+      namespace_memory: 'sum(container_memory_working_set_bytes{container!="",pod!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} > 0) by (namespace)'
+    gke:
+      node_cpu:
+
 
 topology:
   name: cluster
