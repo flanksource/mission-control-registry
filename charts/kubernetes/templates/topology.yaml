@@ -18,8 +18,14 @@ kind: Topology
 metadata:
   name: {{ .Values.topology.name }}
   labels:
+    cluster: {{.Values.clusterName}}
     {{- include "kubernetes.labels" . | nindent 4 }}
 spec:
+  groupBy:
+    tag: cluster
+    selectors:
+      - types:
+          - Kubernetes::Cluster
   type: Kubernetes::Cluster
   icon: "{{ .Values.topology.icon }}"
   schedule: "{{ .Values.topology.schedule }}"
