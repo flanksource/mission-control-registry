@@ -6,6 +6,7 @@ spec:
   icon: flux
   type: Topology
   schedule: "@every 5m"
+  groupByTag: cluster
   components:
     - name: Controllers
       icon: pod
