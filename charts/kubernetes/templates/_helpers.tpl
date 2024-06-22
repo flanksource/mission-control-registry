@@ -230,24 +230,26 @@ Metrics
 {{- end }}
 
 {{- define "kubernetes.topology.metricProperties.k8sMetrics.namespace" -}}
-- name: namespace-metrics
-  lookup:
-    kubernetes:
-      - kind: PodMetrics
-        {{- with .Values.kubeconfig }}
-        kubeconfig: {{ toYaml . | nindent 10}}
-        {{- end}}
-        namespaceSelector:
-          name: '$(.component.name)'
-        test:
-          # To avoid no resources found error for empty namespaces
-          expr: 'true'
-        display:
-          expr: |
-            [
-              {'name': 'cpu', 'unit': 'millicores', 'headline': true, 'value': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.cpuAsMillicores(c.usage.cpu)))))},
-              {'name': 'memory', 'unit': 'bytes', 'headline': true, 'value': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.memoryAsBytes(c.usage.memory)))))},
-            ].toJSON()
+forEach:
+  properties:
+    - name: namespace-metrics
+      lookup:
+        kubernetes:
+          - kind: PodMetrics
+            {{- with .Values.kubeconfig }}
+            kubeconfig: {{ toYaml . | nindent 10}}
+            {{- end}}
+            namespaceSelector:
+              name: '$(.component.name)'
+            test:
+              # To avoid no resources found error for empty namespaces
+              expr: 'true'
+            display:
+              expr: |
+                [
+                  {'name': 'cpu', 'unit': 'millicores', 'headline': true, 'value': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.cpuAsMillicores(c.usage.cpu)))))},
+                  {'name': 'memory', 'unit': 'bytes', 'headline': true, 'value': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.memoryAsBytes(c.usage.memory)))))},
+                ].toJSON()
 {{- end }}
 
 {{- define "kubernetes.topology.metricProperties.cluster" -}}
@@ -276,7 +278,7 @@ Metrics
 
 {{- define "kubernetes.topology.metricProperties.namespace" -}}
 {{- if .Values.prometheus.url }}
-{{- include "kubernetes.topology.metricProperties.prometheus.namespace" . }}
+{{- include "kubernetes.topology.metricProperties.prometheus.namespace" . | nindent 2 }}
 {{- else if .Values.metrics.enabled }}
 {{- include "kubernetes.topology.metricProperties.k8sMetrics.namespace" . }}
 {{- end }}
