@@ -237,7 +237,7 @@ forEach:
         kubernetes:
           - kind: PodMetrics
             {{- with .Values.kubeconfig }}
-            kubeconfig: {{ toYaml . | nindent 10}}
+            kubeconfig: {{ toYaml . | nindent 14}}
             {{- end}}
             namespaceSelector:
               name: '$(.component.name)'
