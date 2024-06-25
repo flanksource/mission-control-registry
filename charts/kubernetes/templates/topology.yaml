@@ -39,8 +39,8 @@ spec:
           kubernetes:
             - kind: Node
               name: k8s
-              {{- with .Values.kubeconfig }}
-              kubeconfig: {{ toYaml . | nindent 18}}
+              {{- if not (empty .Values.kubeconfig)}}
+              kubeconfig: {{ .Values.kubeconfig | toYaml | nindent 16}}
               {{- end}}
               display:
                 expr: |
@@ -71,8 +71,8 @@ spec:
       lookup:
         kubernetes:
           - kind: Pod
-            {{- if not (empty .Values.topology.kubeconfig)}}
-            kubeconfig: {{ .Values.topology.kubeconfig | toYaml | nindent 14}}
+            {{- if not (empty .Values.kubeconfig)}}
+            kubeconfig: {{ .Values.kubeconfig | toYaml | nindent 14}}
             {{- end}}
             ready: false
             ignore:
@@ -113,8 +113,8 @@ spec:
         lookup:
           kubernetes:
             - kind: Namespace
-              {{- if not (empty .Values.topology.kubeconfig)}}
-              kubeconfig: {{ .Values.topology.kubeconfig | toYaml | nindent 18}}
+              {{- if not (empty .Values.kubeconfig)}}
+              kubeconfig: {{ .Values.kubeconfig | toYaml | nindent 16}}
               {{- end}}
               display:
                 expr: |
