@@ -6,7 +6,11 @@ spec:
   icon: flux
   type: Topology
   schedule: "@every 5m"
-  groupByTag: cluster
+  groupBy:
+    tag: cluster
+    selector:
+      types:
+        - Kubernetes::Kustomization
   components:
     - name: Controllers
       icon: pod
