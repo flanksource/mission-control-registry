@@ -35,7 +35,7 @@ spec:
                     'namespace': r.config.metadata.namespace,
                     'status': r.status,
                     'status_reason': r.description,
-                    'selectors': [{'labelSelector': 'helm.toolkit.fluxcd.io/name='+r.name + ',helm.toolkit.fluxcd.io/namespace=r.config.metadata.namespace}],
+                    'selectors': [{'labelSelector': 'helm.toolkit.fluxcd.io/name='+r.name + ',helm.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace}],
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::HelmRelease'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
