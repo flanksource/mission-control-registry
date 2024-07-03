@@ -179,6 +179,10 @@ scraper:
           type: PodCrashLooping
 
     relationship:
+      # Link Crossplane objects to the cloud resources
+      - filter: config_type.startsWith("Crossplane::") && has(config.status) && has(config.status.atProvider)
+        external_id:
+          expr: config.status.atProvider.id.lowerAscii()
       # Link a service to a deployment (adjust the label selector accordingly)
       - filter: config_type == "Kubernetes::Service"
         type:
