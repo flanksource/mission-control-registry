@@ -1,0 +1,25 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.updateHelmChartVersion }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: update-helm-chart-version
+spec:
+  title: Update helm chart version
+  icon: helm
+  category: Flux
+  configs:
+    - types:
+        - Kubernetes::HelmRelease
+
+  parameters:
+    - default: $(.config.config.spec.chart.spec.version)
+      label: "Version"
+      name: version
+      type: text
+
+  actions:
+    - name: Update helm chart version
+      exec:
+        script: |
+          kubectl patch helmrelease -n $(.config.tags.namespace) $(.config.name) -p '{"spec": {"chart": {"spec": {"version": "$(.params.version)"}}}}'
+{{- end}}

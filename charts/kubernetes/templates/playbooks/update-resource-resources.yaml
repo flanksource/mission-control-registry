@@ -1,0 +1,54 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.updateResourceRequestsLimits }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: update-resource-requests-limits
+spec:
+  title: Update Resource Requests and Limits
+  icon: k8s-deployment
+  category: Kubernetes
+  configs:
+    - types:
+        - Kubernetes::Deployment
+        - Kubernetes::StatefulSet
+        - Kubernetes::DaemonSet
+  parameters:
+  - name: cpu_request
+    label: CPU Request
+    type: millicores
+    default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.requests.cpu | default "" }} `}}'
+  - name: memory_request
+    label: Memory Request
+    type: bytes
+    default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.requests.memory | default "" }} `}}'
+  - name: cpu_limit
+    label: CPU Limit
+    type: millicores
+    default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.limits.cpu | default "" }} `}}'
+  - name: memory_limit
+    label: Memory Limit
+    type: bytes
+    default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.limits.memory | default "" }} `}}'
+
+  env:
+  - name: set_resource_cmd
+    value: kubectl set resources $(.config.config_class | strings.ToLower) $(.config.name) -n $(.config.tags.namespace) --containers={{` {{ (index .config.config.spec.template.spec.containers 0).name }} `}}
+
+  actions:
+    - name: Update Resource Requests and Limits
+      exec:
+        script: |
+          if [[ -n "$(params.cpu_request)" ]]; then
+            $(.env.set_resource_cmd) --requests=cpu=$(params.cpu_request)
+          fi
+          if [[ -n "$(params.memory_request)" ]]; then
+            $(.env.set_resource_cmd) --requests=memory=$(params.memory_request)
+          fi
+          if [[ -n "$(params.cpu_limit)" ]]; then
+            $(.env.set_resource_cmd) --limits=cpu=$(params.cpu_limit)
+          fi
+          if [[ -n "$(params.memory_limit)" ]]; then
+            $(.env.set_resource_cmd) --limits=memory=$(params.memory_limit)
+          fi
+{{- end}}

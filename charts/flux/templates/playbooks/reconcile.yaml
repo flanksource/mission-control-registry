@@ -1,0 +1,20 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.reconcile }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: flux-reconcile
+spec:
+  title: Flux Reconcile
+  icon: flux
+  category: Flux
+  configs:
+    - types:
+        - Kubernetes::HelmRelease
+        - Kubernetes::Kustomization
+
+  actions:
+    - name: Reconcile resource
+      exec:
+        script: |
+          flux reconcile -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower) $(.config.name)
+{{- end}}
