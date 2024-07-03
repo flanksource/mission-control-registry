@@ -1,0 +1,20 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.suspend }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: flux-suspend
+spec:
+  title: Flux Suspend
+  icon: todo-yash
+  category: Flux
+  configs:
+    - types:
+        - Kubernetes::HelmRelease
+        - Kubernetes::Kustomization
+
+  actions:
+    - name: Suspend resource
+      exec:
+        script: |
+          flux suspend -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower) $(.config.name)
+{{- end}}

@@ -3,3 +3,12 @@ nameOverride: ""
 fullnameOverride: ""
 labels: {}
 topologyName: flux
+
+playbooks:
+  enabled: true
+
+  resume: true
+  suspend: true
+  reconcile: true
+  updateHelmValues: true
+  updateHelmChartVersion: true
