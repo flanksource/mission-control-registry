@@ -236,6 +236,7 @@ playbooks:
   createDeployment: true
   updateResourceImage: true
   updateResourceRequestsLimits: true
+  deleteResource: true
   edit_kubernetes_manifests:
     enabled: false
     git_connection: "connection://"

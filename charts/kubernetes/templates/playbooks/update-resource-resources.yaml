@@ -17,23 +17,23 @@ spec:
   - name: cpu_request
     label: CPU Request
     type: text
-    default: '{{ "{{" }} (index .config.config.spec.template.spec.containers 0).resources.requests.cpu | default "" {{ "}}" }}'
+    default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.requests.cpu | default "" }} `}}'
   - name: memory_request
     label: Memory Request
     type: text
-    default: '{{ "{{" }} (index .config.config.spec.template.spec.containers 0).resources.requests.memory | default "" {{ "}}" }}'
+    default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.requests.memory | default "" }} `}}'
   - name: cpu_limit
     label: CPU Limit
     type: text
-    default: '{{ "{{" }} (index .config.config.spec.template.spec.containers 0).resources.limits.cpu | default "" {{ "}}" }}'
+    default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.limits.cpu | default "" }} `}}'
   - name: memory_limit
     label: Memory Limit
     type: text
-    default: '{{ "{{" }} (index .config.config.spec.template.spec.containers 0).resources.limits.memory | default "" {{ "}}" }}'
+    default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.limits.memory | default "" }} `}}'
 
   env:
   - name: set_resource_cmd
-    value: kubectl set resources $(.config.config_class | strings.ToLower) $(.config.name) -n $(.config.tags.namespace) --containers={{ "{{" }} (index .config.config.spec.template.spec.containers 0).name {{ "}}" }}
+    value: kubectl set resources $(.config.config_class | strings.ToLower) $(.config.name) -n $(.config.tags.namespace) --containers={{` {{ (index .config.config.spec.template.spec.containers 0).name }} `}}
 
   actions:
     - name: Update Resource Requests and Limits

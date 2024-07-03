@@ -17,10 +17,11 @@ spec:
     - name: image
       label: Image
       type: text
-      default: '{{ "{{" }} (index .config.config.spec.template.spec.containers 0 ).image {{ "}}" }}'
+      default: '{{` {{ (index .config.config.spec.template.spec.containers 0 ).image }} `}}'
   actions:
     - name: Update image
       exec:
         script: |
-          kubectl set image -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower)/$(.config.name) {{ "{{" }} ( index .config.config.spec.template.spec.containers 0 ).name {{ "}}" }}=$(.params.image)
+          kubectl set image -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower)/$(.config.name) {{` {{ (index .config.config.spec.template.spec.containers 0 ).name }} `}}=$(.params.image)
+
 {{- end}}
