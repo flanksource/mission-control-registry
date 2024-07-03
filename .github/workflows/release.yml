@@ -28,7 +28,7 @@ jobs:
             postgres: charts/postgres/**
             prometheus: charts/prometheus/**
 
-  # JOB to build and test each of modified packages
+  # Job to build and test each of modified packages
   build:
     needs: changes
     strategy:
@@ -44,22 +44,37 @@ jobs:
         uses: azure/setup-helm@v1
         with:
           version: v3.12.0
+
+      - name: Set latest expected version
+        run: |
+
       - name: Package Helm chart
         run: |
           cd charts/${{ matrix.chart }}
-          yq -i e '.version |= (split(".") | .[-1] |= ((. tag = "!!int") + 1) | join("."))' Chart.yaml
+          NEW_CHART_VERSION=$(cat Chart.yaml | yq '.version' | awk -F. -v OFS=. '{print $1, $2, $3+1}')
+          yq -i e ".version |= \"$NEW_CHART_VERSION\"" Chart.yaml
           helm package -d ../.. .
+
+          # Commit and push changes to repo
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add Chart.yaml
+          git commit -m "[skip ci] bump chart ${{matrix.chart}} to $NEW_CHART_VERSION"
+          git push
+
       - name: Clone charts repo
         uses: actions/checkout@v3
         with:
           repository: "${{ github.repository_owner }}/charts"
           path: chart-index
           token: "${{ secrets.FLANKBOT }}"
+
       - name: Update chart repo
         run: |
           cd chart-index
           cp ../mission-control-*.tgz ./
           helm repo index --merge index.yaml .
+
       - name: Push changes to chart repo
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
