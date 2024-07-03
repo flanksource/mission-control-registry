@@ -1,0 +1,29 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.createDeployment }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: create-deployment
+spec:
+  title: Create Deployment
+  icon: k8s-deployment
+  category: Kubernetes
+  configs: []
+  parameters:
+    - name: name
+      label: Deployment Name
+      type: text
+      default: "nginx"
+    - name: namespace
+      label: Namespace
+      type: text
+      default: "default"
+    - name: image
+      label: Container Image
+      type: text
+      default: "nginx:latest"
+  actions:
+    - name: Create Deployment
+      exec:
+        script: |
+          kubectl create deployment $(params.name) -n $(params.namespace) --image=$(params.image)
+{{- end}}
