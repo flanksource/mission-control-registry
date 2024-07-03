@@ -5,7 +5,7 @@ metadata:
   name: flux-reconcile
 spec:
   title: Flux Reconcile
-  icon: todo-yash
+  icon: flux
   category: Flux
   configs:
     - types:

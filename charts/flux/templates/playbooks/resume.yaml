@@ -5,7 +5,7 @@ metadata:
   name: flux-resume
 spec:
   title: Flux Resume
-  icon: todo-yash
+  icon: flux
   category: Flux
   configs:
     - types:

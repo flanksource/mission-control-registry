@@ -5,7 +5,7 @@ metadata:
   name: update-helm-values
 spec:
   title: Update helm values
-  icon: todo-yash
+  icon: helm
   category: Flux
   configs:
     - types:

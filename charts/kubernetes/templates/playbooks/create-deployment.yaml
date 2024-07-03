@@ -13,14 +13,16 @@ spec:
       label: Deployment Name
       type: text
       default: "nginx"
-    - name: namespace
+  -  name: namespace
       label: Namespace
-      type: text
-      default: "default"
+      type: config
+      properties:
+        filter:
+          - types:
+              - Kubernetes::Namespace
     - name: image
       label: Container Image
       type: text
-      default: "nginx:latest"
   actions:
     - name: Create Deployment
       exec:

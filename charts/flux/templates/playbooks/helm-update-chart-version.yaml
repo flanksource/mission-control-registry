@@ -5,7 +5,7 @@ metadata:
   name: update-helm-chart-version
 spec:
   title: Update helm chart version
-  icon: todo-yash
+  icon: helm
   category: Flux
   configs:
     - types:
