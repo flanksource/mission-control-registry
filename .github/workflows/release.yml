@@ -48,9 +48,6 @@ jobs:
         with:
           version: v3.12.0
 
-      - name: Set latest expected version
-        run: |
-
       - name: Package Helm chart
         run: |
           cd charts/${{ matrix.chart }}
@@ -58,6 +55,8 @@ jobs:
           yq -i e ".version |= \"$NEW_CHART_VERSION\"" Chart.yaml
           helm package -d ../.. .
 
+          git config --global user.name 'flankbot'
+          git config --global user.email 'flankbot@users.noreply.github.com'
           git add Chart.yaml
           git commit -m "[skip ci] bump chart ${{matrix.chart}} to $NEW_CHART_VERSION"
           git push
