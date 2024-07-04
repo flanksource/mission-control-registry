@@ -57,7 +57,7 @@ spec:
                     'properties': [
                       {"name": "cpu", "max": k8s.cpuAsMillicores(r.status.allocatable["cpu"]), "unit": "millicores", "headline": true},
                       {"name": "memory", "max": k8s.memoryAsBytes(r.status.allocatable["memory"]), "unit": "bytes", "headline": true},
-                      {"name": "ephemeral-storage", "max": k8s.memoryAsBytes(r.status.allocatable["ephemeral-storage"]), "unit": "bytes", "headline": true},
+                      {"name": "ephemeral-storage", "max": has(r.status.allocatable) && ("ephemeral-storage" in r.status.allocatable) ? k8s.memoryAsBytes(r.status.allocatable["ephemeral-storage"]) : 0, "unit": "bytes", "headline": true},
                       {"name": "zone", "text": "topology.kubernetes.io/zone" in r.metadata.labels ? r.metadata.labels["topology.kubernetes.io/zone"]: ""},
                     ]
                   }).toJSON()
