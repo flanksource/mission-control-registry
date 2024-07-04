@@ -1,1 +1,1 @@
-Kubernetes topology and scraper added
+Kubernetes topology, scraper and playbooks added
