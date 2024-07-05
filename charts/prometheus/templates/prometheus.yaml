@@ -53,7 +53,7 @@ spec:
         - query: 'count(prometheus_rule_group_last_duration_seconds > 1)'
           url: {{ .Values.prometheusURL | quote }}
           display:
-            expr: results[?0].orValue(0)
+            expr: results[?0].value.orValue(0)
   - name: Version
     lookup:
       prometheus:
