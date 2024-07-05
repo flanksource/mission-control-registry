@@ -24,8 +24,8 @@ spec:
   groupBy:
     tag: cluster
     selector:
-      - types:
-          - Kubernetes::Cluster
+      types:
+        - Kubernetes::Cluster
   type: Kubernetes::Cluster
   icon: "{{ .Values.topology.icon }}"
   schedule: "{{ .Values.topology.schedule }}"
