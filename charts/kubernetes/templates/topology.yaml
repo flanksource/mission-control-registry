@@ -23,7 +23,7 @@ metadata:
 spec:
   groupBy:
     tag: cluster
-    selectors:
+    selector:
       - types:
           - Kubernetes::Cluster
   type: Kubernetes::Cluster
