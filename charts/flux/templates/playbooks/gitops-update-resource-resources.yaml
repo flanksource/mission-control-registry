@@ -1,4 +1,4 @@
-{{ if and .Values.playbooks.enabled .Values.playbooks.fluxUpdateResourceResources.enabled -}}
+{{ if and .Values.playbooks.enabled .Values.playbooks.updateResourceResources.enabled -}}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
@@ -39,7 +39,7 @@ spec:
       gitops:
         repo:
           url: '$(.env.git.url)'
-          connection: {{ .Values.playbooks.edit_kubernetes_manifests.git_connection }}
+          connection: {{ .Values.playbooks.git.connection }}
           base: '$(.env.git.branch)'
           branch: edit-manifest-$(random.Alpha 8)
         commit:
