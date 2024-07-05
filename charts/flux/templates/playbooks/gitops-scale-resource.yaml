@@ -1,4 +1,4 @@
-{{ if and .Values.playbooks.enabled .Values.playbooks.updateResourceReplicas.enabled -}}
+{{ if and .Values.playbooks.enabled .Values.playbooks.updateResourceReplicas -}}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
