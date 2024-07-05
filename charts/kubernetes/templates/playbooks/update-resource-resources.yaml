@@ -1,5 +1,4 @@
-{{- if and .Values.playbooks.enabled .Values.playbooks.updateResourceRequestsLimits }}
----
+{{ if and .Values.playbooks.enabled .Values.playbooks.updateResourceRequestsLimits }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:

@@ -3,22 +3,23 @@
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
-  name: scale-deployment
+  name: scale-resource
 spec:
-  title: Scale Deployment
+  title: Scale Resource
   icon: scale-out
   category: Kubernetes
   configs:
     - types:
         - Kubernetes::Deployment
+        - Kubernetes::StatefulSet
   parameters:
     - name: replicas
       label: Replicas
       type: text
       default: "$(.config.config.spec.replicas)"
   actions:
-    - name: Scale deployment
+    - name: Scale resource
       exec:
         script: |
-          kubectl scale deployment -n $(.config.tags.namespace) $(.config.name) --replicas=$(.params.replicas)
+          kubectl scale $(.config.config_class | strings.ToLower) -n $(.config.tags.namespace) $(.config.name) --replicas=$(.params.replicas)
 {{- end}}

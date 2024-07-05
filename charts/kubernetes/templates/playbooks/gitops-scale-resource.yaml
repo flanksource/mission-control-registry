@@ -1,0 +1,46 @@
+{{ if and .Values.playbooks.enabled .Values.playbooks.fluxUpdateResourceReplicas.enabled -}}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: gitops-update-resource-replicas
+spec:
+  title: 'Update resource replicas (GitOps)'
+  icon: flux
+  category: Flux
+  parameters:
+    - default: 'chore: update replicas for $(.config.type)/$(.config.name) to <replicas>'
+      label: Commit Message
+      name: commit_message
+    - name: replicas
+      label: "Replicas"
+      default: "$(.config.config.spec.replicas)"
+
+  configs:
+    - labelSelector: 'kustomize.toolkit.fluxcd.io/name'
+      types:
+        - Kubernetes::Deployment
+        - Kubernetes::StatefulSet
+
+  actions:
+    - name: Create Pull Request With Changes
+      gitops:
+        repo:
+          url: '$(.env.git.url)'
+          connection: {{ .Values.playbooks.edit_kubernetes_manifests.git_connection }}
+          base: '$(.env.git.branch)'
+          branch: edit-manifest-$(random.Alpha 8)
+        commit:
+          author: '$(.user.name)'
+          email: '$(.user.email)'
+          message: $(.params.commit_message | strings.ReplaceAll "<replicas>" .params.replicas)
+        pr:
+          title: $(.params.commit_message | strings.ReplaceAll "<replicas>" .params.replicas)
+        patches:
+          - path: '$(filepath.Join .env.kustomize.path .env.git.file)'
+            yq: |
+              select(
+                .kind=="$(.config.config | jq `.kind`)" and
+                .metadata.name=="$(.config.config | jq `.metadata.name`)"
+              ).spec.replicas |= "$(.params.replicas)"
+
+{{ end }}

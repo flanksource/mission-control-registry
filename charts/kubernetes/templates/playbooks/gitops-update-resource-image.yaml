@@ -1,0 +1,46 @@
+{{ if and .Values.playbooks.enabled .Values.playbooks.fluxUpdateResourceImage.enabled -}}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: gitops-update-resource-image
+spec:
+  title: 'Update resource image (GitOps)'
+  icon: flux
+  parameters:
+    - default: 'chore: update image for $(.config.type)/$(.config.name) to <new_image>'
+      label: Commit Message
+      name: commit_message
+    - name: image
+      label: "Image"
+      default: '{{` {{ (index .config.config.spec.template.spec.containers 0 ).image }} `}}'
+
+  configs:
+    - labelSelector: 'kustomize.toolkit.fluxcd.io/name'
+      types:
+        - Kubernetes::Deployment
+        - Kubernetes::StatefulSet
+        - Kubernetes::DaemonSet
+
+  actions:
+    - name: Create Pull Request With Changes
+      gitops:
+        repo:
+          url: '$(.env.git.url)'
+          connection: {{ .Values.playbooks.edit_kubernetes_manifests.git_connection }}
+          base: '$(.env.git.branch)'
+          branch: edit-manifest-$(random.Alpha 8)
+        commit:
+          author: '$(.user.name)'
+          email: '$(.user.email)'
+          message: $(.params.commit_message | strings.ReplaceAll "<new_image>" .params.image)
+        pr:
+          title: $(.params.commit_message | strings.ReplaceAll "<new_image>" .params.image)
+        patches:
+          - path: '$(filepath.Join .env.kustomize.path .env.git.file)'
+            yq: |
+              select(
+                .kind=="$(.config.config | jq `.kind`)" and
+                .metadata.name=="$(.config.config | jq `.metadata.name`)"
+              ).spec.template.spec.containers[0].image |= "$(.params.image)"
+
+{{ end }}
