@@ -4,7 +4,7 @@ kind: Playbook
 metadata:
   name: gitops-update-resource-resources
 spec:
-  title: 'Update resource resources (GitOps)'
+  title: 'Update CPU/Mem'
   icon: flux
   parameters:
   - default: 'chore: update resources for $(.config.type)/$(.config.name)'

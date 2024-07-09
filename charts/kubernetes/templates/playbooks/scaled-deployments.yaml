@@ -5,7 +5,7 @@ kind: Playbook
 metadata:
   name: scale-resource
 spec:
-  title: Scale Resource
+  title: Scale
   icon: scale-out
   category: Kubernetes
   configs:

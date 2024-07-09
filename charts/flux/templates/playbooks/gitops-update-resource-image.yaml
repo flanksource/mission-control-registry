@@ -4,7 +4,7 @@ kind: Playbook
 metadata:
   name: gitops-update-resource-image
 spec:
-  title: 'Update resource image (GitOps)'
+  title: 'Update Image'
   icon: flux
   parameters:
     - default: 'chore: update image for $(.config.type)/$(.config.name) to <new_image>'
