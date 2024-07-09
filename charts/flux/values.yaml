@@ -6,9 +6,14 @@ topologyName: flux
 
 playbooks:
   enabled: true
+  git:
+    connection: connection://
 
   resume: true
   suspend: true
   reconcile: true
   updateHelmValues: true
   updateHelmChartVersion: true
+  updateResourceResources: true
+  updateResourceImage: true
+  updateResourceReplicas: true
