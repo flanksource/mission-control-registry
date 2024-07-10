@@ -6,7 +6,8 @@ metadata:
   name: {{ .Values.prometheus.connection }}
 spec:
   prometheus:
-    url: {{ .Values.prometheus.url }}
+    url:
+    {{- .Values.prometheus.url | toYaml | nindent 6 }}
     {{- if .Values.prometheus.auth }}
     auth:
       {{ .Values.prometheus.auth | toYaml | nindent 6}}

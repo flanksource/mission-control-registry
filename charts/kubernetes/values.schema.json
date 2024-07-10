@@ -80,7 +80,13 @@
         "cleanupFailedPods": {
           "type": "boolean"
         },
+        "createDeployment": {
+          "type": "boolean"
+        },
         "deletePod": {
+          "type": "boolean"
+        },
+        "deleteResource": {
           "type": "boolean"
         },
         "edit_kubernetes_manifests": {
@@ -108,6 +114,12 @@
         },
         "scaleDeployment": {
           "type": "boolean"
+        },
+        "updateResourceImage": {
+          "type": "boolean"
+        },
+        "updateResourceRequestsLimits": {
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -115,7 +127,10 @@
     "prometheus": {
       "properties": {
         "auth": {
-          "type": "null"
+          "type": [
+            "object",
+            "null"
+          ]
         },
         "connection": {
           "type": "string"
@@ -127,7 +142,10 @@
           "type": "string"
         },
         "url": {
-          "type": "string"
+          "type": [
+            "object",
+            "null"
+          ]
         }
       },
       "type": "object"
@@ -143,14 +161,6 @@
               "type": "array"
             },
             "labels": {
-              "properties": {
-                "canary-checker.flanksource.com/check-id": {
-                  "type": "string"
-                },
-                "canary-checker.flanksource.com/generated": {
-                  "type": "string"
-                }
-              },
               "type": "object"
             },
             "name": {
@@ -230,10 +240,7 @@
             "relationship": {
               "items": {
                 "properties": {
-                  "filter": {
-                    "type": "string"
-                  },
-                  "name": {
+                  "external_id": {
                     "properties": {
                       "expr": {
                         "type": "string"
@@ -241,13 +248,8 @@
                     },
                     "type": "object"
                   },
-                  "type": {
-                    "properties": {
-                      "value": {
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
+                  "filter": {
+                    "type": "string"
                   }
                 },
                 "type": "object"
