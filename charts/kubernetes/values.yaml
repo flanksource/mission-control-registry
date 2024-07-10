@@ -10,12 +10,15 @@ clusterName: kubernetes
 prometheus:
   createConnection: true
   connection: prometheus
-  url: ''
+  url:  # @schema type:object,null
+#   value: ''
+#   valueFrom: ''
+
   # prometheus labels to inject: "\,label1=key1\,label2=key2\,label3=~key3"
   # Note: comma(,) needs to be escaped as /, and prometheus.labels should always start with '/,' to work with existing labels
   labels: ''
   # Leave auth blank or use one of [username+password / bearer / oauth]
-  auth:
+  auth:  # @schema type:object,null
 #   username:
 #     valueFrom:
 #       secretKeyRef:
