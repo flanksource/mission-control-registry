@@ -161,17 +161,6 @@
               "type": "array"
             },
             "labels": {
-              "properties": {
-                "canary-checker.flanksource.com/check": {
-                  "type": "string"
-                },
-                "canary-checker.flanksource.com/check-id": {
-                  "type": "string"
-                },
-                "canary-checker.flanksource.com/generated": {
-                  "type": "string"
-                }
-              },
               "type": "object"
             },
             "name": {
