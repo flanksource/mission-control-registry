@@ -377,6 +377,18 @@
     },
     "topology": {
       "properties": {
+        "groupBy": {
+          "properties": {
+            "selector": {
+              "properties": {},
+              "type": "object"
+            },
+            "tag": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
         "icon": {
           "type": "string"
         },
