@@ -23,10 +23,7 @@ metadata:
     {{- include "kubernetes.labels" . | nindent 4 }}
 spec:
   groupBy:
-    tag: cluster
-    selector:
-      types:
-        - Kubernetes::Cluster
+    {{- toYaml .Values.topology.groupBy | nindent 4 }}
   type: Kubernetes::Cluster
   icon: "{{ .Values.topology.icon }}"
   schedule: "{{ .Values.topology.schedule }}"

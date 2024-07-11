@@ -73,6 +73,9 @@ topology:
   name: cluster
   schedule: "@every 5m"
   icon: kubernetes
+  groupBy:
+    tag: ''
+    selector: {}
 
 scraper:
   name: kubernetes
