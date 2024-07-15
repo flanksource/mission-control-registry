@@ -72,7 +72,7 @@ Metrics
   lookup:
     prometheus:
     - query: {{tpl .Values.metrics.queries.prometheus.cluster_cpu .}}
-      connection: {{ .Values.prometheus.connection }}
+      connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
           [{'name': 'cpu', 'value': int(results[0].value), 'headline': true, 'unit': 'millicores'}].toJSON()
@@ -80,7 +80,7 @@ Metrics
   lookup:
     prometheus:
     - query: {{tpl .Values.metrics.queries.prometheus.cluster_memory .}}
-      connection: {{ .Values.prometheus.connection }}
+      connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
           [{'name': 'memory', 'value': int(results[0].value), 'headline': true, 'unit': 'bytes'}].toJSON()
@@ -93,7 +93,7 @@ Metrics
   lookup:
     prometheus:
     - query: {{tpl .Values.metrics.queries.prometheus.node_cpu .}}
-      connection: {{ .Values.prometheus.connection }}
+      connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
           dyn(results).map(r, {
@@ -104,7 +104,7 @@ Metrics
   lookup:
     prometheus:
     - query: {{tpl .Values.metrics.queries.prometheus.node_memory .}}
-      connection: {{ .Values.prometheus.connection }}
+      connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
           dyn(results).map(r, {
@@ -116,7 +116,7 @@ Metrics
   lookup:
     prometheus:
     - query: {{tpl .Values.metrics.queries.prometheus.node_storage .}}
-      connection: {{ .Values.prometheus.connection }}
+      connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
           dyn(results).map(r, {
@@ -131,7 +131,7 @@ Metrics
   lookup:
     prometheus:
     - query: {{tpl .Values.metrics.queries.prometheus.pod_cpu .}}
-      connection: {{ .Values.prometheus.connection }}
+      connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
           dyn(results).map(r, {
@@ -142,7 +142,7 @@ Metrics
   lookup:
     prometheus:
     - query: {{tpl .Values.metrics.queries.prometheus.pod_memory .}}
-      connection: {{ .Values.prometheus.connection }}
+      connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
           dyn(results).map(r, {
@@ -157,7 +157,7 @@ Metrics
   lookup:
     prometheus:
     - query: {{tpl .Values.metrics.queries.prometheus.namespace_cpu .}}
-      connection: {{ .Values.prometheus.connection }}
+      connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
           dyn(results).map(r, {
@@ -168,7 +168,7 @@ Metrics
   lookup:
     prometheus:
     - query: {{tpl .Values.metrics.queries.prometheus.namespace_memory .}}
-      connection: {{ .Values.prometheus.connection }}
+      connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
           dyn(results).map(r, {
