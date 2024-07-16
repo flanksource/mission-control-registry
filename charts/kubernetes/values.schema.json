@@ -24,8 +24,35 @@
           "properties": {
             "gke": {
               "properties": {
+                "cluster_cpu": {
+                  "type": "string"
+                },
+                "cluster_memory": {
+                  "type": "string"
+                },
+                "cluster_name": {
+                  "type": "string"
+                },
+                "namespace_cpu": {
+                  "type": "string"
+                },
+                "namespace_memory": {
+                  "type": "string"
+                },
                 "node_cpu": {
-                  "type": "null"
+                  "type": "string"
+                },
+                "node_memory": {
+                  "type": "string"
+                },
+                "node_storage": {
+                  "type": "string"
+                },
+                "pod_cpu": {
+                  "type": "string"
+                },
+                "pod_memory": {
+                  "type": "string"
                 }
               },
               "type": "object"

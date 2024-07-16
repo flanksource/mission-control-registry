@@ -71,7 +71,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: {{tpl .Values.metrics.queries.prometheus.cluster_cpu .}}
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).cluster_cpu) .}}
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -79,7 +79,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: {{tpl .Values.metrics.queries.prometheus.cluster_memory .}}
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).cluster_memory) .}}
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -92,7 +92,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: {{tpl .Values.metrics.queries.prometheus.node_cpu .}}
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).node_cpu) .}}
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -103,7 +103,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: {{tpl .Values.metrics.queries.prometheus.node_memory .}}
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).node_memory) .}}
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -115,7 +115,7 @@ Metrics
 - name: ephemeral-storage
   lookup:
     prometheus:
-    - query: {{tpl .Values.metrics.queries.prometheus.node_storage .}}
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).node_storage) .}}
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -125,12 +125,11 @@ Metrics
           }).toJSON()
 {{- end }}
 
-
 {{- define "kubernetes.topology.metricProperties.prometheus.pod" -}}
 - name: cpu
   lookup:
     prometheus:
-    - query: {{tpl .Values.metrics.queries.prometheus.pod_cpu .}}
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).pod_cpu) .}}
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -141,7 +140,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: {{tpl .Values.metrics.queries.prometheus.pod_memory .}}
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).pod_memory) .}}
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -156,7 +155,7 @@ Metrics
 - name: cpu
   lookup:
     prometheus:
-    - query: {{tpl .Values.metrics.queries.prometheus.namespace_cpu .}}
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).namespace_cpu) .}}
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
@@ -167,7 +166,7 @@ Metrics
 - name: memory
   lookup:
     prometheus:
-    - query: {{tpl .Values.metrics.queries.prometheus.namespace_memory .}}
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).namespace_memory) .}}
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
