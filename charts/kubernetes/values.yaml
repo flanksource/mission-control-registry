@@ -181,6 +181,13 @@ scraper:
             change.change_type == 'diff' && change.summary == "status.containerStatuses" &&
             patch != null && has(patch.status) && has(patch.status.containerStatuses) &&
             patch.status.containerStatuses.size() > 0 &&
+            has(patch.status.containerStatuses[0].lastState.terminated) &&
+            patch.status.containerStatuses[0].lastState.terminated.reason == "OOMKilled"
+          type: OOMKilled
+        - filter: >
+            change.change_type == 'diff' && change.summary == "status.containerStatuses" &&
+            patch != null && has(patch.status) && has(patch.status.containerStatuses) &&
+            patch.status.containerStatuses.size() > 0 &&
             has(patch.status.containerStatuses[0].restartCount)
           type: PodCrashLooping
 
