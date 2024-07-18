@@ -177,20 +177,15 @@ scraper:
           has(config.apiVersion) && config.apiVersion == "argoproj.io/v1alpha1" &&
           has(config.kind) && config.kind == "Application"
       mapping:
-        - filter: >
-            change.change_type == 'diff' && change.summary == "status.containerStatuses" &&
-            patch != null && has(patch.status) && has(patch.status.containerStatuses) &&
-            patch.status.containerStatuses.size() > 0 &&
-            has(patch.status.containerStatuses[0].lastState.terminated) &&
-            patch.status.containerStatuses[0].lastState.terminated.reason == "OOMKilled"
+        - filter: change.change_type == 'diff' && jq('.status.containerStatuses[0].lastState.terminated.reason', patch) == 'OOMKilled'
+          severity: high
           type: OOMKilled
         - filter: >
-            change.change_type == 'diff' && change.summary == "status.containerStatuses" &&
-            patch != null && has(patch.status) && has(patch.status.containerStatuses) &&
-            patch.status.containerStatuses.size() > 0 &&
-            has(patch.status.containerStatuses[0].restartCount)
+            change.change_type == 'diff' &&
+            jq('.status.containerStatuses[0].restartCount', patch) != null &&
+            jq('.status.containerStatuses[0].restartCount', patch) > 0
           type: PodCrashLooping
-
+          severity: high
     relationship:
       # Link Crossplane objects to the cloud resources
       - filter: config_type.startsWith("Crossplane::") && has(config.status) && has(config.status.atProvider)
