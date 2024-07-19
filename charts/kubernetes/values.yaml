@@ -115,13 +115,6 @@ scraper:
         expr: "has(spec.claimRef) ? spec.claimRef.name : ''"
       namespace:
         expr: "has(spec.claimRef) ? spec.claimRef.namespace : ''"
-    # FluxCD Helm relationships
-    - name:
-        label: "helm.toolkit.fluxcd.io/name"
-      namespace:
-        label: "helm.toolkit.fluxcd.io/namespace"
-      kind:
-        value: "HelmRelease"
     # FluxCD Kustomize relationships
     - name:
         label: "kustomize.toolkit.fluxcd.io/name"
@@ -203,16 +196,6 @@ scraper:
             filter(item, has(item.persistentVolumeClaim)).
             map(item, {"type": "Kubernetes::PersistentVolumeClaim", "name": item.persistentVolumeClaim.claimName}).
             toJSON()
-      # Link Argo Application to the resources
-      - filter: config_type == "Kubernetes::Application" && config.apiVersion == "argoproj.io/v1alpha1"
-        expr: |
-          config.status.resources.map(item, {
-            "type": "Kubernetes::" + item.kind,
-            "name": item.name,
-            "labels": {
-              "namespace": item.?namespace.orValue(''),
-            },
-          }).toJSON()
   retention:
     staleItemAge: "4h"
     defaultChanges:
