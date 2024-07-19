@@ -89,9 +89,9 @@ scraper:
     name: []
     namespace: []
     labels:  # @schema skipProperties:true
-      canary-checker.flanksource.com/generated: "true"
-      canary-checker.flanksource.com/check-id: "*"
-      canary-checker.flanksource.com/check: "*"
+      canaries.flanksource.com/generated: "true"
+      canaries.flanksource.com/check-id: "*"
+      canaries.flanksource.com/check: "*"
     kind:
       - Secret
       - APIService
