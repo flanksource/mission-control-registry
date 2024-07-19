@@ -115,18 +115,11 @@ scraper:
         expr: "has(spec.claimRef) ? spec.claimRef.name : ''"
       namespace:
         expr: "has(spec.claimRef) ? spec.claimRef.namespace : ''"
-    # FluxCD Kustomize relationships
-    - name:
-        label: "kustomize.toolkit.fluxcd.io/name"
-      namespace:
-        label: "kustomize.toolkit.fluxcd.io/namespace"
-      kind:
-        value: "Kustomization"
     # FluxCD Git relationships
     - name:
         expr: "has(spec.sourceRef) ? spec.sourceRef.name : '' "
       namespace:
-        expr: "has(spec.sourceRef) && has(spec.sourceRef.namespace)  ? spec.sourceRef.namespace : metadata.namespace "
+        expr: "has(spec.sourceRef) && has(spec.sourceRef.namespace)  ? spec.sourceRef.namespace : metadata.namespace"
       kind:
         value: "GitRepository"
 
