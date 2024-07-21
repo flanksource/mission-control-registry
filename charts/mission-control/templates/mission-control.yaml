@@ -37,6 +37,10 @@ spec:
   icon: mission-control
   schedule: '@every 5m'
   type: Topology
+  {{- if .Values.pushLocation.url }}
+  push:
+    {{- .Values.pushLocation | toYaml | nindent 4 }}
+  {{- end }}
   properties:
   - name: URL
     type: url
