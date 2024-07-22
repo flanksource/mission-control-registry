@@ -92,6 +92,8 @@ scraper:
       canaries.flanksource.com/generated: "true"
       canaries.flanksource.com/check-id: "*"
       canaries.flanksource.com/check: "*"
+      canary-checker.flanksource.com/generated: *
+      canary-checker.flanksource.com/check: *
     kind:
       - Secret
       - APIService
