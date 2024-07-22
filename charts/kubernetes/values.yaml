@@ -69,10 +69,10 @@ metrics:
       cluster_name: ''
       cluster_cpu: 'sum(rate(kubernetes_io:container_cpu_core_usage_time{container_name!="",cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}[5m]))'
       cluster_memory: 'sum(kubernetes_io:container_memory_used_bytes{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}})'
-      node_cpu: 'sum(rate(kubernetes_io:container_cpu_core_usage_time{container_name!="",cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}[5m])) by (metadata_system_node_name)'
-      node_memory: 'sum(kubernetes_io:container_memory_used_bytes{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}) by (metadata_system_node_name)'
-      node_storage: ''
-      pod_cpu: 'sum(rate(label_replace(kubernetes_io:container_cpu_core_usage_time{container_name!="",cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}, "pod","$1","pod_name", "(.+)")[5m])) by (pod)'
+      node_cpu: 'sum(rate(label_replace(kubernetes_io:node_cpu_core_usage_time{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}, "node","$1","node_name", "(.+)")[5m:])) by (node)'
+      node_memory: 'sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}, "node","$1","node_name", "(.+)")) by (node)'
+      node_storage: 'sum(label_replace(kubernetes_io:node_ephemeral_storage_used_bytes{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}},  "node","$1","node_name", "(.+)")) by (node)'
+      pod_cpu: 'sum(rate(label_replace(kubernetes_io:container_cpu_core_usage_time{container_name!="",cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}, "pod","$1","pod_name", "(.+)")[5m:])) by (pod)'
       pod_memory: 'sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}, "pod","$1","pod_name", "(.+)")) by (pod)'
       namespace_cpu: 'sum(rate(label_replace(kubernetes_io:container_cpu_core_usage_time{container_name!="",cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}, "namespace","$1","namespace_name", "(.+)")[5m])) by (namespace)'
       namespace_memory: 'sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}, "namespace","$1","namespace_name", "(.+)")) by (namespace)'
@@ -184,7 +184,7 @@ scraper:
           severity: high
     relationship:
       # Link Crossplane objects to the cloud resources
-      - filter: config_type.startsWith("Crossplane::") && has(config.status) && has(config.status.atProvider)
+      - filter: config_type.startsWith("Crossplane::") && has(config.status) && has(config.status.atProvider) && has(config.status.atProvider.id)
         external_id:
           expr: config.status.atProvider.id.lowerAscii()
       # Link a service to a deployment (adjust the label selector accordingly)
