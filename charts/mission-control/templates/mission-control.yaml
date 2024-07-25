@@ -52,7 +52,7 @@ spec:
           app.kubernetes.io/name: incident-manager-ui
         type: Kubernetes::Ingress
       display:
-        javascript: config.spec.rules[0].host
+        expr: config.spec.rules[0].host
   components:
   - components:
     - icon: group
@@ -60,11 +60,10 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: |
-              JSON.stringify(results.rows.map(function(r) {return {name: r.name}}))
+            expr: |
+              results.rows.map(r, {'name': r.name}).toJSON()
           name: Team names query
           query: SELECT name FROM teams
-          results: -1
       name: Teams
       type: lookup
     icon: incidents
@@ -83,7 +82,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: results.rows[0].count
+            expr: results.rows[0].count
           name: Incident count query
           query: SELECT count(*) FROM incidents WHERE (resolved IS NULL) OR (closed
             IS NULL)
@@ -100,8 +99,7 @@ spec:
             app.kubernetes.io/name: mission-control
           type: Kubernetes::Deployment
         display:
-          javascript: |
-            config.spec.template.spec.containers[0]['image'].split(':')[1]
+          expr: config.spec.template.spec.containers[0]['image'].split(':')[1]
       headline: true
       name: Version
     selectors:
@@ -179,10 +177,10 @@ spec:
               results.rows.map(r, {
                 'name': r.name,
                 'properties': [
-                  { 'name': 'Last runtime', 'text': r.time_end != null ? string(r.time_end) : 'N/A' },
-                  { 'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
-                  { 'name': 'Success Count', 'value': r.success_count, 'headline': true},
-                  { 'name': 'Error Count', 'value': r.error_count, 'headline': true},
+                  {'name': 'Last runtime', 'text': r.time_end != null ? string(r.time_end) : 'N/A' },
+                  {'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
+                  {'name': 'Success Count', 'value': r.success_count, 'headline': true},
+                  {'name': 'Error Count', 'value': r.error_count, 'headline': true},
                 ],
               }).toJSON()
           name: Topologies count query
@@ -206,7 +204,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: results.rows[0].count
+            expr: results.rows[0].count
           name: Component count query
           query: SELECT count(*) FROM components WHERE deleted_at IS NULL
           results: 1
@@ -216,7 +214,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: results.rows[0].count
+            expr: results.rows[0].count
           name: Check count query
           query: SELECT count(*) FROM checks WHERE deleted_at IS NULL
           results: 1
@@ -229,8 +227,7 @@ spec:
             app.kubernetes.io/name: canary-checker
           type: Kubernetes::Deployment
         display:
-          javascript: |
-            config.spec.template.spec.containers[0]['image'].split(':')[1]
+          expr: config.spec.template.spec.containers[0]['image'].split(':')[1]
       headline: true
       name: Version
     - name: Docs
@@ -276,7 +273,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: results.rows[0].count
+            expr: results.rows[0].count
           name: Backends count query
           query: SELECT count(*) FROM logging_backends WHERE deleted_at IS NULL
           results: 1
@@ -289,8 +286,7 @@ spec:
             app.kubernetes.io/name: apm-hub
           type: Kubernetes::Deployment
         display:
-          javascript: |
-            config.spec.template.spec.containers[0]['image'].split(':')[1]
+          expr: config.spec.template.spec.containers[0]['image'].split(':')[1]
       headline: true
       name: Version
     - name: Docs
@@ -338,32 +334,17 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: |
-              JSON.stringify(results.rows.map(function(r) {return {
-                name: r.name,
-                properties: [
-                {
-                  name: 'Last runtime',
-                  text: String(r.time_end),
-                },
-                {
-                  name: 'Duration',
-                  text: String(r.duration_millis),
-                  unit: 'ms',
-                  headline: true,
-                },
-                {
-                  name: 'Success Count',
-                  value: r.success_count,
-                  headline: true,
-                },
-                {
-                  name: 'Error Count',
-                  value: r.error_count,
-                  headline: true,
-                },
-              ],
-              }}))
+            expr: |
+              results.rows.map(r, {
+                'name': r.name,
+                'properties': [
+                  {'name': 'Last runtime', 'text': r.time_end != null ? string(r.time_end) : 'N/A' },
+                  {'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
+                  {'name': 'Success Count', 'value': r.success_count, 'headline': true},
+                  {'name': 'Error Count', 'value': r.error_count, 'headline': true},
+                ],
+              }).toJSON()
+
           name: Config scrapers count query
           query: |
             SELECT * FROM (
@@ -385,7 +366,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: results.rows[0].count
+            expr: results.rows[0].count
           name: Config Items count query
           query: SELECT count(*) FROM config_items WHERE deleted_at IS NULL
           results: 1
@@ -398,8 +379,7 @@ spec:
             app.kubernetes.io/name: config-db
           type: Kubernetes::Deployment
         display:
-          javascript: |
-            config.spec.template.spec.containers[0]['image'].split(':')[1]
+          expr: config.spec.template.spec.containers[0]['image'].split(':')[1]
       headline: true
       name: Version
     - name: Docs
@@ -419,7 +399,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: results.rows[0].version
+            expr: results.rows[0].version
           name: Version query
           query: SELECT VERSION()
           results: 1
@@ -431,7 +411,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: results.rows[0].pg_size_pretty
+            expr: results.rows[0].pg_size_pretty
           name: Size query
           query: SELECT pg_size_pretty(pg_database_size('mission_control'))
           results: 1
@@ -443,7 +423,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: results.rows[0].sum
+            expr: results.rows[0].sum
           name: Active connections query
           query: SELECT sum(numbackends) FROM pg_stat_database
           results: 1
@@ -463,8 +443,7 @@ spec:
             app.kubernetes.io/name: incident-manager-ui
           type: Kubernetes::Deployment
         display:
-          javascript: |
-            config.spec.template.spec.containers[0]['image'].split(':')[1]
+          expr: config.spec.template.spec.containers[0]['image'].split(':')[1]
       headline: true
       name: Version
     selectors:
@@ -484,14 +463,14 @@ spec:
             app.kubernetes.io/name: kratos
           type: Kubernetes::Deployment
         display:
-          javascript: labels['app.kubernetes.io/version']
+          expr: labels['app.kubernetes.io/version']
       headline: true
     - headline: true
       lookup:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            javascript: results.rows[0].count
+            expr: results.rows[0].count
           name: Count
           query: SELECT COUNT(*) FROM identities
           results: 1
