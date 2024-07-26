@@ -10,7 +10,7 @@ clusterName: kubernetes
 prometheus:
   createConnection: true
   connection: prometheus
-  url: # @schema type:object,null
+  url:  # @schema type:object,null
   #   value: ''
   #   valueFrom: ''
 
@@ -18,7 +18,7 @@ prometheus:
   # Note: comma(,) needs to be escaped as /, and prometheus.labels should always start with '/,' to work with existing labels
   labels: ""
   # Leave auth blank or use one of [username+password / bearer / oauth]
-  auth: # @schema type:object,null
+  auth:  # @schema type:object,null
 #   username:
 #     valueFrom:
 #       secretKeyRef:
@@ -52,7 +52,7 @@ prometheus:
 metrics:
   enabled: true
   # Allowed: [prometheus|gke]
-  type: prometheus # @schema pattern:^(gke|prometheus)$
+  type: prometheus  # @schema pattern:^(gke|prometheus)$
 
   queries:
     prometheus:
@@ -96,7 +96,7 @@ scraper:
   defaultExclusions:
     name: []
     namespace: []
-    labels: # @schema skipProperties:true
+    labels:  # @schema skipProperties:true
       canaries.flanksource.com/generated: "true"
       canaries.flanksource.com/check-id: "*"
       canaries.flanksource.com/check: "*"
