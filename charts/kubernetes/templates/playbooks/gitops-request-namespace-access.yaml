@@ -11,7 +11,7 @@ spec:
       labelSelector: 'kustomize.toolkit.fluxcd.io/name' # limits to namespaces created by flux
   title: Request Namespace Access (GitOps)
   category: Kubernetes
-  icon: add-shield
+  icon: k8s-namespace
   description: Adds a Rolebinding to the given role in the selected Namespace
   parameters:
     - name: user

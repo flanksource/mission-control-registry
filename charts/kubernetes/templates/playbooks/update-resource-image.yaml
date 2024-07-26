@@ -5,8 +5,8 @@ kind: Playbook
 metadata:
   name: update-resource-image
 spec:
-  title: Update image
-  icon: k8s-deployment
+  title: Update Image
+  icon: docker
   category: Kubernetes
   configs:
     - types:

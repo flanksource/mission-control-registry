@@ -4,8 +4,8 @@ kind: Playbook
 metadata:
   name: update-resource-requests-limits
 spec:
-  title: Update Resource Requests and Limits
-  icon: k8s-deployment
+  title: Update Resources
+  icon: scale-up
   category: Kubernetes
   configs:
     - types:
@@ -15,19 +15,19 @@ spec:
   parameters:
   - name: cpu_request
     label: CPU Request
-    type: text
+    type: millicores
     default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.requests.cpu | default "" }} `}}'
   - name: memory_request
     label: Memory Request
-    type: text
+    type: bytes
     default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.requests.memory | default "" }} `}}'
   - name: cpu_limit
     label: CPU Limit
-    type: text
+    type: millicores
     default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.limits.cpu | default "" }} `}}'
   - name: memory_limit
     label: Memory Limit
-    type: text
+    type: bytes
     default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.limits.memory | default "" }} `}}'
 
   env:

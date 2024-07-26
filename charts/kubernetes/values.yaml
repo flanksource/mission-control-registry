@@ -11,12 +11,12 @@ prometheus:
   createConnection: true
   connection: prometheus
   url:  # @schema type:object,null
-#   value: ''
-#   valueFrom: ''
+  #   value: ''
+  #   valueFrom: ''
 
   # prometheus labels to inject: "\,label1=key1\,label2=key2\,label3=~key3"
   # Note: comma(,) needs to be escaped as /, and prometheus.labels should always start with '/,' to work with existing labels
-  labels: ''
+  labels: ""
   # Leave auth blank or use one of [username+password / bearer / oauth]
   auth:  # @schema type:object,null
 #   username:
@@ -66,7 +66,7 @@ metrics:
       namespace_cpu: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (namespace)'
       namespace_memory: 'sum(container_memory_working_set_bytes{container!="",pod!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase="Running"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} > 0) by (namespace)'
     gke:
-      cluster_name: ''
+      cluster_name: ""
       cluster_cpu: 'sum(rate(kubernetes_io:container_cpu_core_usage_time{container_name!="",cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}[5m]))'
       cluster_memory: 'sum(kubernetes_io:container_memory_used_bytes{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}})'
       node_cpu: 'sum(rate(label_replace(kubernetes_io:node_cpu_core_usage_time{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}, "node","$1","node_name", "(.+)")[5m:])) by (node)'
@@ -82,7 +82,7 @@ topology:
   schedule: "@every 5m"
   icon: kubernetes
   groupBy:
-    tag: ''
+    tag: ""
     selector: {}
 
 scraper:
@@ -113,6 +113,7 @@ scraper:
       - podmetrics.metrics.k8s.io
       - nodemetrics.metrics.k8s.io
       - customresourcedefinition
+      - componentstatuses
       - controllerrevisions
       - certificaterequests
       - orders.acme.cert-manager.io
@@ -225,7 +226,7 @@ playbooks:
   # If this is set to false, no playbooks will be created
   # If true, all individual playbook values will be honored
   enabled: true
-
+  kubectlLogs: true
   deletePod: true
   cleanupFailedPods: true
   podSnapshot: false
