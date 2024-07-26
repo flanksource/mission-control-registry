@@ -1,0 +1,105 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.kubectlLogs.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubectl-logs
+spec:
+  actions:
+    - exec:
+        script: |
+          {{`
+          # escape delims passed through to stern
+          left="{""{"
+          right="}""}"
+
+          function template() {
+            local -n outvar=$1
+            outvar="$left $2 $right"
+          }
+
+          ns=" -n  {{.config.tags.namespace}}"
+          type="{{.config.type}}"
+          name="{{.config.name}}"
+          template pod "color .PodColor .PodName"
+          template namespace ".Namespace"
+          template node ".NodeName"
+          template container "color .ContainerColor .ContainerName"
+          template msg ".Message"
+          template nl  '"\n"'
+          stern="stern --color always --container-state all --no-follow --since  {{.params.since}} --tail {{.params.lines}}"
+
+          case $type in
+              Kubernetes::Namespace)
+                 $stern --template "$namespace/$pod $msg $nl" -n $name ".*"
+                ;;
+              Kubernetes::Pod)
+                $stern --template "$container $msg $nl" $name $ns
+                ;;
+              Kubernetes::Statefulset)
+                $stern --template "$pod $container $msg $nl" statefulset/$name $ns
+                ;;
+              Kubernetes::ReplicaSet)
+                 $stern --template "$pod $container $msg  $nl"  replicaset/$name $ns
+                ;;
+              Kubernetes::Deployment)
+                 $stern --template "$pod $container $msg  $nl" deployment/$name $ns
+                ;;
+              Kubernetes::Job)
+                 $stern --template "$pod $container $msg  $nl" job/$name $ns
+                ;;
+              Kubernetes::DaemonSet)
+                 $stern --template "$node $msg  $nl" ds/$name $ns
+                ;;
+              Kubernetes::Service)
+                 $stern --template "$pod $container $msg  $nl" svc/$name $ns
+                ;;
+              Kubernetes::Node)
+                 $stern --node $name $ns
+                ;;
+              *)
+                echo -n "unknown type: $type"
+                ;;
+            esac
+          `}}
+      name: Stern
+  category: Kubernetes
+  configs:
+    - types:
+        - Kubernetes::Pod
+        - Kubernetes::Deployment
+        - Kubernetes::Statefulset
+        - Kubernetes::Namespace
+        - Kubernetes::ReplicaSet
+        - Kubernetes::Job
+        - Kubernetes::Node
+        - Kubernetes::Service
+        - Kubernetes::DaemonSet
+  icon: kubernetes
+  parameters:
+    - default: 1h
+      label: Since
+      name: since
+      properties:
+        options:
+          - label: 1h
+            value: 1h
+          - label: 2h
+            value: 2h
+          - label: 4h
+            value: 4h
+          - label: 8h
+            value: 8h
+          - label: 12h
+            value: 12h
+          - label: 1d
+            value: 24h
+          - label: 3d
+            value: 72h
+      type: list
+    - default: "5000"
+      label: Max Lines
+      name: lines
+      type: text
+  title: Kubectl Logs
+{{- end }}
+

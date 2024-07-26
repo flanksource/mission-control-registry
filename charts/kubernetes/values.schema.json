@@ -110,6 +110,9 @@
         "createDeployment": {
           "type": "boolean"
         },
+        "kubectlLogs": {
+          "type": "boolean"
+        },
         "deletePod": {
           "type": "boolean"
         },

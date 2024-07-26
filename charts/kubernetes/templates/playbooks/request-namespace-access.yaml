@@ -6,7 +6,7 @@ metadata:
   name: request-namespace-access
 spec:
   title: Request Namespace Access
-  icon: add-shield
+  icon: k8s-namespace
   category: Kubernetes
   description: Adds a Rolebinding to the given role
   parameters:
