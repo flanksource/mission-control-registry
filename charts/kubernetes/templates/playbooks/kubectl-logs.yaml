@@ -1,16 +1,15 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
-{{- if and .Values.playbooks.enabled .Values.playbooks.kubectlLogs.enabled }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.kubectlLogs }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: kubectl-logs
 spec:
   runsOn:
-    -  {{` {{- if .agent }}{{.agent.id}}{{ else }}local{{ end }} `}}
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
   actions:
     - exec:
         script: |
-          {{`
           # escape delims passed through to stern
           left="{""{"
           right="}""}"
@@ -20,16 +19,16 @@ spec:
             outvar="$left $2 $right"
           }
 
-          ns=" -n  {{.config.tags.namespace}}"
-          type="{{.config.type}}"
-          name="{{.config.name}}"
+          ns=" -n  $(.config.tags.namespace)"
+          type=" $(.config.type)"
+          name="$(.config.name)"
           template pod "color .PodColor .PodName"
           template namespace ".Namespace"
           template node ".NodeName"
           template container "color .ContainerColor .ContainerName"
           template msg ".Message"
           template nl  '"\n"'
-          stern="stern --color always --container-state all --no-follow --since  {{.params.since}} --tail {{.params.lines}}"
+          stern="stern --color always --container-state all --no-follow --since  $(.params.since) --tail $(.params.lines)"
 
           case $type in
               Kubernetes::Namespace)
@@ -63,7 +62,6 @@ spec:
                 echo -n "unknown type: $type"
                 ;;
             esac
-          `}}
       name: Stern
   category: Kubernetes
   configs:
