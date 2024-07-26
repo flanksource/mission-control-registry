@@ -1,9 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
 {{- if and .Values.playbooks.enabled .Values.playbooks.kubectlLogs.enabled }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: kubectl-logs
 spec:
+  runsOn:
+    -  {{` {{- if .agent }}{{.agent.id}}{{ else }}local{{ end }} `}}
   actions:
     - exec:
         script: |
