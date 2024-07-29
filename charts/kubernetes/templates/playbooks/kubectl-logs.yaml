@@ -6,7 +6,7 @@ metadata:
   name: kubectl-logs
 spec:
   runsOn:
-    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+    -  {{` "{{- if .agent }}{{.agent.name}}{{ else }}local{{ end }}" `}}
   actions:
     - exec:
         script: |
@@ -20,7 +20,7 @@ spec:
           }
 
           ns=" -n  $(.config.tags.namespace)"
-          type=" $(.config.type)"
+          type="$(.config.type)"
           name="$(.config.name)"
           template pod "color .PodColor .PodName"
           template namespace ".Namespace"
@@ -63,9 +63,13 @@ spec:
                 ;;
             esac
       name: Stern
+      runsOn:
+        -  {{` "{{- if .agent }}{{.agent.name}}{{ else }}local{{ end }}" `}}
+
   category: Kubernetes
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Pod
         - Kubernetes::Deployment
         - Kubernetes::Statefulset
