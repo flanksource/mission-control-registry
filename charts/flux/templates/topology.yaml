@@ -33,13 +33,13 @@ spec:
                     'name': r.name,
                     'icon': 'helm',
                     'namespace': r.config.metadata.namespace,
-                    'status': r.status,
+                    'status': r.health,
                     'status_reason': r.description,
                     'selectors': [{'labelSelector': 'helm.toolkit.fluxcd.io/name='+r.name + ',helm.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace}],
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::HelmRelease'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
-                      {'name': 'Version', 'text': has(r.config.status.lastAppliedRevision) ? r.config.status.lastAppliedRevision : '', 'headline': true},
+                      {'name': 'Version', 'text': has(r.config.status.history) ? r.config.status.history.chartVersion?.orValue('') : '', 'headline': true},
                       {'name': 'Last attempted version', 'text': has(r.config.status.lastAttemptedRevision) ? r.config.status.lastAttemptedRevision : '', 'headline': true},
                     ],
                   }).toJSON()
@@ -59,7 +59,7 @@ spec:
                     'name': r.name,
                     'icon': 'kustomize',
                     'namespace': r.config.metadata.namespace,
-                    'status': r.status,
+                    'status': r.health,
                     'status_reason': r.description,
                     'selectors': [{'labelSelector': 'kustomize.toolkit.fluxcd.io/name='+r.name + ',kustomize.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace}],
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::Kustomization'}],
@@ -84,7 +84,7 @@ spec:
                     'name': r.name,
                     'icon': 'helm',
                     'namespace': r.config.metadata.namespace,
-                    'status': r.status,
+                    'status': r.health,
                     'status_reason': r.description,
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::HelmRepository'}],
                     'properties': [
@@ -108,7 +108,7 @@ spec:
                     'name': r.name,
                     'icon': 'git',
                     'namespace': r.config.metadata.namespace,
-                    'status': r.status,
+                    'status': r.health,
                     'status_reason': r.description,
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::GitRepository'}],
                     'properties': [
