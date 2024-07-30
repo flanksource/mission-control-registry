@@ -15,19 +15,15 @@ spec:
   parameters:
   - name: cpu_request
     label: CPU Request
-    type: millicores
     default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.requests.cpu | default "" }} `}}'
   - name: memory_request
     label: Memory Request
-    type: bytes
     default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.requests.memory | default "" }} `}}'
   - name: cpu_limit
     label: CPU Limit
-    type: millicores
     default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.limits.cpu | default "" }} `}}'
   - name: memory_limit
     label: Memory Limit
-    type: bytes
     default: '{{` {{ (index .config.config.spec.template.spec.containers 0).resources.limits.memory | default "" }} `}}'
 
   env:
