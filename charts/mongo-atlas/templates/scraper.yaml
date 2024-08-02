@@ -1,0 +1,77 @@
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: {{ .Values.scraper.name }}
+labels:
+  {{- include "mongo-atlas.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.scraper.schedule | quote }}
+  retention:
+    {{- with .Values.scraper.retention.staleItemAge }}
+    staleItemAge: {{ . }}
+    {{- end }}
+  http:
+    - url: "https://cloud.mongodb.com/api/atlas/v1.0/groups/{{.Values.groupID}}/clusters"
+      digest: true
+      username:
+        valueFrom:
+          secretKeyRef:
+            name: "{{.Values.secret.name}}"
+            key: PUBLIC_KEY
+      password:
+        valueFrom:
+          secretKeyRef:
+            name: "{{.Values.secret.name}}"
+            key: PRIVATE_KEY
+      id: '$.id'
+      type: '$.configType'
+      name: '$.name'
+      createFields:
+        - $.createDate
+      properties:
+        - filter: config.configType == "Mongo::Replica"
+          name: 'URL'
+          links:
+            - label: Atlas
+              url: 'https://$(.config.name)'
+        - filter: config.configType == "Mongo::ReplicaSet"
+          name: 'Version'
+          text: '$(.config.mongoDBVersion)'
+        - filter: config.configType == "Mongo::ReplicaSet"
+          name: 'Region'
+          text: '$(.config.providerSettings.regionName)'
+      transform:
+        relationship:
+          - filter: config.configType == "Mongo::ReplicaSet"
+            expr: |
+              config.replicas.map(r, {
+                "external_id": r,
+              }).toJSON()
+        javascript: |+
+          var all = [];
+          for (var i = 0; i < config.results.length; i++) {
+            var cluster = config.results[i];
+
+            if (cluster.clusterType == "REPLICASET") {
+              cluster.configType = "Mongo::ReplicaSet";
+
+              var replicas = cluster.mongoURI.split(",");
+              var replicaHosts = [];
+              for (var j = 0; j < replicas.length; j++) {
+                var replica = replicas[j].trim().replace(/^.*:\/\//, '').split(/[/?#]/)[0].split(':')[0];
+                replicaHosts.push(replica);
+                all.push({
+                  "configType": "Mongo::Replica",
+                  "id": replica,
+                  "name": replica,
+                  "createDate": cluster.createDate,
+                })
+              }
+
+              cluster.replicas = replicaHosts;
+            }
+
+            all.push(cluster)
+          }
+
+          JSON.stringify(all)

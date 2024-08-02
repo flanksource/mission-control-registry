@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=./values.schema.json
+
+nameOverride: ""
+fullnameOverride: ""
+labels: {}
+
+groupID: ""
+
+# Secret for the MongoDB Atlas REST API
+# Must have two fields: PUBLIC_KEY & PRIVATE_KEY
+secret:
+  name: ""
+
+scraper:
+  name: "mongo-atlas-scraper"
+  schedule: "@every 15m"
+  retention:
+    staleItemAge: "4h"

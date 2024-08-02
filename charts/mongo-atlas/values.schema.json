@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "properties": {
+    "fullnameOverride": {
+      "type": "string"
+    },
+    "groupID": {
+      "type": "string"
+    },
+    "labels": {
+      "properties": {},
+      "type": "object"
+    },
+    "nameOverride": {
+      "type": "string"
+    },
+    "scraper": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "retention": {
+          "properties": {
+            "staleItemAge": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "schedule": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "secret": {
+      "properties": {
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object",
+      "required": ["name"]
+    }
+  },
+  "title": "Schema for MongoDB Atlas bundle of Flanksource Mission Control",
+  "type": "object"
+}
