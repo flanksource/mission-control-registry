@@ -16,3 +16,8 @@ scraper:
   schedule: "@every 15m"
   retention:
     staleItemAge: "4h"
+
+topology:
+  name: "mongo-atlas"
+  schedule: "@every 5m"
+  icon: kubernetes

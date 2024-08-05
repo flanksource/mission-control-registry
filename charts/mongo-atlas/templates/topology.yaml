@@ -1,0 +1,61 @@
+---
+apiVersion: canaries.flanksource.com/v1
+kind: Topology
+metadata:
+  name: "{{ .Values.topology.name }}"
+  labels:
+  {{- include "mongo-atlas.labels" . | nindent 4 }}
+spec:
+  type: Topology
+  icon: "{{ .Values.topology.icon }}"
+  schedule: "{{ .Values.topology.schedule }}"
+  components:
+    - icon: mongodb
+      name: ReplicaSet
+      components:
+        - name: ReplicaSet
+          type: lookup
+          lookup:
+            catalog:
+              - display:
+                  expr: >
+                    dyn(results).map(c, {
+                      'name': c.name,
+                      'icon': 'Mongo::ReplicaSet',
+                      'type': c.type,
+                      'configs': [{'id': c.id}],
+                      'externalID': c.external_id[0],
+                      'status': c.status,
+                      'status_reason': c.description,
+                      'labels': c.labels,
+                      'selectors': [{'types': ['Mongo::Replica']}]
+                    }).toJSON()
+                name: ''
+                selector:
+                  - types:
+                      - Mongo::ReplicaSet
+    - icon: mongodb
+      name: Replica
+      type: virtual
+      components:
+        - name: Replica
+          type: virtual
+          type: virtual
+          lookup:
+            catalog:
+              - display:
+                  expr: >
+                    dyn(results).map(c, {
+                      'name': c.name,
+                      'icon': 'Mongo::Replica',
+                      'type': c.type,
+                      'configs': [{'id': c.id}],
+                      'externalID': c.external_id[0],
+                      'status': c.status,
+                      'status_reason': c.description,
+                      'labels': c.labels,
+                    }).toJSON()
+                name: ''
+                selector:
+                  - types:
+                      - Mongo::Replica
