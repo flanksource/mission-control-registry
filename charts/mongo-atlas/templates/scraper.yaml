@@ -64,6 +64,7 @@ spec:
                   "configType": "Mongo::Replica",
                   "id": replica,
                   "name": replica,
+                  "replicaSet": cluster.name,
                   "createDate": cluster.createDate,
                 })
               }
@@ -92,15 +93,23 @@ spec:
             name: {{.Values.scraper.slack.secretKeyRef.name}}
             key: {{.Values.scraper.slack.secretKeyRef.key}}
       rules:
-        - regexp: (?s):.*?\*(?P<status>Closed|Open)\*:.*?Query Targeting:(?P<message>.*?)<[^>]*\.net\|(?P<shard_url>[^>]+\.mongodb\.net)>
+        - regexp: (?s):.*?\*(?P<status>Closed|Open)\*:\s*(?P<change_type>[^:\n<]+?)(?:\s+in)?\s*(?:<|:|\n).*?(?P<shard_url>[\w-]+\.[\w-]+\.mongodb\.net)
           filter:
             bot: "{{.Values.scraper.slack.botName}}"
           mapping:
             summary:
-              expr: |
-                "[" + env.status + "] " + env.message
+              expr: env.status
             type:
-              value: Query Targeting
+              expr: env.change_type
+            severity:
+              expr: |
+                env.status == "Open" ? "low" : "info"
+            details:
+              expr: |
+                {
+                  "markdown": text,
+                  "url": env.shard_url,
+                }.toJSON()
           config:
             - name:
                 expr: env.shard_url

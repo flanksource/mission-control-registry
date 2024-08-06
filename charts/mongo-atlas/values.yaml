@@ -41,4 +41,4 @@ scraper:
 topology:
   name: "mongo-atlas"
   schedule: "@every 5m"
-  icon: kubernetes
+  icon: mongodb
