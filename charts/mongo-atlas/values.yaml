@@ -17,6 +17,27 @@ scraper:
   retention:
     staleItemAge: "4h"
 
+  slack:
+    enabled: false
+    schedule: "@every 15m"
+
+    # name of the scraper
+    name: "mongo-atlas-slack-notifications"
+
+    # list of slack channel names to scrape alerts from
+    channels: []
+
+    # name of the slack app that's publishing the notification
+    botName: ""
+
+    # fetch slack messages within this time
+    since: 30d
+
+    # slack token secret
+    secretKeyRef:
+      name: ""
+      key: "token"
+
 topology:
   name: "mongo-atlas"
   schedule: "@every 5m"

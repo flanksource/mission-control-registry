@@ -75,3 +75,35 @@ spec:
           }
 
           JSON.stringify(all)
+---
+{{- if .Values.scraper.slack.enabled}}
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: "{{.Values.scraper.slack.name}}"
+spec:
+  schedule: {{ .Values.scraper.slack.schedule | quote }}
+  slack:
+    - channels: {{ .Values.scraper.slack.channels | toYaml | nindent 8 }}
+      since: "{{.Values.scraper.slack.since}}"
+      token:
+        valueFrom:
+          secretKeyRef:
+            name: {{.Values.scraper.slack.secretKeyRef.name}}
+            key: {{.Values.scraper.slack.secretKeyRef.key}}
+      rules:
+        - regexp: (?s):.*?\*(?P<status>Closed|Open)\*:.*?Query Targeting:(?P<message>.*?)<[^>]*\.net\|(?P<shard_url>[^>]+\.mongodb\.net)>
+          filter:
+            bot: "{{.Values.scraper.slack.botName}}"
+          mapping:
+            summary:
+              expr: |
+                "[" + env.status + "] " + env.message
+            type:
+              value: Query Targeting
+          config:
+            - name:
+                expr: env.shard_url
+              types:
+                - value: Mongo::Replica
+{{- end}}                

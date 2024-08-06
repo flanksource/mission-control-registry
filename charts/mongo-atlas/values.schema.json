@@ -29,6 +29,39 @@
         },
         "schedule": {
           "type": "string"
+        },
+        "slack": {
+          "properties": {
+            "botName": {
+              "type": "string"
+            },
+            "channels": {
+              "type": "array"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "name": {
+              "type": "string"
+            },
+            "secretKeyRef": {
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": ["name", "key"],
+              "type": "object"
+            },
+            "since": {
+              "type": "string"
+            }
+          },
+          "required": ["botName", "channels", "name"],
+          "type": "object"
         }
       },
       "type": "object"
@@ -39,8 +72,21 @@
           "type": "string"
         }
       },
-      "type": "object",
-      "required": ["name"]
+      "type": "object"
+    },
+    "topology": {
+      "properties": {
+        "icon": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "schedule": {
+          "type": "string"
+        }
+      },
+      "type": "object"
     }
   },
   "title": "Schema for MongoDB Atlas bundle of Flanksource Mission Control",
