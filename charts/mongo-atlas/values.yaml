@@ -23,6 +23,9 @@ scraper:
     enabled: false
     schedule: "@every 15m"
 
+    regexp: |
+      (?s):.*?\*(?P<status>Closed|Open)\*:\s*(?P<message>[^:\n<]+?)(?:\s+in)?\s*(?:<|:|\n).*?(?P<shard_url>[\w-]+\.[\w-]+\.mongodb\.net)
+
     # name of the scraper
     name: "mongo-atlas-slack-notifications"
 
