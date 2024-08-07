@@ -48,7 +48,6 @@ spec:
       config:
         name: incident-manager-ui
         tags:
-          app.kubernetes.io/instance: mission-control
           app.kubernetes.io/name: incident-manager-ui
         type: Kubernetes::Ingress
       display:
@@ -95,8 +94,7 @@ spec:
         config:
           name: mission-control
           tags:
-            app.kubernetes.io/instance: mission-control
-            app.kubernetes.io/name: mission-control
+            app.kubernetes.io/name: {{ include "mission-control.deploymentName" . }}
           type: Kubernetes::Deployment
         display:
           expr: config.spec.template.spec.containers[0]['image'].split(':')[1]
@@ -223,7 +221,6 @@ spec:
         config:
           name: canary-checker
           tags:
-            app.kubernetes.io/instance: mission-control
             app.kubernetes.io/name: canary-checker
           type: Kubernetes::Deployment
         display:
@@ -282,7 +279,6 @@ spec:
         config:
           name: apm-hub
           tags:
-            app.kubernetes.io/instance: mission-control
             app.kubernetes.io/name: apm-hub
           type: Kubernetes::Deployment
         display:
@@ -375,7 +371,6 @@ spec:
         config:
           name: config-db
           tags:
-            app.kubernetes.io/instance: mission-control
             app.kubernetes.io/name: config-db
           type: Kubernetes::Deployment
         display:
@@ -432,6 +427,8 @@ spec:
     - labelSelector: app=postgresql
       fieldSelector: namespace={{.Release.Namespace}}
     type: Database
+
+  {{- if not .Values.isAgent }}
   - icon: html
     name: UI
     properties:
@@ -439,7 +436,6 @@ spec:
         config:
           name: incident-manager-ui
           tags:
-            app.kubernetes.io/instance: mission-control
             app.kubernetes.io/name: incident-manager-ui
           type: Kubernetes::Deployment
         display:
@@ -449,7 +445,9 @@ spec:
     selectors:
     - labelSelector: app.kubernetes.io/name=incident-manager-ui
     type: Website
+  {{- end }}
 
+  {{- if not .Values.isAgent }}
   - name: Kratos
     icon: ory-kratos
     type: Service
@@ -459,7 +457,6 @@ spec:
         config:
           name: kratos
           tags:
-            app.kubernetes.io/instance: mission-control
             app.kubernetes.io/name: kratos
           type: Kubernetes::Deployment
         display:
@@ -473,10 +470,10 @@ spec:
             expr: results.rows[0].count
           name: Count
           query: SELECT COUNT(*) FROM identities
-          results: 1
       name: Identities
     selectors:
     - labelSelector: app.kubernetes.io/name=kratos
+  {{- end }}
 
   - name: Jobs
     type: Jobs
@@ -514,6 +511,7 @@ spec:
                   ],
                 }).toJSON()
 
+        {{- if .Values.prometheusURL }}
         properties:
           - name: count
             lookup:
@@ -549,6 +547,8 @@ spec:
                       'name': r.name,
                       'properties': [{'name': 'pass rate', 'value': int(r.value)}]
                     }).toJSON()
+        {{- end }}
+
 
   {{- if .Values.isAgent }}
   - name: Upstream Sync
