@@ -60,3 +60,11 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{- define "mission-control.deploymentName" -}}
+{{- if .Values.isAgent -}}
+mission-control-agent
+{{- else -}}
+mission-control
+{{- end }}
+{{- end }}
