@@ -4,8 +4,8 @@
     "fullnameOverride": {
       "type": "string"
     },
-    "groupID": {
-      "type": "string"
+    "groupIDs": {
+      "type": "array"
     },
     "labels": {
       "properties": {},
@@ -44,6 +44,9 @@
             "name": {
               "type": "string"
             },
+            "schedule": {
+              "type": "string"
+            },
             "secretKeyRef": {
               "properties": {
                 "key": {
@@ -53,14 +56,12 @@
                   "type": "string"
                 }
               },
-              "required": ["name", "key"],
               "type": "object"
             },
             "since": {
               "type": "string"
             }
           },
-          "required": ["botName", "channels", "name"],
           "type": "object"
         }
       },

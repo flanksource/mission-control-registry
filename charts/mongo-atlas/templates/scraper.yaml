@@ -11,8 +11,11 @@ spec:
     staleItemAge: {{ . }}
     {{- end }}
   http:
-    - url: "https://cloud.mongodb.com/api/atlas/v1.0/groups/{{.Values.groupID}}/clusters"
+    - url: 'https://cloud.mongodb.com/api/atlas/v2/orgs'
       digest: true
+      headers:
+        Accept:
+          value: 'application/vnd.atlas.2023-02-01+json'
       username:
         valueFrom:
           secretKeyRef:
@@ -24,16 +27,63 @@ spec:
             name: "{{.Values.secret.name}}"
             key: PRIVATE_KEY
       id: '$.id'
+      type: 'Mongo::Org'
+      name: '$.name'
+      createFields:
+        - $.created
+      transform:
+        expr: dyn(config.results).map(config, config).toJSON()
+
+    - url: 'https://cloud.mongodb.com/api/atlas/v2/groups'
+      digest: true
+      headers:
+        Accept:
+          value: 'application/vnd.atlas.2023-02-01+json'
+      username:
+        valueFrom:
+          secretKeyRef:
+            name: "{{.Values.secret.name}}"
+            key: PUBLIC_KEY
+      password:
+        valueFrom:
+          secretKeyRef:
+            name: "{{.Values.secret.name}}"
+            key: PRIVATE_KEY
+      id: '$.id'
+      type: 'Mongo::Project'
+      name: '$.name'
+      createFields:
+        - $.created
+      transform:
+        expr: dyn(config.results).map(config, config).toJSON()
+
+    {{- range .Values.groupIDs }}
+    - url: "https://cloud.mongodb.com/api/atlas/v2/groups/{{.}}/clusters"
+      digest: true
+      headers:
+        Accept:
+          value: 'application/vnd.atlas.2023-02-01+json'
+      username:
+        valueFrom:
+          secretKeyRef:
+            name: "{{$.Values.secret.name}}"
+            key: PUBLIC_KEY
+      password:
+        valueFrom:
+          secretKeyRef:
+            name: "{{$.Values.secret.name}}"
+            key: PRIVATE_KEY
+      id: '$.id'
       type: '$.configType'
       name: '$.name'
       createFields:
         - $.createDate
       properties:
-        - filter: config.configType == "Mongo::Replica"
+        - filter: config.configType == "Mongo::ReplicaSet"
           name: 'URL'
           links:
             - label: Atlas
-              url: 'https://$(.config.name)'
+              url: "https://cloud.mongodb.com/v2/{{.}}#/clusters/detail/$(.config.name)"
         - filter: config.configType == "Mongo::ReplicaSet"
           name: 'Version'
           text: '$(.config.mongoDBVersion)'
@@ -55,13 +105,13 @@ spec:
             if (cluster.clusterType == "REPLICASET") {
               cluster.configType = "Mongo::ReplicaSet";
 
-              var replicas = cluster.mongoURI.split(",");
+              var replicas = cluster.connectionStrings.standard.split(",");
               var replicaHosts = [];
               for (var j = 0; j < replicas.length; j++) {
                 var replica = replicas[j].trim().replace(/^.*:\/\//, '').split(/[/?#]/)[0].split(':')[0];
                 replicaHosts.push(replica);
                 all.push({
-                  "configType": "Mongo::Replica",
+                  "configType": "Mongo::Node",
                   "id": replica,
                   "name": replica,
                   "replicaSet": cluster.name,
@@ -76,6 +126,7 @@ spec:
           }
 
           JSON.stringify(all)
+    {{- end }}
 ---
 {{- if .Values.scraper.slack.enabled}}
 apiVersion: configs.flanksource.com/v1
@@ -93,26 +144,27 @@ spec:
             name: {{.Values.scraper.slack.secretKeyRef.name}}
             key: {{.Values.scraper.slack.secretKeyRef.key}}
       rules:
-        - regexp: (?s):.*?\*(?P<status>Closed|Open)\*:\s*(?P<change_type>[^:\n<]+?)(?:\s+in)?\s*(?:<|:|\n).*?(?P<shard_url>[\w-]+\.[\w-]+\.mongodb\.net)
+        - regexp: (?s):.*?\*(?P<status>Closed|Open)\*:.*?Query Targeting:(?P<message>.*?)<[^>]*\.net\|(?P<shard_url>[^>]+\.mongodb\.net)>
           filter:
             bot: "{{.Values.scraper.slack.botName}}"
           mapping:
             summary:
-              expr: env.status
+              expr: |
+                "[" + env.status + "] " + env.message
             type:
-              expr: env.change_type
+              value: Query Targeting
             severity:
               expr: |
                 env.status == "Open" ? "low" : "info"
             details:
               expr: |
                 {
-                  "markdown": text,
+                  "markdown": env.message,
                   "url": env.shard_url,
                 }.toJSON()
           config:
             - name:
                 expr: env.shard_url
               types:
-                - value: Mongo::Replica
-{{- end}}                
+                - value: Mongo::Node
+{{- end}}
