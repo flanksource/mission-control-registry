@@ -1,0 +1,49 @@
+# yaml-language-server: $schema=./values.schema.json
+
+nameOverride: ""
+fullnameOverride: ""
+labels: {}
+
+# groupIDs (or the project IDs).
+# This wouldn't be necessary in future.
+groupIDs: []
+
+# Secret for the MongoDB Atlas REST API
+# Must have two fields: PUBLIC_KEY & PRIVATE_KEY
+secret:
+  name: ""
+
+scraper:
+  name: "mongo-atlas-scraper"
+  schedule: "@every 15m"
+  retention:
+    staleItemAge: "4h"
+
+  slack:
+    enabled: false
+    schedule: "@every 15m"
+
+    regexp: |
+      (?s):.*?\*(?P<status>Closed|Open)\*:\s*(?P<message>[^:\n<]+?)(?:\s+in)?\s*(?:<|:|\n).*?(?P<shard_url>[\w-]+\.[\w-]+\.mongodb\.net)
+
+    # name of the scraper
+    name: "mongo-atlas-slack-notifications"
+
+    # list of slack channel names to scrape alerts from
+    channels: []
+
+    # name of the slack app that's publishing the notification
+    botName: ""
+
+    # fetch slack messages within this time
+    since: 30d
+
+    # slack token secret
+    secretKeyRef:
+      name: ""
+      key: "token"
+
+topology:
+  name: "mongo-atlas"
+  schedule: "@every 5m"
+  icon: mongodb

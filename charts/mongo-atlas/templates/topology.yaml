@@ -1,0 +1,95 @@
+---
+apiVersion: canaries.flanksource.com/v1
+kind: Topology
+metadata:
+  name: "{{ .Values.topology.name }}"
+  labels:
+  {{- include "mongo-atlas.labels" . | nindent 4 }}
+spec:
+  type: Topology
+  icon: "{{ .Values.topology.icon }}"
+  schedule: "{{ .Values.topology.schedule }}"
+  components:
+    - icon: mongodb
+      name: Organization
+      lookup:
+        catalog:
+          - display:
+              expr: >
+                dyn(results).map(c, {
+                  'name': c.name,
+                  'icon': 'Mongo::Org',
+                  'type': c.type,
+                  'configs': [{'id': c.id}],
+                  'external_id': c.external_id[0],
+                  'status': c.status,
+                  'status_reason': c.description,
+                  'labels': c.labels,
+                }).toJSON()
+            name: ''
+            selector:
+              - types:
+                  - Mongo::Org
+    - icon: mongodb
+      name: ProjectGroup
+      type: virtual
+      lookup:
+        catalog:
+          - display:
+              expr: >
+                dyn(results).map(c, {
+                  'name': c.name,
+                  'icon': 'Mongo::Project',
+                  'type': c.type,
+                  'configs': [{'id': c.id}],
+                  'external_id': c.external_id[0],
+                  'status': c.status,
+                  'status_reason': c.description,
+                  'parentLookup': {'externalID': c.config.orgId, 'type': 'Mongo::Org'},
+                  'labels': c.labels
+                }).toJSON()
+            selector:
+              - types:
+                  - Mongo::Project
+    - icon: mongodb
+      name: ReplicaSetGroup
+      type: virtual
+      lookup:
+        catalog:
+          - display:
+              expr: >
+                dyn(results).map(c, {
+                  'name': c.name,
+                  'icon': 'Mongo::ReplicaSet',
+                  'type': c.type,
+                  'configs': [{'id': c.id}],
+                  'external_id': c.external_id[0],
+                  'status': c.status,
+                  'status_reason': c.description,
+                  'parentLookup': {'externalID': c.config.groupId, 'type': 'Mongo::Project'},
+                  'labels': c.labels
+                }).toJSON()
+            selector:
+              - types:
+                  - Mongo::ReplicaSet
+    - icon: mongodb
+      name: NodeGroup
+      type: virtual
+      lookup:
+        catalog:
+          - display:
+              expr: >
+                dyn(results).map(c, {
+                  'name': c.name,
+                  'icon': 'Mongo::Node',
+                  'type': c.type,
+                  'configs': [{'id': c.id}],
+                  'external_id': c.external_id[0],
+                  'status': c.status,
+                  'status_reason': c.description,
+                  'parentLookup': {'name': c.config.replicaSet, 'type': 'Mongo::ReplicaSet'},
+                  'labels': c.labels,
+                }).toJSON()
+            selector:
+              - types:
+                  - Mongo::Node

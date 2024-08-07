@@ -1,0 +1,169 @@
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: {{ .Values.scraper.name }}
+labels:
+  {{- include "mongo-atlas.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.scraper.schedule | quote }}
+  retention:
+    {{- with .Values.scraper.retention.staleItemAge }}
+    staleItemAge: {{ . }}
+    {{- end }}
+  http:
+    - url: 'https://cloud.mongodb.com/api/atlas/v2/orgs'
+      digest: true
+      headers:
+        Accept:
+          value: 'application/vnd.atlas.2023-02-01+json'
+      username:
+        valueFrom:
+          secretKeyRef:
+            name: "{{.Values.secret.name}}"
+            key: PUBLIC_KEY
+      password:
+        valueFrom:
+          secretKeyRef:
+            name: "{{.Values.secret.name}}"
+            key: PRIVATE_KEY
+      id: '$.id'
+      type: 'Mongo::Org'
+      name: '$.name'
+      createFields:
+        - $.created
+      transform:
+        expr: dyn(config.results).map(config, config).toJSON()
+
+    - url: 'https://cloud.mongodb.com/api/atlas/v2/groups'
+      digest: true
+      headers:
+        Accept:
+          value: 'application/vnd.atlas.2023-02-01+json'
+      username:
+        valueFrom:
+          secretKeyRef:
+            name: "{{.Values.secret.name}}"
+            key: PUBLIC_KEY
+      password:
+        valueFrom:
+          secretKeyRef:
+            name: "{{.Values.secret.name}}"
+            key: PRIVATE_KEY
+      id: '$.id'
+      type: 'Mongo::Project'
+      name: '$.name'
+      createFields:
+        - $.created
+      transform:
+        expr: dyn(config.results).map(config, config).toJSON()
+
+    {{- range .Values.groupIDs }}
+    - url: "https://cloud.mongodb.com/api/atlas/v2/groups/{{.}}/clusters"
+      digest: true
+      headers:
+        Accept:
+          value: 'application/vnd.atlas.2023-02-01+json'
+      username:
+        valueFrom:
+          secretKeyRef:
+            name: "{{$.Values.secret.name}}"
+            key: PUBLIC_KEY
+      password:
+        valueFrom:
+          secretKeyRef:
+            name: "{{$.Values.secret.name}}"
+            key: PRIVATE_KEY
+      id: '$.id'
+      type: '$.configType'
+      name: '$.name'
+      createFields:
+        - $.createDate
+      properties:
+        - filter: config.configType == "Mongo::ReplicaSet"
+          name: 'URL'
+          links:
+            - label: Atlas
+              url: "https://cloud.mongodb.com/v2/{{.}}#/clusters/detail/$(.config.name)"
+        - filter: config.configType == "Mongo::ReplicaSet"
+          name: 'Version'
+          text: '$(.config.mongoDBVersion)'
+        - filter: config.configType == "Mongo::ReplicaSet"
+          name: 'Region'
+          text: '$(.config.providerSettings.regionName)'
+      transform:
+        relationship:
+          - filter: config.configType == "Mongo::ReplicaSet"
+            expr: |
+              config.replicas.map(r, {
+                "external_id": r,
+              }).toJSON()
+        javascript: |+
+          var all = [];
+          for (var i = 0; i < config.results.length; i++) {
+            var cluster = config.results[i];
+
+            if (cluster.clusterType == "REPLICASET") {
+              cluster.configType = "Mongo::ReplicaSet";
+
+              var replicas = cluster.connectionStrings.standard.split(",");
+              var replicaHosts = [];
+              for (var j = 0; j < replicas.length; j++) {
+                var replica = replicas[j].trim().replace(/^.*:\/\//, '').split(/[/?#]/)[0].split(':')[0];
+                replicaHosts.push(replica);
+                all.push({
+                  "configType": "Mongo::Node",
+                  "id": replica,
+                  "name": replica,
+                  "replicaSet": cluster.name,
+                  "createDate": cluster.createDate,
+                })
+              }
+
+              cluster.replicas = replicaHosts;
+            }
+
+            all.push(cluster)
+          }
+
+          JSON.stringify(all)
+    {{- end }}
+---
+{{- if .Values.scraper.slack.enabled}}
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: "{{.Values.scraper.slack.name}}"
+spec:
+  schedule: {{ .Values.scraper.slack.schedule | quote }}
+  slack:
+    - channels: {{ .Values.scraper.slack.channels | toYaml | nindent 8 }}
+      since: "{{.Values.scraper.slack.since}}"
+      token:
+        valueFrom:
+          secretKeyRef:
+            name: {{.Values.scraper.slack.secretKeyRef.name}}
+            key: {{.Values.scraper.slack.secretKeyRef.key}}
+      rules:
+        - regexp: {{.Values.scraper.slack.regexp}}
+          filter:
+            bot: "{{.Values.scraper.slack.botName}}"
+          mapping:
+            summary:
+              expr: env.status
+            type:
+              expr: env.message
+            severity:
+              expr: |
+                env.status == "Open" ? "low" : "info"
+            details:
+              expr: |
+                {
+                  "markdown": text,
+                  "url": env.shard_url,
+                }.toJSON()
+          config:
+            - name:
+                expr: env.shard_url
+              types:
+                - value: Mongo::Node
+{{- end}}
