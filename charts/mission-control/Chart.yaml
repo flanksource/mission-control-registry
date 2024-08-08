@@ -1,6 +1,6 @@
 apiVersion: v2
 name: mission-control-watchtower
-description: A Mission Control Helm Chart for monitoring mission-control itself
+description: Mission Control Helm Chart for monitoring mission-control itself
 type: application
 version: 0.1.18
 appVersion: "1.0.0"
