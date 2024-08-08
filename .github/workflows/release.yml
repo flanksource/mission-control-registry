@@ -95,15 +95,16 @@ jobs:
         if: matrix.chart == 'mission-control'
         run: |
           # mission-control chart needs to be updated as a dependency for mission-control-agent
-          if [[ ${{ matrix.chart }} == "mission-control" ]]; then
-              yq e '.dependencies[] |= select(.name == "mission-control-watchtower").version = env(NEW_CHART_VERSION)' -i ./mission-control-chart/agent-chart/Chart.yaml
-          fi
+          yq e '.dependencies[] |= select(.name == "mission-control-watchtower").version = env(NEW_CHART_VERSION)' -i ./mission-control-chart/agent-chart/Chart.yaml
+
+          # We sleep for 120 seconds to allow charts repo to publish the mission-control-watchtower helm chart
+          sleep 120
 
       - name: Push changes to chart repo
         uses: stefanzweifel/git-auto-commit-action@v4
         if: matrix.chart == 'mission-control'
         with:
-          commit_message: "chore: bump mission-control-watchtower to $NEW_CHART_VERSION"
+          commit_message: "chore: bump mission-control-watchtower to ${{ env.NEW_CHART_VERSION }}"
           branch: main
           repository: ./mission-control-chart
 
