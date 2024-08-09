@@ -1,1 +1,1 @@
-MongoDB Atlas topology, scraper and playbooks added
+MongoDB Atlas topology and scraper added

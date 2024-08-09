@@ -108,4 +108,3 @@ jobs:
           commit_message: "chore: bump mission-control-watchtower to ${{ env.NEW_CHART_VERSION }}"
           branch: main
           repository: ./mission-control-chart
-
