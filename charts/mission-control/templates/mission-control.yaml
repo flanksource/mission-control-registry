@@ -101,7 +101,7 @@ spec:
       headline: true
       name: Version
     selectors:
-    - labelSelector: app.kubernetes.io/name=mission-control
+    - labelSelector: app.kubernetes.io/name={{ include "mission-control.deploymentName" . }}
     type: API
   - checks:
     - inline:
