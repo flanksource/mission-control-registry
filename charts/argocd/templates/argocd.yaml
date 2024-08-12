@@ -31,6 +31,7 @@ spec:
                     'type': 'Application',
                     'configs': [{"id": c.id}],
                     'status': c.status,
+                    'health': c.health,
                     'status_reason': has(c.description) ? c.description : '',
                     'selectors': [{'labelSelector': 'argocd.argoproj.io/instance='+c.name}],
                     'properties': [
@@ -66,6 +67,7 @@ spec:
                     'type': 'Kubernetes::AppProject',
                     'namespace': r.config.metadata.namespace,
                     'status': r.status,
+                    'health': r.health,
                     'status_reason': has(r.description) ? r.description : '',
                     'selectors': [{'labelSelector': 'argocd.argoproj.io/instance='+r.name}],
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::AppProject'}],

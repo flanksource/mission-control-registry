@@ -26,6 +26,7 @@ spec:
                     'externalID': c.external_id[0],
                     'status': c.status,
                     'status_reason': c.description,
+                    'health': c.health,
                     'labels': c.labels,
                     'selectors': [{'types': ['AWS::EC2::Instance'], 'labelSelector': 'network='+c.external_id[0]}]
                   }).toJSON()
@@ -48,6 +49,7 @@ spec:
                     'configs': [{'id': c.id}],
                     'status': c.status,
                     'status_reason': c.description,
+                    'health': c.health,
                     'labels': c.labels,
                     'properties': [
                       {'name': 'NodeGroup', 'text': 'eksctl.io/v1alpha2/nodegroup-name' in c.labels ? c.labels['eksctl.io/v1alpha2/nodegroup-name'] : ''}
@@ -71,6 +73,7 @@ spec:
                     'type': c.type,
                     'labels': c.labels,
                     'configs': [{'id': c.id}],
+                    'health': c.health,
                     'status': c.status,
                     'status_reason': c.description,
                     'selectors': [{'types': ['AWS::EC2::Instance'], 'labelSelector': 'alpha.eksctl.io/cluster-name='+c.labels['alpha.eksctl.io/cluster-name']}]
@@ -93,6 +96,7 @@ spec:
                     'type': c.type,
                     'configs': [{'id': c.id}],
                     'status': c.status,
+                    'health': c.health,
                     'status_reason': c.description,
                     'labels': c.labels,
                   }).toJSON()
