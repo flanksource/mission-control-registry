@@ -174,6 +174,7 @@ spec:
             expr: |
               results.rows.map(r, {
                 'name': r.name,
+                'health': r.status == 'SUCCESS' ? 'healthy': 'unhealthy',
                 'properties': [
                   {'name': 'Last runtime', 'text': r.time_end != null ? string(r.time_end) : 'N/A' },
                   {'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
@@ -333,6 +334,7 @@ spec:
             expr: |
               results.rows.map(r, {
                 'name': r.name,
+                'health': r.status == 'SUCCESS' ? 'healthy': 'unhealthy',
                 'properties': [
                   {'name': 'Last runtime', 'text': r.time_end != null ? string(r.time_end) : 'N/A' },
                   {'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
@@ -499,6 +501,7 @@ spec:
                   'icon': 'clock',
                   'type': 'JobHistory',
                   'status': r.status in ['SUCCESS', 'FINISHED'] ? 'healthy': 'unhealthy',
+                  'health': r.status in ['SUCCESS', 'FINISHED'] ? 'healthy': 'unhealthy',
                   'status_reason': r.status in ['SUCCESS', 'FINISHED'] ? '': r.details.toJSON(),
                   'properties': [
                     {'name': 'success_count', 'value': r.success_count, 'headline': true},
