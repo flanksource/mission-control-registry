@@ -55,9 +55,10 @@ spec:
                     'external_id': r.metadata.name,
                     'logs': [{'name': 'Kubernetes', 'type': 'KubernetesNode'}],
                     'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Node'}],
-                    'selectors':[{'fieldSelector': 'node='+r.metadata.name}],
+                    'selectors': [{'fieldSelector': 'node='+r.metadata.name}],
                     'status': k8s.getHealth(r).health,
                     'status_reason': k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message,
+                    'status_expr': k8s.getHealth(r).health.quote(),
                     'health': k8s.getHealth(r).health,
                     'properties': [
                       {"name": "cpu", "max": k8s.cpuAsMillicores(r.status.allocatable["cpu"]), "unit": "millicores", "headline": true},
@@ -130,6 +131,8 @@ spec:
                     'external_id': r.metadata.name,
                     'labels': k8s.labels(r).merge({ 'cluster': '{{.Values.clusterName}}' }),
                     'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Namespace'}],
+                    'status': k8s.getHealth(r).health,
+                    'status_reason': k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message,
                     'health': k8s.getHealth(r).health,
                     'properties': [
                       {'name': 'cpu', 'unit': 'millicores', 'headline': true},
