@@ -21,6 +21,7 @@ spec:
                   dyn(results).map(c, {
                     'name': c.name,
                     'icon': 'aws-vpc',
+                    'config_id': r.id,
                     'type': c.type,
                     'configs': [{'id': c.id}],
                     'externalID': c.external_id[0],
@@ -46,6 +47,7 @@ spec:
                     'name': c.external_id[0] + '/' + c.name,
                     'icon': 'aws-ec2',
                     'type': c.type,
+                    'config_id': r.id,
                     'configs': [{'id': c.id}],
                     'status': c.status,
                     'status_reason': c.description,
@@ -74,6 +76,7 @@ spec:
                     'labels': c.labels,
                     'configs': [{'id': c.id}],
                     'health': c.health,
+                    'config_id': r.id,
                     'status': c.status,
                     'status_reason': c.description,
                     'selectors': [{'types': ['AWS::EC2::Instance'], 'labelSelector': 'alpha.eksctl.io/cluster-name='+c.labels['alpha.eksctl.io/cluster-name']}]
@@ -93,6 +96,7 @@ spec:
                   dyn(results).map(c, {
                     'name': c.name,
                     'icon': 'aws-elb',
+                    'config_id': r.id,
                     'type': c.type,
                     'configs': [{'id': c.id}],
                     'status': c.status,
