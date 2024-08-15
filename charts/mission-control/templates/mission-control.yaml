@@ -581,7 +581,7 @@ spec:
           postgres:
             - query: SELECT time_end FROM job_history WHERE name = 'ReconcileAll' AND status = 'SUCCESS' LIMIT 1
               connection: "connection://{{ .Values.connectionName }}"
-              name: Last Full Reconcile: {{.Values.topologyName}}
+              name: Last Full Reconcile/{{.Values.topologyName}}
               display:
                 expr: |
                   results.count == 0 ? 'N/A' : results.rows[0].time_end
@@ -593,7 +593,7 @@ spec:
           postgres:
             - query: SELECT reltuples as count FROM  pg_class  WHERE relname ='check_statuses_is_pushed_idx'
               connection: "connection://{{ .Values.connectionName }}"
-              name: Check Status Backlog: {{.Values.topologyName}}
+              name: Check Status Backlog/{{.Values.topologyName}}
               display:
                 expr: results.rows[0].count
               test:
@@ -603,7 +603,7 @@ spec:
           postgres:
             - query: SELECT count(*) FROM config_analysis where is_pushed is false
               connection: "connection://{{ .Values.connectionName }}"
-              name: Config Analysis Backlog: {{.Values.topologyName}}
+              name: Config Analysis Backlog/{{.Values.topologyName}}
               display:
                 expr: results.rows[0].count
               test:
@@ -613,7 +613,7 @@ spec:
           postgres:
             - query: SELECT count(*) FROM config_changes where is_pushed is false
               connection: "connection://{{ .Values.connectionName }}"
-              name: Config Changes Backlog: {{.Values.topologyName}}
+              name: Config Changes Backlog/{{.Values.topologyName}}
               display:
                 expr: results.rows[0].count
               test:
