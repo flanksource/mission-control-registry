@@ -175,6 +175,8 @@ spec:
               results.rows.map(r, {
                 'name': r.name,
                 'health': r.status == 'SUCCESS' ? 'healthy': 'unhealthy',
+                'status': r.status,
+                'status_reason': r.details.toJSON(),
                 'properties': [
                   {'name': 'Last runtime', 'text': r.time_end != null ? string(r.time_end) : 'N/A' },
                   {'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
@@ -500,9 +502,9 @@ spec:
                   'name': r.name,
                   'icon': 'clock',
                   'type': 'JobHistory',
-                  'status': r.status in ['SUCCESS', 'FINISHED'] ? 'healthy': 'unhealthy',
-                  'health': r.status in ['SUCCESS', 'FINISHED'] ? 'healthy': 'unhealthy',
-                  'status_reason': r.status in ['SUCCESS', 'FINISHED'] ? '': r.details.toJSON(),
+                  'status': r.status,
+                  'health': r.status == 'SUCCESS' ? 'healthy': 'unhealthy',
+                  'status_reason': r.details.toJSON(),
                   'properties': [
                     {'name': 'success_count', 'value': r.success_count, 'headline': true},
                     {'name': 'error_count', 'value': r.error_count, 'headline': true},
@@ -556,35 +558,30 @@ spec:
   {{- if .Values.isAgent }}
   - name: Upstream Sync
     icon: helm
-    properties:
-      - name: Check Status Backlog
-        lookup:
-          postgres:
-            - query: SELECT reltuples FROM  pg_class  WHERE relname ='check_statuses_is_pushed_idx'
-              connection: "connection://{{ .Values.connectionName }}"
-              display:
-                expr: results.rows[0].reltuples
-      - name: Config Analysis Backlog
-        lookup:
-          postgres:
-            - query: SELECT count(*) FROM config_analysis where is_pushed is false
-              connection: "connection://{{ .Values.connectionName }}"
-              display:
-                expr: results.rows[0].count
-      - name: Config Changes Backlog
-        lookup:
-          postgres:
-            - query: SELECT count(*) FROM config_changes where is_pushed is false
-              connection: "connection://{{ .Values.connectionName }}"
-              display:
-                expr: results.rows[0].count
+    components:
+    - name: UpstreamGroup
+      lookup:
+        postgres:
+        - query: |
+            SELECT
+               (SELECT reltuples FROM pg_class WHERE relname ='check_statuses_is_pushed_idx') as cs,
+               (SELECT count(*) FROM config_analysis where is_pushed is false) as ca,
+               (SELECT count(*) FROM config_changes where is_pushed is false) as cc
+          connection: "connection://{{ .Values.connectionName }}"
+          display:
+            expr: |
+              [
+                {'name': 'Check Status Backlog', 'icon': 'sync', 'health': results.rows[0].cs < 500 ? 'healthy' : 'unhealthy' ,'properties': [{'name': 'size', 'value': results.rows[0].cs, 'headline': true}]},
+                {'name': 'Config Analysis Backlog', 'icon': 'sync', 'health': results.rows[0].ca < 200 ? 'healthy' : 'unhealthy' ,'properties': [{'name': 'size', 'value': results.rows[0].ca, 'headline': true}]},
+                {'name': 'Config Changes Backlog', 'icon': 'sync', 'health': results.rows[0].cc < 200 ? 'healthy' : 'unhealthy' ,'properties': [{'name': 'size', 'value': results.rows[0].cc, 'headline': true}]},
+              ].toJSON()
     checks:
       - inline:
-          schedule: '@every 30s'
+          schedule: '@every 2m'
           postgres:
             - query: SELECT time_end FROM job_history WHERE name = 'ReconcileAll' AND status = 'SUCCESS' LIMIT 1
               connection: "connection://{{ .Values.connectionName }}"
-              name: Last Full Reconcile
+              name: Last Full Reconcile: {{.Values.topologyName}}
               display:
                 expr: |
                   results.count == 0 ? 'N/A' : results.rows[0].time_end
@@ -592,31 +589,31 @@ spec:
                 expr: |
                   results.count == 0 || time.Since(results.rows[0].time_end).getMinutes() > 2
       - inline:
-          schedule: '@every 30s'
+          schedule: '@every 2m'
           postgres:
             - query: SELECT reltuples as count FROM  pg_class  WHERE relname ='check_statuses_is_pushed_idx'
               connection: "connection://{{ .Values.connectionName }}"
-              name: Check Status Backlog
+              name: Check Status Backlog: {{.Values.topologyName}}
               display:
                 expr: results.rows[0].count
               test:
                 expr: results.rows[0].count < 500
       - inline:
-          schedule: '@every 30s'
+          schedule: '@every 2m'
           postgres:
             - query: SELECT count(*) FROM config_analysis where is_pushed is false
               connection: "connection://{{ .Values.connectionName }}"
-              name: Config Analysis Backlog
+              name: Config Analysis Backlog: {{.Values.topologyName}}
               display:
                 expr: results.rows[0].count
               test:
                 expr: results.rows[0].count < 200
       - inline:
-          schedule: '@every 30s'
+          schedule: '@every 2m'
           postgres:
             - query: SELECT count(*) FROM config_changes where is_pushed is false
               connection: "connection://{{ .Values.connectionName }}"
-              name: Config Changes Backlog
+              name: Config Changes Backlog: {{.Values.topologyName}}
               display:
                 expr: results.rows[0].count
               test:
