@@ -4,7 +4,7 @@ kind: Playbook
 metadata:
   name: gitops-update-resource-replicas
 spec:
-  title: 'Scale'
+  title: Scale (GitOps)
   icon: flux
   category: Flux
   parameters:
