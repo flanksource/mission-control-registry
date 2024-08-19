@@ -103,7 +103,7 @@ spec:
                     // Order of CPU Max is first non empty of cpu.limit, cpu.request * 2, 1000 millicores
                     {"name": "cpu", "max": [k8s.getResourcesLimit(r, "cpu"), k8s.getResourcesRequests(r, "cpu") * 2, 1000].filter(i, i != 0)[0], "unit": "millicores", "headline": true},
                     // Order of Memory Max is first non empty of memory.limit, memory.request * 1.5, 1 GB
-                    {"name": "memory", "max": [k8s.getResourcesLimit(r, "memory"), k8s.getResourcesRequests(r, "memory") * 1.5, 1073741824]filter(i, i != 0)[0], "unit": "bytes", "headline": true},
+                    {"name": "memory", "max": [k8s.getResourcesLimit(r, "memory"), k8s.getResourcesRequests(r, "memory") * 1.5, 1073741824].filter(i, i != 0)[0], "unit": "bytes", "headline": true},
                     {"name": "node", "text": r.spec.?nodeName.orValue('')},
                     {"name": "created_at", "text": time.Parse('2006-01-02T15:04:05Z07:00', r.metadata.creationTimestamp)},
                     {"name": "namespace", "text": r.metadata.namespace},
