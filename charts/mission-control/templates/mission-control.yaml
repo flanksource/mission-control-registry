@@ -189,12 +189,11 @@ spec:
             SELECT * FROM (
               SELECT
                 ROW_NUMBER() OVER (PARTITION BY t.name ORDER BY time_end DESC) AS rn, t.name, jh.status, jh.success_count,
-                jh.error_count, jh.duration_millis, jh.time_end
+                jh.error_count, jh.details, jh.duration_millis, jh.time_end
               FROM topologies t
               INNER JOIN job_history jh ON t.id::text = jh.resource_id
               WHERE jh.status NOT in ('RUNNING', 'STALE', 'SKIPPED')
             ) AS s WHERE rn = 1
-          results: 1
       name: Topologies
       type: lookup
     icon: heart
