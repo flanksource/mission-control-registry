@@ -1,0 +1,21 @@
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Connection
+metadata:
+  name: {{ .Values.connectionName }}
+spec:
+  mssql:
+    database:
+      value: master
+    host:
+      value: {{ .Values.hostName }}
+    username:
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.secretName }}
+          key: username
+    password:
+      valueFrom:
+        secretKeyRef:
+          name: {{ .Values.secretName }}
+          key: password
