@@ -1,0 +1,25 @@
+playbooks:
+  # If this is set to false, no playbooks will be created
+  enabled: true
+  createDeployment: true
+  logs: true
+  delete: true
+  ignoreChanges: true
+  cleanupFailedPods: true
+  podSnapshot: false
+  requestNamespaceAccess: true
+  restart: true
+  scale: true
+  updateImage: true
+  updateResources: true
+
+delete:
+  types:
+    - Kubernetes::Pod
+    - Kubernetes::Deployment
+    - Kubernetes::Statefulset
+    - Kubernetes::ReplicaSet
+    - Kubernetes::Job
+    - Kubernetes::CronJob
+    - Kubernetes::DaemonSet
+    - Kubernetes::ConfigMap

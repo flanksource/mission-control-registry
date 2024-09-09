@@ -1,0 +1,142 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+{{- if and .Values.playbooks.enabled .Values.playbooks.ignoreChanges }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-ignore-changes
+spec:
+  actions:
+    - exec:
+        script: |
+          #! /usr/bin/pwsh
+          # gotemplate: left-delim=$[[ right-delim=]]
+
+          $ns="$[[.config.tags.namespace]]"
+          $type="$[[.config.type]]"
+          $name="$[[.config.name]]"
+          $severity="$[[.params.severity | default ""]]"
+          $changes="$[[.params.changes | default ""]]"
+          $ignore="$[[.params.ignore | default ""]]"
+          $resource="$[[ strings.ToLower (index (split .config.type "::") 1) ]]"
+
+          echo "Ignoring $ns/$name changes"
+
+
+          function annotate {
+            if ($ignore -eq "true") {
+                Write-Host "kubectl annotate $resource $name -n $ns 'config-db.flanksource.com/ignore=*'"
+                kubectl annotate $resource $name -n $ns "config-db.flanksource.com/ignore=*" -v 1
+
+            }
+
+            if ($severity -ne "") {
+                  kubectl annotate $resource $name -n $ns "config-db.flanksource.com/ignore-change-severity=$severity"
+            }
+
+            if ($changes -ne "") {
+              kubectl annotate $resource $name -n $ns "config-db.flanksource.com/ignore-changes=$changes"
+            }
+          }
+
+          function annotatePatch {
+            param (
+              [string]$resource,
+              [string]$annotationKey,
+              [string]$annotationValue
+            )
+
+            if ($resource -like "cronjob*" ) {
+
+              return @{
+                spec=@{
+                  jobTemplate=@{
+                    spec=@{
+                      template=@{
+                        metadata=@{
+                          annotations=@{
+                            $annotationKey=$annotationValue
+                          }
+                        }
+                      }
+                    }
+                  }
+
+                }
+              } | ConvertTo-Json -Compress -Depth 10
+            } else {
+              return @{
+                spec=@{
+                  template=@{
+                    metadata=@{
+                      annotations=@{
+                        $annotationKey=$annotationValue
+                      }
+                    }
+                  }
+                }
+              } | ConvertTo-Json -Compress -Depth 10
+            }
+          }
+
+          function patch {
+            if ($ignore -eq "true") {
+              $p = annotatePatch $resource "config-db.flanksource.com/ignore" "*"
+              Write-Host $p
+              kubectl patch $resource $name -n $ns -p $p
+            }
+
+            if ($severity -ne "") {
+                $p = annotatePatch $resource "config-db.flanksource.com/ignore-change-severity" $severity
+                kubectl patch $resource $name -n $ns -p $p
+            }
+
+            if ($changes -ne "") {
+              $p = annotatePatch $resource "config-db.flanksource.com/ignore-changes" $changes
+              kubectl patch $resource $name -n $ns -p $p
+            }
+          }
+
+          annotate
+
+          if ($type -ne "pod") {
+            patch
+          }
+      name: Ignore Resources
+  category: Kubernetes
+  configs:
+    - types:
+        - Kubernetes::Pod
+        - Kubernetes::Deployment
+        - Kubernetes::Statefulset
+        - Kubernetes::ReplicaSet
+        - Kubernetes::Job
+        - Kubernetes::CronJob
+        - Kubernetes::DaemonSet
+        - Kubernetes::ConfigMap
+  icon: silence
+  parameters:
+    - default: ""
+      label: Ignore all changes and updates to this resource
+      name: ignore
+      type: checkbox
+      required: false
+    - default: ""
+      label: Ignore all changes below this severity level
+      name: severity
+      required: false
+      properties:
+        options:
+          - label: Low
+            value: low
+          - label: Medium
+            value: med
+          - label: high
+            value: High
+      type: list
+    - default: ""
+      label: Comma seperated list of change types to ignore, use '*' for all
+      name: changes
+      required: false
+  title: Ignore Changes
+{{- end }}

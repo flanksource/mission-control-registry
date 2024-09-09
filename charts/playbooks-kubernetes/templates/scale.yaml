@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.scale }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-scale
+spec:
+  title: Scale
+  icon: scale-out
+  category: Kubernetes
+  configs:
+    - types:
+        - Kubernetes::Deployment
+        - Kubernetes::StatefulSet
+  parameters:
+    - name: replicas
+      label: Replicas
+      type: text
+      default: "$(.config.config.spec.replicas)"
+  actions:
+    - name: Scale resource
+      exec:
+        script: |
+          kubectl scale $(.config.config_class | strings.ToLower) -n $(.config.tags.namespace) $(.config.name) --replicas=$(.params.replicas)
+{{- end}}

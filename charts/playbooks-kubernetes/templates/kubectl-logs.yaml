@@ -1,0 +1,109 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+{{- if and .Values.playbooks.enabled .Values.playbooks.logs }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-logs
+spec:
+  runsOn:
+    -  $[[` "$[[- if .agent ]]$[[.agent.id]]$[[ else ]]local$[[ end ]]" `]]
+  actions:
+   - name: Kubectl Logs
+     exec:
+      script: |
+        # gotemplate: left-delim=$[[ right-delim=]]
+
+        left="{""{"
+        right="}""}"
+
+
+        function template() {
+          local -n outvar=$1
+          outvar="$left $2 $right"
+        }
+
+
+        ns=" -n  $[[.config.tags.namespace]]"
+        type="$[[.config.type]]"
+        name="$[[.config.name]]"
+        template pod "color .PodColor .PodName"
+        template namespace "colorBlue .Namespace"
+        template container "color .ContainerColor .ContainerName"
+        template msg ".Message"
+        template nl  '"\n"'
+        selector=""
+        echo $pod $container $msg> msg.tpl
+        stern="stern --color always --container-state all --no-follow --since  $[[.params.since]] --tail $[[.params.lines]]"
+        fblog="fblog -p"
+        cmd=""
+        case $type in
+            Kubernetes::Namespace)
+              selector="-n $name '.*'"
+             echo $namespace/$pod $msg > msg.tpl
+              ;;
+            Kubernetes::Pod)
+              selector="$name $ns"
+             echo $container $msg > msg.tpl
+              ;;
+            Kubernetes::Node)
+              selector="--node $name $ns"
+              ;;
+            *)
+              type="$[[ strings.ToLower (index ( split .config.type "::") 1) ]]"
+              selector="$type/$name $ns"
+              ;;
+          esac
+          echo $cmd
+          if [[ "$[[.params.jsonLogs]]" == "true" ]]; then
+            $stern $selector | fblog -p
+          else
+            $stern $selector -T msg.tpl
+          fi
+  category: Kubernetes
+  configs:
+    - types:
+        - Kubernetes::Pod
+        - Kubernetes::Deployment
+        - Kubernetes::Statefulset
+        - Kubernetes::Namespace
+        - Kubernetes::ReplicaSet
+        - Kubernetes::Job
+        - Kubernetes::Node
+        - Kubernetes::Service
+        - Kubernetes::DaemonSet
+  icon: kubernetes
+  parameters:
+    - default: 1h
+      label: Since
+      name: since
+      properties:
+        options:
+          - label: 5m
+            value: 5m
+          - label: 15m
+            value: 15m
+          - label: 1h
+            value: 1h
+          - label: 2h
+            value: 2h
+          - label: 4h
+            value: 4h
+          - label: 8h
+            value: 8h
+          - label: 12h
+            value: 12h
+          - label: 1d
+            value: 24h
+          - label: 3d
+            value: 72h
+      type: list
+    - default: "5000"
+      label: Max Lines
+      name: lines
+      type: text
+    - name: jsonLogs
+      label: JSON Logs
+      type: checkbox
+  title: Logs
+{{- end }}
+
