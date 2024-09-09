@@ -28,6 +28,7 @@ jobs:
             mongo-atlas: charts/mongo-atlas/**
             postgres: charts/postgres/**
             prometheus: charts/prometheus/**
+            mission-control-playbooks-kubernetes: charts/playbooks-kubernetes/**
 
   # Job to build and test each of modified packages
   build:

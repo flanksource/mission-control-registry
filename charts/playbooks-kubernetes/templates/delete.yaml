@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.delete }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-delete
+spec:
+  title: Delete
+  icon: trash
+  category: Kubernetes
+  description: Deletes the resource
+  configs:
+    - types:
+      {{- range $k := .Values.delete.types }}
+      - {{$k}}
+      {{- end }}
+  actions:
+    - name: Delete pod
+      exec:
+        script: |
+          kubectl delete $(.config.config_class) -n $(.config.tags.namespace) $(.config.name) -v 1
+{{- end}}

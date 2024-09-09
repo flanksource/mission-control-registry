@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{ if and .Values.playbooks.enabled .Values.playbooks.updateResources }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-update-resources
+spec:
+  title: Update Resources
+  icon: scale-up
+  category: Kubernetes
+  configs:
+    - types:
+        - Kubernetes::Deployment
+        - Kubernetes::StatefulSet
+        - Kubernetes::DaemonSet
+  parameters:
+  - name: cpu_request
+    label: CPU
+    properties:
+      colSpan: 3
+    type: millicores
+    default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.requests.cpu" | default "" )'
+  - name: cpu_limit
+    properties:
+      colSpan: 3
+    label: Limit
+    type: millicores
+    default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.limits.cpu" | default "")'
+  - name: memory_request
+    label: Memory
+    properties:
+      colSpan: 3
+    type: bytes
+
+    default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.requests.memory" | default "" )'
+  - name: memory_limit
+    label: Memory Limit
+    properties:
+      colSpan: 3
+    type: bytes
+    default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.limits.memory" | default "")'
+
+
+  actions:
+    - name: Update Resource Requests and Limits
+      exec:
+        script: |
+          cmd="kubectl set resources -v=2 $(.config.config_class | strings.ToLower) $(.config.name) -n $(.config.tags.namespace) --containers=$( .config.config | jq ".spec.template.spec.containers[0].name" )"
+
+          if [[ -n "$(params.cpu_request  | default "")" ]]; then
+            $cmd --requests=cpu=$(params.cpu_request | default "")
+          fi
+          if [[ -n "$(params.memory_request  | default "")" ]]; then
+            $cmd --requests=memory=$(params.memory_request | default "")
+          fi
+          if [[ -n "$(params.cpu_limit  | default "")" ]]; then
+            $cmd --limits=cpu=$(params.cpu_limit | default "")
+          fi
+          if [[ -n "$(params.memory_limit  | default "")" ]]; then
+             $cmd --limits=memory=$(params.memory_limit | default "")
+          fi
+{{- end}}

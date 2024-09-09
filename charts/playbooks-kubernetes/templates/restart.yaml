@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.restart }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-restart
+spec:
+  title: Restart
+  icon: reload
+  category: Kubernetes
+  configs:
+    - types:
+        - Kubernetes::Deployment
+        - Kubernetes::Statefulset
+        - Kubernetes::DaemonSet
+
+  actions:
+    - name: Restart
+      exec:
+        script: |
+          kubectl rollout restart -n $(.config.tags.namespace) $(.config.config_class)/$(.config.name)
+{{- end}}

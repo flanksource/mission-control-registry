@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.updateImage }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-update-image
+spec:
+  title: Update Image
+  icon: docker
+  category: Kubernetes
+  configs:
+    - types:
+        - Kubernetes::Deployment
+        - Kubernetes::StatefulSet
+        - Kubernetes::DaemonSet
+  parameters:
+    - name: container
+      label: Container
+      type: text
+      default: '$( .config.config | jq ".spec.template.spec.containers[0].name" )'
+    - name: image
+      label: Image
+      type: text
+      default: '$( .config.config | jq ".spec.template.spec.containers[0].image" )'
+  actions:
+    - name: Update image
+      exec:
+        script: |
+          kubectl set image -n $(.config.tags.namespace) \
+            $(.config.config_class)/$(.config.name) \
+            $(.params.container)=$(.params.image)
+
+{{- end}}
