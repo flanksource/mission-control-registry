@@ -186,6 +186,11 @@ scraper:
             jq('.status.containerStatuses[0].restartCount', patch) > 0
           type: PodCrashLooping
           severity: high
+        - filter: >
+            change.change_type == 'diff' &&
+            jq('.status.conditons', patch) != null &&
+            jq('.status.conditions[] | select(.type == "Healthy").message', patch).contains('Health check passed')
+          type: HealthCheckPassed
     relationship:
       # Link Crossplane objects to the cloud resources
       - filter: config_type.startsWith("Crossplane::") && has(config.status) && has(config.status.atProvider) && has(config.status.atProvider.id)
@@ -224,6 +229,8 @@ scraper:
         age: 7d
       - name: Started
         age: 7d
+      - name: HealthCheckPassed
+        age: 4h
     changes: []
 playbooks:
   # If this is set to false, no playbooks will be created
