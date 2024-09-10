@@ -160,7 +160,10 @@ scraper:
     relationship: []
   defaultTransform:
     exclude: []
-    mask: []
+    mask:
+      - selector: config.type == 'Connection'
+        jsonpath: '$..[password,bearer,clientSecret,personalAccessToken,certificate,secretKey,token].value'
+        value: '******'
     changes:
       exclude:
         - 'details.source.component == "canary-checker" && (change_type == "Failed" || change_type == "Pass")'
