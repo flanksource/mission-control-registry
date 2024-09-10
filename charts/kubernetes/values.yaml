@@ -162,7 +162,7 @@ scraper:
     exclude: []
     mask:
       - selector: config.type == 'Connection'
-        jsonpath: '$..[password,bearer,clientSecret,personalAccessToken,certificate,secretKey,token].value'
+        jsonpath: "$..['password','bearer','clientSecret','personalAccessToken','certificate','secretKey','token'].value"
         value: '******'
     changes:
       exclude:
