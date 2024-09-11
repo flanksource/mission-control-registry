@@ -504,6 +504,7 @@ spec:
                   'status': r.status,
                   'health': r.status == 'SUCCESS' ? 'healthy': 'unhealthy',
                   'status_reason': r.details.toJSON(),
+                  'health': r.error_count == 0 ? 'healthy': (r.success_count == 0 ? 'unhealthy' : 'warning'),
                   'properties': [
                     {'name': 'success_count', 'value': r.success_count, 'headline': true},
                     {'name': 'error_count', 'value': r.error_count, 'headline': true},
