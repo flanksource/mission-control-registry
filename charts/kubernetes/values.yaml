@@ -161,7 +161,7 @@ scraper:
   defaultTransform:
     exclude: []
     mask:
-      - selector: config.type == 'Connection'
+      - selector: config_class == 'Connection'
         jsonpath: "$..['password','bearer','clientSecret','personalAccessToken','certificate','secretKey','token'].value"
         value: '******'
     changes:
