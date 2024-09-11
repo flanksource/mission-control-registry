@@ -167,7 +167,7 @@ scraper:
     changes:
       exclude:
         - 'details.source.component == "canary-checker" && (change_type == "Failed" || change_type == "Pass")'
-        - 'change_type == "diff" && config_type == "Kubernetes::Canary" && summary.startsWith("status.")'
+        - 'change_type == "diff" && config_class == "Canary" && summary.startsWith("status.")'
         - 'config_type == "Kubernetes::Node" && summary == "status.images"'
         - 'has(details.source) && details.source.component == "kustomize-controller" && details.reason == "ReconciliationSucceeded"'
         - 'config_type.startsWith("Kubernetes::") && summary == "metadata.annotations.endpoints.kubernetes.io/last-change-trigger-time"'
