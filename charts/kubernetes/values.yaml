@@ -188,7 +188,6 @@ scraper:
           severity: high
         - filter: >
             change.change_type == 'diff' &&
-            jq('.status.conditons', patch) != null &&
             jq('.status.conditions[] | select(.type == "Healthy").message', patch).contains('Health check passed')
           type: HealthCheckPassed
     relationship:
