@@ -1,0 +1,3 @@
+prometheus:
+  url:
+    value: http://prometheus
