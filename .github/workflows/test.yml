@@ -3,7 +3,41 @@ on:
   pull_request:
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    # Required permissions
+    permissions:
+      pull-requests: read
+    outputs:
+      # Expose matched filters as job 'packages' output variable
+      charts: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            argocd: charts/argocd/**
+            aws: charts/aws/**
+            azure: charts/azure/**
+            kubernetes: charts/kubernetes/**
+            mission-control: charts/mission-control/**
+            flux: charts/flux/**
+            mongo-atlas: charts/mongo-atlas/**
+            postgres: charts/postgres/**
+            prometheus: charts/prometheus/**
+            playbooks-kubernetes: charts/playbooks-kubernetes/**
+
+  # Job to build and test each of modified packages
   test:
+    needs: changes
+    strategy:
+      fail-fast: false
+      matrix:
+        # Parse JSON array containing names of all filters matching any of changed files
+        # e.g. ['package1', 'package2'] if both package folders contains changes
+        chart: ${{ fromJSON(needs.changes.outputs.charts) }}
+
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -12,17 +46,11 @@ jobs:
         with:
           version: v3.12.0
 
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+
       - name: Set up chart-testing
         uses: helm/chart-testing-action@v2.6.1
 
-      - name: Lint chart
-        run: |
-          # For AWS Chart, region is a required value
-          for chart in $(ls charts); do
-              ct lint \
-                --helm-lint-extra-args='--set region={"eu-west-1"}' \
-                --charts charts/$chart
-          done
-
-      - name: Run tests
-        run: make test
+      - run: ./test_charts.sh ${{matrix.chart}}
+        name: test
