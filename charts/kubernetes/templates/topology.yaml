@@ -130,8 +130,9 @@ spec:
                     'external_id': r.metadata.name,
                     'labels': k8s.labels(r).merge({ 'cluster': '{{.Values.clusterName}}' }),
                     'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Namespace'}],
-                    'status': k8s.getHealth(r).health,
-                    'status_reason': k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message,
+                    'health': k8s.getHealth(r).health,
+                    'status': k8s.getHealth(r).status,
+                    'status_reason': k8s.getHealth(r).healthy != 'healthy' ? k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message : '',
                     'properties': [
                       {'name': 'cpu', 'unit': 'millicores', 'headline': true},
                       {'name': 'memory', 'unit': 'bytes', 'headline': true},
