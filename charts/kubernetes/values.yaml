@@ -1,59 +1,67 @@
-# yaml-language-server: $schema=./values.schema.json
+# yaml-language-server: $schema=values.schema.json
+
+# @schema
+# required: false
+# @schema
+# @ignored
 nameOverride: ""
+# @schema
+# required: false
+# @schema
+# @ignored
 fullnameOverride: ""
+# @schema
+# required: false
+# additionalProperties: true
+# @schema
 labels: {}
 
+# @schema
+# required: false
+# $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
+# @schema
 kubeconfig: {}
 
 clusterName: kubernetes
 
 prometheus:
+  # @schema
+  # required: false
+  # @schema
   createConnection: true
+  # @schema
+  # required: false
+  # @schema
   connection: prometheus
-  url:  # @schema type:object,null
-  #   value: ''
-  #   valueFrom: ''
-
+  # @schema
+  # required: false
+  # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
+  # @schema
+  url:
+  # @schema
+  # required: false
+  # @schema
   # prometheus labels to inject: "\,label1=key1\,label2=key2\,label3=~key3"
   # Note: comma(,) needs to be escaped as /, and prometheus.labels should always start with '/,' to work with existing labels
   labels: ""
-  # Leave auth blank or use one of [username+password / bearer / oauth]
-  auth:  # @schema type:object,null
-#   username:
-#     valueFrom:
-#       secretKeyRef:
-#         name:
-#         key:
-#   password:
-#     valueFrom:
-#       secretKeyRef:
-#         name:
-#         key:
-#   bearer:
-#     valueFrom:
-#       secretKeyRef:
-#         name:
-#         key:
-#   oauth:
-#     username:
-#       valueFrom:
-#         secretKeyRef:
-#           name:
-#           key:
-#     password:
-#       valueFrom:
-#         secretKeyRef:
-#           name:
-#           key:
-#     scopes: []
-#     tokenURL: ''
-#     params: {}
+  # @schema
+  # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/connection.schema.json#/$defs/ConnectionPrometheus
+  # @schema
+  auth:
 
+# @schema
+# required: false
+# @schema
 metrics:
   enabled: true
-  # Allowed: [prometheus|gke]
-  type: prometheus  # @schema pattern:^(gke|prometheus)$
-
+  # @schema
+  # default: prometheus
+  # enum:
+  # - prometheus
+  # - gke
+  # @schema
+  type: prometheus
+  # -- queries to retrieve cpu/memory metrics for cluster/node/pod
   queries:
     prometheus:
       cluster_cpu: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels}}}[5m]))'
@@ -78,25 +86,121 @@ metrics:
       namespace_memory: 'sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name="{{.Values.metrics.queries.gke.cluster_name}}"{{.Values.prometheus.labels}}}, "namespace","$1","namespace_name", "(.+)")) by (namespace)'
 
 topology:
-  name: cluster
+  # @schema
+  # required: false
+  # default: true
+  # @schema
+  enabled: true
+  # @schema
+  # required: false
+  # @schema
+  name: "{{ .Values.clusterName }}"
+
+  # @schema
+  # required: false
+  # @schema
   schedule: "@every 5m"
+  # @schema
+  # required: false
+  # @schema
   icon: kubernetes
+  # @schema
+  # required: false
+  # @schema
   groupBy:
+    # @schema
+    # required: false
+    # @schema
     tag: ""
+    # @schema
+    # required: false
+    # additionalProperties: true
+    # type: object
+    # @schema
     selector: {}
 
 scraper:
-  name: kubernetes
+  # @schema
+  # required: false
+  # @schema
+  name: "{{ .Values.clusterName }}"
+  # @schema
+  # required: false
+  # @schema
   schedule: "@every 15m"
+  # required: false
+  # @schema
+  # required: false
+  # type: array
+  # items:
+  #   $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesResourceToWatch
+  # @schema
+  watch: []
+  # @schema
+  # type: array
+  # required: false
+  # items:
+  #   $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesResourceToWatch
+  # @schema
+  defaultWatch:
+    - apiVersion: v1
+      kind: Namespace
+    - apiVersion: v1
+      kind: Node
+    - apiVersion: v1
+      kind: Pod
+    - apiVersion: apps/v1
+      kind: Deployment
+    - apiVersion: apps/v1
+      kind: ReplicaSet
+    - apiVersion: apps/v1
+      kind: StatefulSet
+    - apiVersion: apps/v1
+      kind: DaemonSet
+    - apiVersion: batch/v1
+      kind: CronJob
+    - apiVersion: batch/v1
+      kind: Job
+  # @schema
+  # $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesExclusionConfig
+  # @schema
   exclusions:
+    # @schema
+    # required: false
+    # type: array
+    # items:
+    #   type: string
+    # @schema
     name: []
+    # @schema
+    # required: false
+    # type: array
+    # items:
+    #   type: string
+    # @schema
     namespace: []
+    # @schema
+    # required: false
+    # type: array
+    # items:
+    #   type: string
+    # @schema
     kind: []
+    # @schema
+    # required: false
+    # type: object
+    # allowProperties: true
+    # @schema
     labels: {}
+
+
+  # @schema
+  # $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesExclusionConfig
+  # @schema
   defaultExclusions:
     name: []
     namespace: []
-    labels:  # @schema skipProperties:true
+    labels:
       canaries.flanksource.com/generated: "true"
       canaries.flanksource.com/check-id: "*"
       canaries.flanksource.com/check: "*"
@@ -118,7 +222,20 @@ scraper:
       - certificaterequests
       - orders.acme.cert-manager.io
 
+  # @schema
+  # required: false
+  # type: array
+  # items:
+  #   $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesRelationshipSelectorTemplate
+  # @schema
   relationships: []
+
+  # @schema
+  # required: false
+  # type: array
+  # items:
+  #   $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesRelationshipSelectorTemplate
+  # @schema
   defaultRelationships:
     - kind:
         expr: "has(spec.claimRef) ? spec.claimRef.kind : ''"
@@ -134,8 +251,18 @@ scraper:
       kind:
         value: "GitRepository"
 
+  # @schema
+  # required: false
+  # $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesEventConfig
+  # @schema
   event:
     exclusions:
+      # @schema
+      # type: array
+      # items:
+      #   type: string
+      # required: false
+      # @schema
       reason:
         - SuccessfulCreate
         - Created
@@ -144,12 +271,28 @@ scraper:
         - GarbageCollectionSucceeded
 
     severityKeywords:
+      # @schema
+      # type: array
+      # required: false
+      # items:
+      #   type: string
+      # @schema
       error:
         - failed
         - error
+      # @schema
+      # type: array
+      # required: false
+      # items:
+      #   type: string
+      # @schema
       warn:
         - backoff
         - nodeoutofmemory
+  # @schema
+  # required: false
+  # $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/Transform
+  # @schema
   transform:
     exclude: []
     mask: []
@@ -158,6 +301,10 @@ scraper:
       mapping: []
     expr: ""
     relationship: []
+  # @schema
+  # required: false
+  # $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/Transform
+  # @schema
   defaultTransform:
     exclude: []
     mask:
@@ -209,8 +356,19 @@ scraper:
             filter(item, has(item.persistentVolumeClaim)).
             map(item, {"type": "Kubernetes::PersistentVolumeClaim", "name": item.persistentVolumeClaim.claimName}).
             toJSON()
+
+  # @schema
+  # required: false
+  # additionalProperties: true
+  # @schema
   retention:
     staleItemAge: "4h"
+    # @schema
+    # type: array
+    # items:
+    #   $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/ChangeRetentionSpec
+    # required: false
+    # @schema
     defaultChanges:
       - name: ReconciliationSucceeded
         age: 1d
@@ -230,7 +388,17 @@ scraper:
         age: 7d
       - name: HealthCheckPassed
         age: 4h
+    # @schema
+    # type: array
+    # items:
+    #   $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/ChangeRetentionSpec
+    # required: false
+    # @schema
     changes: []
+
+# @schema
+# required: false
+# @schema
 playbooks:
   # If this is set to false, no playbooks will be created
   # If true, all individual playbook values will be honored

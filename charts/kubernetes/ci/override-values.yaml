@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=../values.schema.json
+clusterName: aws
+
+prometheus:
+  url:
+    value: http://prometheus
+  auth:
+    username:
+      value: user
+    password:
+      value: password
+topology:
+  groupBy:
+    selector:
+      a: b
+scraper:
+  retention:
+    staleItemAge: "4h"
+    changes:
+      - name: sadas
+    defaultChanges:
+      - count: 1
+
+  watch:
+    - apiVersion: v1
+      kind: other
