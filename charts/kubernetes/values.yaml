@@ -132,7 +132,7 @@ scraper:
   # @schema
   # required: false
   # @schema
-  name: "{{ .Values.clusterName }}"
+  name: "kubernetes-{{ .Values.clusterName }}"
   # @schema
   # required: false
   # @schema
