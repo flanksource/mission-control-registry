@@ -570,8 +570,8 @@ spec:
                 'type': 'Notification',
                 'health': r.failed == 0 ? 'healthy' : (r.sent > 0 ? 'warning' : 'unhealthy'),
                 'properties':[
-                  {'name': 'Sent', value: r.sent, 'headline': true},
-                  {'name': 'Failed', value: r.failed, 'headline': true},
+                  {'name': 'Sent', 'value': r.sent, 'headline': true},
+                  {'name': 'Failed', 'value': r.failed, 'headline': true},
                 ],
               }).toJSON()
 
