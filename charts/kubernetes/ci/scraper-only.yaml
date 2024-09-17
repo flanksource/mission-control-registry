@@ -1,0 +1,6 @@
+scraper:
+  watch:
+    - apiVersion: v1
+      kind: Other
+topology:
+  enabled: false

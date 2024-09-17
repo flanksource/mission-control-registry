@@ -1,437 +1,535 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
   "properties": {
     "clusterName": {
+      "default": "kubernetes",
+      "required": [],
+      "title": "clusterName",
       "type": "string"
     },
     "fullnameOverride": {
-      "type": "string"
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
     },
     "kubeconfig": {
-      "properties": {},
-      "type": "object"
+      "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+      "required": []
     },
     "labels": {
-      "properties": {},
-      "type": "object"
+      "additionalProperties": true,
+      "required": [],
+      "title": "labels"
     },
     "metrics": {
+      "additionalProperties": false,
       "properties": {
         "enabled": {
+          "default": true,
+          "required": [],
+          "title": "enabled",
           "type": "boolean"
         },
         "queries": {
+          "additionalProperties": false,
+          "description": "queries to retrieve cpu/memory metrics for cluster/node/pod",
           "properties": {
             "gke": {
+              "additionalProperties": false,
               "properties": {
                 "cluster_cpu": {
+                  "default": "sum(rate(kubernetes_io:container_cpu_core_usage_time{container_name!=\"\",cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}[5m]))",
+                  "required": [],
+                  "title": "cluster_cpu",
                   "type": "string"
                 },
                 "cluster_memory": {
+                  "default": "sum(kubernetes_io:container_memory_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}})",
+                  "required": [],
+                  "title": "cluster_memory",
                   "type": "string"
                 },
                 "cluster_name": {
+                  "default": "",
+                  "required": [],
+                  "title": "cluster_name",
                   "type": "string"
                 },
                 "namespace_cpu": {
+                  "default": "sum(rate(label_replace(kubernetes_io:container_cpu_core_usage_time{container_name!=\"\",cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"namespace\",\"$1\",\"namespace_name\", \"(.+)\")[5m])) by (namespace)",
+                  "required": [],
+                  "title": "namespace_cpu",
                   "type": "string"
                 },
                 "namespace_memory": {
+                  "default": "sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"namespace\",\"$1\",\"namespace_name\", \"(.+)\")) by (namespace)",
+                  "required": [],
+                  "title": "namespace_memory",
                   "type": "string"
                 },
                 "node_cpu": {
+                  "default": "sum(rate(label_replace(kubernetes_io:node_cpu_core_usage_time{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"node\",\"$1\",\"node_name\", \"(.+)\")[5m:])) by (node)",
+                  "required": [],
+                  "title": "node_cpu",
                   "type": "string"
                 },
                 "node_memory": {
+                  "default": "sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"node\",\"$1\",\"node_name\", \"(.+)\")) by (node)",
+                  "required": [],
+                  "title": "node_memory",
                   "type": "string"
                 },
                 "node_storage": {
+                  "default": "sum(label_replace(kubernetes_io:node_ephemeral_storage_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}},  \"node\",\"$1\",\"node_name\", \"(.+)\")) by (node)",
+                  "required": [],
+                  "title": "node_storage",
                   "type": "string"
                 },
                 "pod_cpu": {
+                  "default": "sum(rate(label_replace(kubernetes_io:container_cpu_core_usage_time{container_name!=\"\",cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"pod\",\"$1\",\"pod_name\", \"(.+)\")[5m:])) by (pod)",
+                  "required": [],
+                  "title": "pod_cpu",
                   "type": "string"
                 },
                 "pod_memory": {
+                  "default": "sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"pod\",\"$1\",\"pod_name\", \"(.+)\")) by (pod)",
+                  "required": [],
+                  "title": "pod_memory",
                   "type": "string"
                 }
               },
+              "required": [
+                "cluster_name",
+                "cluster_cpu",
+                "cluster_memory",
+                "node_cpu",
+                "node_memory",
+                "node_storage",
+                "pod_cpu",
+                "pod_memory",
+                "namespace_cpu",
+                "namespace_memory"
+              ],
+              "title": "gke",
               "type": "object"
             },
             "prometheus": {
+              "additionalProperties": false,
               "properties": {
                 "cluster_cpu": {
+                  "default": "1000 * sum(rate(container_cpu_usage_seconds_total{container!=\"\"{{.Values.prometheus.labels}}}[5m]))",
+                  "required": [],
+                  "title": "cluster_cpu",
                   "type": "string"
                 },
                 "cluster_memory": {
+                  "default": "sum(container_memory_working_set_bytes{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}})",
+                  "required": [],
+                  "title": "cluster_memory",
                   "type": "string"
                 },
                 "namespace_cpu": {
+                  "default": "1000 * sum(rate(container_cpu_usage_seconds_total{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (namespace)",
+                  "required": [],
+                  "title": "namespace_cpu",
                   "type": "string"
                 },
                 "namespace_memory": {
+                  "default": "sum(container_memory_working_set_bytes{container!=\"\",pod!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase=\"Running\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} \u003e 0) by (namespace)",
+                  "required": [],
+                  "title": "namespace_memory",
                   "type": "string"
                 },
                 "node_cpu": {
+                  "default": "1000 * sum(rate(container_cpu_usage_seconds_total{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (node)",
+                  "required": [],
+                  "title": "node_cpu",
                   "type": "string"
                 },
                 "node_memory": {
+                  "default": "sum(container_memory_working_set_bytes{container!=\"\",pod!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase=\"Running\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} \u003e 0) by (node)",
+                  "required": [],
+                  "title": "node_memory",
                   "type": "string"
                 },
                 "node_storage": {
+                  "default": "max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"rootfs\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m]))",
+                  "required": [],
+                  "title": "node_storage",
                   "type": "string"
                 },
                 "pod_cpu": {
+                  "default": "1000 * sum(rate(container_cpu_usage_seconds_total{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (pod)",
+                  "required": [],
+                  "title": "pod_cpu",
                   "type": "string"
                 },
                 "pod_memory": {
+                  "default": "sum(container_memory_working_set_bytes{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}) by (pod)",
+                  "required": [],
+                  "title": "pod_memory",
                   "type": "string"
                 }
               },
+              "required": [
+                "cluster_cpu",
+                "cluster_memory",
+                "node_cpu",
+                "node_memory",
+                "node_storage",
+                "pod_cpu",
+                "pod_memory",
+                "namespace_cpu",
+                "namespace_memory"
+              ],
+              "title": "prometheus",
               "type": "object"
             }
           },
+          "required": [
+            "prometheus",
+            "gke"
+          ],
+          "title": "queries",
           "type": "object"
         },
         "type": {
-          "pattern": "^(gke|prometheus)$",
-          "type": "string"
+          "default": "prometheus",
+          "enum": [
+            "prometheus",
+            "gke"
+          ],
+          "required": [],
+          "title": "type"
         }
       },
-      "type": "object"
+      "required": [
+        "enabled",
+        "queries"
+      ],
+      "title": "metrics"
     },
     "nameOverride": {
-      "type": "string"
+      "default": "",
+      "required": [],
+      "title": "nameOverride"
     },
     "playbooks": {
+      "additionalProperties": false,
       "properties": {
         "cleanupFailedPods": {
+          "default": true,
+          "required": [],
+          "title": "cleanupFailedPods",
           "type": "boolean"
         },
         "createDeployment": {
-          "type": "boolean"
-        },
-        "kubectlLogs": {
+          "default": true,
+          "required": [],
+          "title": "createDeployment",
           "type": "boolean"
         },
         "deletePod": {
+          "default": true,
+          "required": [],
+          "title": "deletePod",
           "type": "boolean"
         },
         "deleteResource": {
+          "default": true,
+          "required": [],
+          "title": "deleteResource",
           "type": "boolean"
         },
         "edit_kubernetes_manifests": {
+          "additionalProperties": false,
           "properties": {
             "enabled": {
+              "default": false,
+              "required": [],
+              "title": "enabled",
               "type": "boolean"
             },
             "git_connection": {
+              "default": "connection://",
+              "required": [],
+              "title": "git_connection",
               "type": "string"
             }
           },
+          "required": [
+            "enabled",
+            "git_connection"
+          ],
+          "title": "edit_kubernetes_manifests",
           "type": "object"
         },
         "enabled": {
+          "default": true,
+          "description": "If this is set to false, no playbooks will be created\nIf true, all individual playbook values will be honored",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "kubectlLogs": {
+          "default": true,
+          "required": [],
+          "title": "kubectlLogs",
           "type": "boolean"
         },
         "podSnapshot": {
+          "default": false,
+          "required": [],
+          "title": "podSnapshot",
           "type": "boolean"
         },
         "requestNamespaceAccess": {
+          "default": true,
+          "required": [],
+          "title": "requestNamespaceAccess",
           "type": "boolean"
         },
         "restartDeployment": {
+          "default": true,
+          "required": [],
+          "title": "restartDeployment",
           "type": "boolean"
         },
         "scaleDeployment": {
+          "default": true,
+          "required": [],
+          "title": "scaleDeployment",
           "type": "boolean"
         },
         "updateResourceImage": {
+          "default": true,
+          "required": [],
+          "title": "updateResourceImage",
           "type": "boolean"
         },
         "updateResourceRequestsLimits": {
+          "default": true,
+          "required": [],
+          "title": "updateResourceRequestsLimits",
           "type": "boolean"
         }
       },
-      "type": "object"
+      "required": [
+        "enabled",
+        "kubectlLogs",
+        "deletePod",
+        "cleanupFailedPods",
+        "podSnapshot",
+        "requestNamespaceAccess",
+        "restartDeployment",
+        "scaleDeployment",
+        "createDeployment",
+        "updateResourceImage",
+        "updateResourceRequestsLimits",
+        "deleteResource",
+        "edit_kubernetes_manifests"
+      ],
+      "title": "playbooks"
     },
     "prometheus": {
+      "additionalProperties": false,
       "properties": {
         "auth": {
-          "type": [
-            "object",
-            "null"
-          ]
+          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/connection.schema.json#/$defs/ConnectionPrometheus",
+          "required": []
         },
         "connection": {
-          "type": "string"
+          "default": "prometheus",
+          "required": [],
+          "title": "connection"
         },
         "createConnection": {
-          "type": "boolean"
+          "default": "true",
+          "required": [],
+          "title": "createConnection"
         },
         "labels": {
-          "type": "string"
+          "default": "",
+          "description": "prometheus labels to inject: \"\\,label1=key1\\,label2=key2\\,label3=~key3\"\nNote: comma(,) needs to be escaped as /, and prometheus.labels should always start with '/,' to work with existing labels",
+          "required": [],
+          "title": "labels"
         },
         "url": {
-          "type": [
-            "object",
-            "null"
-          ]
+          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "required": []
         }
       },
+      "required": [],
+      "title": "prometheus",
       "type": "object"
     },
     "scraper": {
+      "additionalProperties": false,
       "properties": {
         "defaultExclusions": {
-          "properties": {
-            "kind": {
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            "labels": {
-              "type": "object"
-            },
-            "name": {
-              "type": "array"
-            },
-            "namespace": {
-              "type": "array"
-            }
-          },
-          "type": "object"
+          "$ref": "https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesExclusionConfig",
+          "required": []
         },
         "defaultRelationships": {
           "items": {
-            "properties": {
-              "kind": {
-                "properties": {
-                  "expr": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
-              },
-              "name": {
-                "properties": {
-                  "expr": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
-              },
-              "namespace": {
-                "properties": {
-                  "expr": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
-              }
-            },
-            "type": "object"
+            "$ref": "https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesRelationshipSelectorTemplate",
+            "required": []
           },
+          "required": [],
+          "title": "defaultRelationships",
           "type": "array"
         },
         "defaultTransform": {
-          "properties": {
-            "changes": {
-              "properties": {
-                "exclude": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "mapping": {
-                  "items": {
-                    "properties": {
-                      "filter": {
-                        "type": "string"
-                      },
-                      "type": {
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "type": "array"
-                }
-              },
-              "type": "object"
-            },
-            "exclude": {
-              "type": "array"
-            },
-            "mask": {
-              "type": "array"
-            },
-            "relationship": {
-              "items": {
-                "properties": {
-                  "external_id": {
-                    "properties": {
-                      "expr": {
-                        "type": "string"
-                      }
-                    },
-                    "type": "object"
-                  },
-                  "filter": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
-              },
-              "type": "array"
-            }
+          "$ref": "https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/Transform",
+          "required": []
+        },
+        "defaultWatch": {
+          "items": {
+            "$ref": "https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesResourceToWatch",
+            "required": []
           },
-          "type": "object"
+          "required": [],
+          "title": "defaultWatch",
+          "type": "array"
         },
         "event": {
-          "properties": {
-            "exclusions": {
-              "properties": {
-                "reason": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                }
-              },
-              "type": "object"
-            },
-            "severityKeywords": {
-              "properties": {
-                "error": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "warn": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                }
-              },
-              "type": "object"
-            }
-          },
-          "type": "object"
+          "$ref": "https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesEventConfig",
+          "required": []
         },
         "exclusions": {
-          "properties": {
-            "kind": {
-              "type": "array"
-            },
-            "labels": {
-              "properties": {},
-              "type": "object"
-            },
-            "name": {
-              "type": "array"
-            },
-            "namespace": {
-              "type": "array"
-            }
-          },
-          "type": "object"
+          "$ref": "https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesExclusionConfig",
+          "required": []
         },
         "name": {
-          "type": "string"
+          "default": "{{ .Values.clusterName }}",
+          "required": [],
+          "title": "name"
         },
         "relationships": {
+          "items": {
+            "$ref": "https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesRelationshipSelectorTemplate",
+            "required": []
+          },
+          "required": [],
+          "title": "relationships",
           "type": "array"
         },
         "retention": {
+          "additionalProperties": true,
           "properties": {
             "changes": {
+              "items": {
+                "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/ChangeRetentionSpec",
+                "required": []
+              },
+              "required": [],
+              "title": "changes",
               "type": "array"
             },
             "defaultChanges": {
               "items": {
-                "properties": {
-                  "age": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  }
-                },
-                "type": "object"
+                "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/ChangeRetentionSpec",
+                "required": []
               },
+              "required": [],
+              "title": "defaultChanges",
               "type": "array"
             },
             "staleItemAge": {
+              "default": "4h",
+              "required": [],
+              "title": "staleItemAge",
               "type": "string"
             }
           },
-          "type": "object"
+          "required": [
+            "staleItemAge"
+          ],
+          "title": "retention"
         },
         "schedule": {
-          "type": "string"
+          "default": "@every 15m",
+          "required": [],
+          "title": "schedule"
         },
         "transform": {
-          "properties": {
-            "changes": {
-              "properties": {
-                "exclude": {
-                  "type": "array"
-                },
-                "mapping": {
-                  "type": "array"
-                }
-              },
-              "type": "object"
-            },
-            "exclude": {
-              "type": "array"
-            },
-            "expr": {
-              "type": "string"
-            },
-            "mask": {
-              "type": "array"
-            },
-            "relationship": {
-              "type": "array"
-            }
+          "$ref": "https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/Transform",
+          "required": []
+        },
+        "watch": {
+          "description": "required: false",
+          "items": {
+            "$ref": "https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesResourceToWatch",
+            "required": []
           },
-          "type": "object"
+          "required": [],
+          "title": "watch",
+          "type": "array"
         }
       },
+      "required": [],
+      "title": "scraper",
       "type": "object"
     },
     "topology": {
+      "additionalProperties": false,
       "properties": {
+        "enabled": {
+          "default": true,
+          "required": [],
+          "title": "enabled"
+        },
         "groupBy": {
+          "additionalProperties": false,
           "properties": {
             "selector": {
-              "properties": {},
+              "additionalProperties": true,
+              "required": [],
+              "title": "selector",
               "type": "object"
             },
             "tag": {
-              "type": "string"
+              "default": "",
+              "required": [],
+              "title": "tag"
             }
           },
-          "type": "object"
+          "required": [],
+          "title": "groupBy"
         },
         "icon": {
-          "type": "string"
+          "default": "kubernetes",
+          "required": [],
+          "title": "icon"
         },
         "name": {
-          "type": "string"
+          "default": "{{ .Values.clusterName }}",
+          "required": [],
+          "title": "name"
         },
         "schedule": {
-          "type": "string"
+          "default": "@every 5m",
+          "required": [],
+          "title": "schedule"
         }
       },
+      "required": [],
+      "title": "topology",
       "type": "object"
     }
   },
-  "title": "Schema for Kubernetes bundle for Flanksource Mission Control",
+  "required": [
+    "clusterName",
+    "prometheus",
+    "topology",
+    "scraper"
+  ],
   "type": "object"
 }
