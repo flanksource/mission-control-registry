@@ -1,4 +1,4 @@
----
+{{- if .Values.topology.enabled }}
 {{- if and .Values.prometheus.createConnection .Values.prometheus.url }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Connection
@@ -17,7 +17,7 @@ spec:
 apiVersion: canaries.flanksource.com/v1
 kind: Topology
 metadata:
-  name: {{ .Values.topology.name }}
+  name: {{ tpl .Values.topology.name . }}
   labels:
     cluster: {{.Values.clusterName}}
     {{- include "kubernetes.labels" . | nindent 4 }}
@@ -140,3 +140,4 @@ spec:
                   }).toJSON()
         properties:
           {{- include "kubernetes.topology.metricProperties.namespace" . | nindent 8 }}
+{{- end}}

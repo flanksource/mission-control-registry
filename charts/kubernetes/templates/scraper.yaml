@@ -1,7 +1,7 @@
 apiVersion: configs.flanksource.com/v1
 kind: ScrapeConfig
 metadata:
-  name: {{ .Values.scraper.name }}
+  name: {{ tpl .Values.scraper.name . }}
   labels:
     {{- include "kubernetes.labels" . | nindent 4 }}
 spec:
@@ -10,6 +10,10 @@ spec:
     - clusterName: {{ .Values.clusterName }}
       {{- with .Values.kubeconfig }}
       kubeconfig: {{ toYaml . | nindent 8}}
+      {{- end}}
+      {{- with  concat .Values.scraper.defaultWatch .Values.scraper.watch }}
+      watch:
+        {{ . | toYaml | nindent 10}}
       {{- end}}
       exclusions:
         name:  {{ concat .Values.scraper.defaultExclusions.name .Values.scraper.exclusions.name | default  (list) |toYaml | nindent 10 }}
