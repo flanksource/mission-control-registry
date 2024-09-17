@@ -554,6 +554,26 @@ spec:
                     }).toJSON()
         {{- end }}
 
+  - name: Notifications
+    icon: bell
+    components:
+    - name: NotificationGroup
+      lookup:
+        postgres:
+        - query: SELECT id, name, namespace, sent, failed FROM notifications_summary
+          connection: "connection://{{ .Values.connectionName }}"
+          display:
+            expr: |
+              results.rows.map(r, {
+                'name': r.namespace + '/' + r.name,
+                'icon': 'bell',
+                'type': 'Notification',
+                'health': r.failed == 0 ? 'healthy' : (r.sent > 0 ? 'warning' : 'unhealthy'),
+                'properties':[
+                  {'name': 'Sent', value: r.sent, 'headline': true},
+                  {'name': 'Failed', value: r.failed, 'headline': true},
+                ],
+              }).toJSON()
 
   {{- if .Values.isAgent }}
   - name: Upstream Sync
