@@ -121,8 +121,7 @@ topology:
     tag: ""
     # @schema
     # required: false
-    # additionalProperties: true
-    # type: object
+    # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/ResourceSelector
     # @schema
     selector: {}
 
@@ -347,6 +346,10 @@ scraper:
             change.change_type == 'diff' &&
             jq('.status.conditions[] | select(.type == "Healthy").message', patch).contains('Health check passed')
           type: HealthCheckPassed
+        - filter: >
+            change.change_type == 'diff' &&
+            jq('.status.conditions[] | select(.type == "Healthy").message', patch).contains('Health check failed')
+          type: HealthCheckFailed
     relationship:
       # Link Crossplane objects to the cloud resources
       - filter: config_type.startsWith("Crossplane::") && has(config.status) && has(config.status.atProvider) && has(config.status.atProvider.id)

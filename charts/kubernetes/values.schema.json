@@ -488,10 +488,8 @@
           "additionalProperties": false,
           "properties": {
             "selector": {
-              "additionalProperties": true,
-              "required": [],
-              "title": "selector",
-              "type": "object"
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/ResourceSelector",
+              "required": []
             },
             "tag": {
               "default": "",

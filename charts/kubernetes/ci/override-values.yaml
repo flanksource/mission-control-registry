@@ -12,7 +12,7 @@ prometheus:
 topology:
   groupBy:
     selector:
-      a: b
+      name: test
 scraper:
   retention:
     staleItemAge: "4h"
