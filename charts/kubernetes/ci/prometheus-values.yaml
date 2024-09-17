@@ -2,3 +2,10 @@
 prometheus:
   url:
     value: http://prometheus
+  auth:
+    url:
+      value: "ignore"
+    username:
+      value: user1
+    password:
+      value: "pass"
