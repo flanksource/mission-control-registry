@@ -367,8 +367,7 @@
         }
       },
       "required": [],
-      "title": "prometheus",
-      "type": "object"
+      "title": "prometheus"
     },
     "scraper": {
       "additionalProperties": false,
@@ -475,8 +474,7 @@
         }
       },
       "required": [],
-      "title": "scraper",
-      "type": "object"
+      "title": "scraper"
     },
     "topology": {
       "additionalProperties": false,
@@ -521,15 +519,11 @@
         }
       },
       "required": [],
-      "title": "topology",
-      "type": "object"
+      "title": "topology"
     }
   },
   "required": [
-    "clusterName",
-    "prometheus",
-    "topology",
-    "scraper"
+    "clusterName"
   ],
   "type": "object"
 }
