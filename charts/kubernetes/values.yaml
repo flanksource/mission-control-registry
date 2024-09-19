@@ -344,11 +344,11 @@ scraper:
           severity: high
         - filter: >
             change.change_type == 'diff' &&
-            jq('.status.conditions[] | select(.type == "Healthy").message', patch).contains('Health check passed')
+            jq('.status.conditions[]? | select(.type == "Healthy").message', patch).contains('Health check passed')
           type: HealthCheckPassed
         - filter: >
             change.change_type == 'diff' &&
-            jq('.status.conditions[] | select(.type == "Healthy").message', patch).contains('Health check failed')
+            jq('.status.conditions[]? | select(.type == "Healthy").message', patch).contains('Health check failed')
           type: HealthCheckFailed
     relationship:
       # Link Crossplane objects to the cloud resources
