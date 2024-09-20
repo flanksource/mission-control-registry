@@ -1,6 +1,6 @@
 apiVersion: v2
 name: mission-control-playbooks-kubernetes
-description: A Helm chart containers Kubernetes Playbooks for Flanksource Mission Control
+description: Flanksource Mission Control Playbooks that interact directly with the Kubernetes API
 icon: https://github.com/flanksource/docs/blob/main/docs/images/flanksource-icon.png?raw=true
 type: application
 version: 0.1.45
