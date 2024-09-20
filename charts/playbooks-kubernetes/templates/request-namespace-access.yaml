@@ -14,7 +14,7 @@ spec:
   parameters:
     - name: user
       label: User
-    - name: delay
+    - name: expiry
       label: Expires after
       type: list
       properties:
@@ -52,8 +52,8 @@ spec:
           --user=$(.params.user)
           --role=$(.params.role.name)
     - name: Clear Rolebinding
-      if: 'success() && params.delay != "0"'
-      delay: ".params.delay"
+      if: 'success() && params.expiry != "0"'
+      delay: "params.expiry"
       exec:
         script: |
           kubectl delete rolebinding "playbook-$(.run.id)" --namespace=$(.config.name)

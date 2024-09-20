@@ -54,3 +54,9 @@ jobs:
 
       - run: ./test_charts.sh ${{matrix.chart}}
         name: test
+
+  test-all:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Done"
