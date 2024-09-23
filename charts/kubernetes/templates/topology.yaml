@@ -59,7 +59,7 @@ spec:
                     'status_reason': k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message,
                     'status_expr': k8s.getHealth(r).health.quote(),
                     'health': k8s.getHealth(r).health,
-                    'configID': r.metadata.uid,
+                    'config_id': r.metadata.uid,
                     'properties': [
                       {"name": "cpu", "max": k8s.cpuAsMillicores(r.status.allocatable["cpu"]), "unit": "millicores", "headline": true},
                       {"name": "memory", "max": k8s.memoryAsBytes(r.status.allocatable["memory"]), "unit": "bytes", "headline": true},
@@ -98,7 +98,7 @@ spec:
                   'status': k8s.getHealth(r).health,
                   'status_reason': k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message,
                   'health': k8s.getHealth(r).health,
-                  'configID': r.metadata.uid,
+                  'config_id': r.metadata.uid,
                   'properties': [
                     {"name": "image", "text": r.spec.containers[0].image},
                     {"name": "cpu", "max": [k8s.getResourcesLimit(r, "cpu"), k8s.getResourcesRequests(r, "cpu") * 2, 1000].filter(i, i != 0)[0], "unit": "millicores", "headline": true},
@@ -135,7 +135,7 @@ spec:
                     'health': k8s.getHealth(r).health,
                     'status': k8s.getHealth(r).status,
                     'status_reason': k8s.getHealth(r).status != 'Healthy' ? k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message : '',
-                    'configID': r.metadata.uid,
+                    'config_id': r.metadata.uid,
                     'properties': [
                       {'name': 'cpu', 'unit': 'millicores', 'headline': true},
                       {'name': 'memory', 'unit': 'bytes', 'headline': true},
