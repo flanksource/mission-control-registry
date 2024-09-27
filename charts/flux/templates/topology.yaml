@@ -70,7 +70,10 @@ spec:
                     'status_reason': r.description,
                     'config_id': r.id,
                     'health': r.health,
-                    'selectors': [{'labelSelector': 'kustomize.toolkit.fluxcd.io/name='+r.name + ',kustomize.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace}],
+                    'selectors': [
+                      {'labelSelector': 'kustomize.toolkit.fluxcd.io/name='+r.name + ',kustomize.toolkit.fluxcd.io/namespace='+r.config.metadata.namespace},
+                      {'search': 'component_config_traverse=$(.self.id),outgoing type=Kubernetes::Pod'}
+                    ],
                     'configs': [{'name': r.name, 'namespace': r.config.metadata.namespace, 'type': 'Kubernetes::Kustomization'}],
                     'properties': [
                       {'name': 'Message', 'text': r.config.status.conditions[0].message},
