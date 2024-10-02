@@ -1,0 +1,45 @@
+{{- if .Values.playbooks.updateHelmValues }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: update-helm-values
+spec:
+  title: Update helm values
+  icon: helm
+  category: Flux
+  configs:
+    - types:
+        - Kubernetes::HelmRelease
+
+  parameters:
+    - default: 'chore: update $(.config.type)/$(.config.name)'
+      label: Commit Message
+      name: commit_message
+
+    - default: $(.config.config.spec.values | toJSON | json | toYAML)
+      label: ""
+      name: yamlInput
+      properties:
+        size: large
+      type: code
+
+  actions:
+    - name: Update helm values
+      gitops:
+        repo:
+          {{ include "git-origin" . | nindent 10}}
+          branch: edit-manifest-$(random.Alpha 8)
+        commit:
+          author: '$(.user.name)'
+          email: '$(.user.email)'
+          message: $(.params.commit_message)
+        {{ include "git-pr" (list . "$(.params.commit_message)" ) | nindent 8}}
+        patches:
+          - path: '$(.git.file)'
+            yq: |
+              select(
+                .kind=="$(.config.config | jq `.kind`)" and
+                .metadata.name=="$(.config.config | jq `.metadata.name`)"
+              ) |= $(.params.yamlInput | yaml | toJSON)
+
+{{- end}}

@@ -1,0 +1,71 @@
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kustomize-create-kustomization
+spec:
+  category: Flux
+  description: Create a new kustomization object in namespace
+  icon: kustomize
+  title: Create Kustomization
+
+  configs:
+    - types:
+        - Kubernetes::Kustomization
+  parameters:
+    - name: Name
+      label: Name
+      icon: kustomize
+      required: true
+    - name: Path
+      label: Path
+      default: "./"
+      required: true
+    - name: repo
+      label: Git Repository
+      type: config
+      properties:
+        filter:
+          - types:
+              - Kubernetes::GitRepository
+
+  actions:
+
+    - name: "Create manifest"
+      gitops:
+        commit:
+          author: $(.user.name)
+          email: $(.user.email | default "" )
+          message: "chore: create kustomization $(.params.Name)"
+        files:
+          - path: "$(.git.dir)/$(.params.Name).yaml"
+            content: |
+              apiVersion: kustomize.toolkit.fluxcd.io/v1
+              kind: Kustomization
+              metadata:
+                name: $(.params.Name)
+                namespace: $(.config.tags.namespace)
+                annotations:
+                  "mission-control/playbook": $(.playbook.name)
+                  "mission-control/run": $(.run.id)
+                  "mission-control/createdBy": $(.user.name)
+              spec:
+                interval: 5m0s
+                path: $(.params.Path)
+                prune: true
+                sourceRef:
+                  kind: GitRepository
+                  name:  $(.params.repo.name)
+        patches:
+          - path:  $(.git.kustomize.file)
+            yq: '.resources += "$(.git.dir)/$(.params.Name).yaml"'
+        {{ include "git-pr" (list . "Create kustomization $(.params.Name)" ) | nindent 8}}
+        repo:
+          {{ omit .Values.git "branch" "url" "base" | toYaml | nindent 10 }}
+          url: $(.git.url)
+          {{- if .Values.createPullRequest}}
+          branch: "deploy/$(.params.Name)"
+          base: $(.git.branch)
+          {{- else }}
+          branch: $(.git.branch)
+          {{- end }}

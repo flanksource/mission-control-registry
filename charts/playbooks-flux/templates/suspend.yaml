@@ -1,10 +1,10 @@
-{{- if and .Values.playbooks.enabled .Values.playbooks.suspend }}
+{{- if .Values.playbooks.suspend }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: flux-suspend
 spec:
-  title: Flux Suspend
+  title: Suspend
   icon: flux
   category: Flux
   configs:

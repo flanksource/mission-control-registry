@@ -1,0 +1,42 @@
+{{- if .Values.playbooks.updateHelmChartVersion }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: update-helm-chart-version
+spec:
+  title: Update helm chart version
+  icon: helm
+  category: Flux
+  configs:
+    - types:
+        - Kubernetes::HelmRelease
+
+  parameters:
+    - default: $(.config.config.spec.chart.spec.version)
+      label: "Version"
+      name: version
+      type: text
+
+    - default: 'chore: bump $(.config.config.spec.chart.spec.name)'
+      label: Commit Message
+      name: commit_message
+
+  actions:
+    - name: Update helm chart version
+      gitops:
+        repo:
+          {{ include "git-origin" . | nindent 10}}
+          branch: update-version-$(random.Alpha 8)
+        commit:
+          author: '$(.user.name)'
+          email: '$(.user.email)'
+          message: $(.params.commit_message)
+        {{ include "git-pr" (list . "$(.params.commit_message)" ) | nindent 8}}
+        patches:
+          - path: '$(.git.file)'
+            yq: |
+              select(
+                .kind=="HelmRelease" and
+                .metadata.name=="$(.config.config | jq `.metadata.name`)"
+              ).spec.chart.spec.version |= $(.params.version)
+{{- end}}

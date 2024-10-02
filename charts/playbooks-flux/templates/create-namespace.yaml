@@ -1,0 +1,58 @@
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kustomize-create-namespace
+spec:
+  category: Flux
+  description: Create a new namespace
+  icon: namespace
+  title: Create Namespace
+
+  configs:
+    - types:
+        - Kubernetes::Kustomization
+  parameters:
+    - name: Name
+      label: Name
+      icon: namespace
+      required: true
+
+  actions:
+    - name: "Create manifest"
+      gitops:
+        commit:
+          author: $(.user.name)
+          email: $(.user.email | default "" )
+          message: "chore: create namespace $(.params.Name)"
+        files:
+          - path: "$(.git.dir)/namespaces/$(.params.Name)/kustomization.yaml"
+            content: |
+              apiVersion: kustomize.config.k8s.io/v1beta1
+              kind: Kustomization
+              buildMetadata: [originAnnotations]
+              resources:
+                - namespace.yaml
+          - path: $(.git.dir)/namespaces/$(.params.Name)/namespace.yaml
+            content: |
+              apiVersion: v1
+              kind: Namespace
+              metadata:
+                name: $(.params.Name)
+                annotations:
+                  "mission-control/playbook": $(.playbook.name)
+                  "mission-control/run": $(.run.id)
+                  "mission-control/createdBy": $(.user.name)
+        patches:
+          - path:  $(.git.kustomize.file)
+            yq: '.resources += "namespaces/$(.params.Name)"'
+        {{ include "git-pr" (list . "Create namespace $(.params.Name)" ) | nindent 8}}
+        repo:
+          {{ omit .Values.git "branch" "url" "base" | toYaml | nindent 10 }}
+          url: $(.git.url)
+          {{- if .Values.createPullRequest}}
+          branch: "deploy/$(.params.Name)"
+          base: $(.git.branch)
+          {{- else }}
+          branch: $(.git.branch)
+          {{- end }}

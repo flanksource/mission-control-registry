@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.debug }}
+
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kustomize-debug-git
+spec:
+  title: Debug Gitops
+  icon: k8s-deployment
+  category: Flux
+
+  configs:
+    - labelSelector:  kustomize.toolkit.fluxcd.io/name
+
+
+  actions:
+    - name: debug2
+      exec:
+        script: |
+          echo $(.config.id | gitops_source  | toJSON | shellQuote ) | jq
+    - name: debug3
+      exec:
+        script: |
+          echo $(. | toJSON | shellQuote) | jq
+{{- end }}
