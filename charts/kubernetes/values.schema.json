@@ -407,7 +407,7 @@
           "required": []
         },
         "name": {
-          "default": "{{ .Values.clusterName }}",
+          "default": "kubernetes-{{ .Values.clusterName }}",
           "required": [],
           "title": "name"
         },
@@ -504,6 +504,18 @@
           "default": "kubernetes",
           "required": [],
           "title": "icon"
+        },
+        "ingress": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled"
+            }
+          },
+          "required": [],
+          "title": "ingress"
         },
         "name": {
           "default": "{{ .Values.clusterName }}",

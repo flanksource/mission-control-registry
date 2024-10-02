@@ -144,6 +144,7 @@ spec:
         properties:
           {{- include "kubernetes.topology.metricProperties.namespace" . | nindent 8 }}
 
+    {{- if .Values.topology.ingress }}
     - name: Ingresses
       icon: k8s-ingress
       type: Kubernetes::Ingresses
@@ -178,5 +179,6 @@ spec:
                       }
                     }],
                   }).toJSON()
+    {{- end}}
 
 {{- end}}

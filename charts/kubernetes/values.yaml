@@ -125,6 +125,16 @@ topology:
     # @schema
     selector: {}
 
+  # @schema
+  # required: false
+  # @schema
+  ingress:
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    enabled: true
+
 # @schema
 # required: false
 # @schema
