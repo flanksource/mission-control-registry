@@ -1,0 +1,68 @@
+{{ if .Values.playbooks.updateResources -}}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kustomize-update-resources
+spec:
+  title: 'Update CPU/Mem'
+  icon: flux
+  category: Flux
+  parameters:
+  - default: 'chore: update resources for $(.config.type)/$(.config.name)'
+    label: Commit Message
+    name: commit_message
+  - name: cpu_request
+    label: CPU
+    properties:
+      colSpan: 3
+    type: millicores
+    default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.requests.cpu" | default "" )'
+  - name: cpu_limit
+    properties:
+      colSpan: 3
+    label: Limit
+    type: millicores
+    default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.limits.cpu" | default "")'
+  - name: memory_request
+    label: Memory
+    properties:
+      colSpan: 3
+    type: bytes
+
+    default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.requests.memory" | default "" )'
+  - name: memory_limit
+    label: Memory Limit
+    properties:
+      colSpan: 3
+    type: bytes
+    default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.limits.memory" | default "")'
+
+  configs:
+    - labelSelector: 'kustomize.toolkit.fluxcd.io/name'
+      types:
+        - Kubernetes::Deployment
+        - Kubernetes::StatefulSet
+        - Kubernetes::DaemonSet
+
+  actions:
+    - name: Create Pull Request With Changes
+      gitops:
+        repo:
+          {{ include "git-origin" . | nindent 10}}
+          branch: update-image-$(random.Alpha 8)
+        commit:
+          author: '$(.user.name)'
+          email: '$(.user.email)'
+          message: $(.params.commit_message)
+        {{ include "git-pr" (list . "$(.params.commit_message)") | nindent 8}}
+        patches:
+          - path: '$(.git.file)'
+            yq: |
+              select(
+                .kind=="$(.config.config | jq `.kind`)" and
+                .metadata.name=="$(.config.config | jq `.metadata.name`)"
+              ).spec.template.spec.containers[0].resources |= {
+                "requests": {"cpu": "$(.params.cpu_request)", "memory": $(.params.memory_request)},
+                "limits": {"cpu": "$(.params.cpu_limit)", "memory": $(.params.memory_limit)}
+              }
+{{ end }}

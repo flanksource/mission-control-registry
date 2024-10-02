@@ -1,0 +1,18 @@
+createPullRequest: false
+git:
+  # connection: connection://mission-control/github
+  # url: https://github.com/flanksource/demo-gitops.git
+  type: github
+playbooks:
+  enabled: true
+  resume: true
+  suspend: true
+  reconcile: true
+  edit: true
+  debug: false
+  createDeployment: true
+  updateHelmValues: true
+  updateHelmChartVersion: true
+  updateResources: true
+  updateImage: true
+  scale: true

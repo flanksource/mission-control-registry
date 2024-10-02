@@ -1,19 +1,18 @@
-{{- if and .Values.playbooks.enabled .Values.playbooks.resume }}
+{{- if .Values.playbooks.resume }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: flux-resume
 spec:
-  title: Flux Resume
+  title: Resume
   icon: flux
   category: Flux
   configs:
     - types:
         - Kubernetes::HelmRelease
         - Kubernetes::Kustomization
-
   actions:
-    - name: Resume resource
+    - name: Resume
       exec:
         script: |
           flux resume -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower) $(.config.name)

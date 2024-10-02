@@ -1,10 +1,10 @@
-{{- if and .Values.playbooks.enabled .Values.playbooks.reconcile }}
+{{- if .Values.playbooks.reconcile }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: flux-reconcile
 spec:
-  title: Flux Reconcile
+  title: Reconcile
   icon: flux
   category: Flux
   configs:

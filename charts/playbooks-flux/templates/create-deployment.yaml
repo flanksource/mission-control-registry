@@ -1,0 +1,107 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if .Values.playbooks.createDeployment }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kustomize-create-deployment
+spec:
+  title: Create Deployment
+  icon: k8s-deployment
+  category: Flux
+  description: Create a new deployment
+  parameters:
+    - name: name
+      label: Name
+      required: true
+
+    - name: image
+      label: Container Image
+      required: true
+
+    - name: cpu_request
+      label: CPU
+      properties:
+        colSpan: 3
+      type: millicores
+      default: '100m'
+      required: true
+    - name: cpu_limit
+      properties:
+        colSpan: 3
+      label: Limit
+      type: millicores
+    - name: memory_request
+      label: Memory
+      properties:
+        colSpan: 3
+      type: bytes
+      default: '100Mi'
+      required: true
+    - name: memory_limit
+      label: Memory Limit
+      properties:
+        colSpan: 3
+      type: bytes
+  configs:
+    - labelSelector:  kustomize.toolkit.fluxcd.io/name
+      types:
+        - Kubernetes::Namespace
+
+
+  actions:
+     - name: "Create manifest"
+      gitops:
+        commit:
+          author: $(.user.name)
+          email: $(.user.email | default "" )
+          message: "chore: create namespace $(.params.Name)"
+        files:
+           - path: "$(git.dir)/deploy-$(.params.name).yaml"
+             content: |
+                apiVersion: apps/v1
+                kind: Deployment
+                metadata:
+                  name: $(.params.name)
+                  namespace: $(.config.name)
+                  annotations:
+                    "mission-control/playbook": $(.playbook.name)
+                    "mission-control/run": $(.run.id)
+                    "mission-control/createdBy": $(.user.name)
+                spec:
+                  replicas: 1
+                  selector:
+                    matchLabels:
+                      app.kubernetes.io/name: $(.params.name)
+                  template:
+                    metadata:
+                      labels:
+                        app.kubernetes.io/name: $(.params.name)
+                    spec:
+                      containers:
+                        - name: $(.params.name)
+                          image: $(.params.image)
+                          resources:
+                            limits:
+                              memory: $(.params.memory_limit | default "")
+                              cpu: $(.params.cpu_limit | default "")
+                            requests:
+                              cpu: $(.params.cpu_request)
+                              memory: $(.params.memory_request)
+
+
+        patches:
+          - path: "$(.git.kustomize.file)"
+            yq: '.resources += "deploy-$(.params.name).yaml"'
+        {{ include "git-pr" (list . "Create namespace $(.params.Name)" ) | nindent 8}}
+        repo:
+          {{ omit .Values.git "branch" "url" "base" | toYaml | nindent 10 }}
+          url: $(.git.url)
+          {{- if .Values.createPullRequest}}
+          branch: "deploy/create-deploy-$(.params.Name)"
+          base: $(.git.branch)
+          {{- else }}
+          branch: $(.git.branch)
+          {{- end }}
+{{- end}}
