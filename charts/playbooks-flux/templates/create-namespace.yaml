@@ -26,14 +26,14 @@ spec:
           email: $(.user.email | default "" )
           message: "chore: create namespace $(.params.Name)"
         files:
-          - path: "$(.git.dir)/namespaces/$(.params.Name)/kustomization.yaml"
+          - path: "$(.git.kustomize.path)/namespaces/$(.params.Name)/kustomization.yaml"
             content: |
               apiVersion: kustomize.config.k8s.io/v1beta1
               kind: Kustomization
               buildMetadata: [originAnnotations]
               resources:
                 - namespace.yaml
-          - path: $(.git.dir)/namespaces/$(.params.Name)/namespace.yaml
+          - path: $(.git.kustomize.path)/namespaces/$(.params.Name)/namespace.yaml
             content: |
               apiVersion: v1
               kind: Namespace

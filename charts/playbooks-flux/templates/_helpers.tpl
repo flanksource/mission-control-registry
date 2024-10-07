@@ -1,7 +1,7 @@
 {{- define "git-origin" -}}
 {{- omit .Values.git "url" "base" "branch" | toYaml}}
-url: $(.env.git.url | strings.ReplaceAll "ssh://git@" "https://")
-base: "$(.env.git.branch)"
+url: $(.git.git.url | strings.ReplaceAll "ssh://git@" "https://")
+base: "$(.git.git.branch)"
 {{- end}}
 
 
