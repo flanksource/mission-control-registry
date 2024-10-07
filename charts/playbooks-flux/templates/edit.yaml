@@ -17,10 +17,10 @@ spec:
       properties:
         size: large
       type: code
-    - default: '$(git.url)'
+    - default: '$(.git.git.url)'
       label: Git Repo
       name: url
-    - default: '$(git.file)'
+    - default: '$(.git.git.file)'
       label: File
       name: file
 
@@ -39,7 +39,7 @@ spec:
           message: $(.params.commit_message)
         {{ include "git-pr" (list . "$(.params.commit_message)" ) | nindent 8}}
         patches:
-          - path: '$(git.file)'
+          - path: '$(.params.file)'
             yq: |
               select(
                 .kind=="$(.config.config | jq `.kind`)" and

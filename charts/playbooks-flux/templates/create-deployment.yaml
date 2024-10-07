@@ -1,7 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
 
 {{- if .Values.playbooks.createDeployment }}
----
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
@@ -51,14 +50,14 @@ spec:
 
 
   actions:
-     - name: "Create manifest"
+    - name: "Create manifest"
       gitops:
         commit:
           author: $(.user.name)
           email: $(.user.email | default "" )
           message: "chore: create namespace $(.params.Name)"
         files:
-           - path: "$(git.dir)/deploy-$(.params.name).yaml"
+           - path: "$(.git.kustomize.path)/deploy-$(.params.name).yaml"
              content: |
                 apiVersion: apps/v1
                 kind: Deployment
