@@ -56,7 +56,7 @@ spec:
           message: $(.params.commit_message)
         {{ include "git-pr" (list . "$(.params.commit_message)") | nindent 8}}
         patches:
-          - path: '$(.git.file)'
+          - path: '$(.git.git.file)'
             yq: |
               select(
                 .kind=="$(.config.config | jq `.kind`)" and
