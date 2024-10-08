@@ -89,7 +89,6 @@ spec:
                               cpu: $(.params.cpu_request)
                               memory: $(.params.memory_request)
 
-
         patches:
           - path: "$(.git.kustomize.file)"
             yq: '.resources += "deploy-$(.params.name).yaml"'
@@ -99,8 +98,8 @@ spec:
           url: $(.git.url)
           {{- if .Values.createPullRequest}}
           branch: "deploy/create-deploy-$(.params.Name)"
-          base: $(.git.branch)
+          base: $(.git.git.branch)
           {{- else }}
-          branch: $(.git.branch)
+          branch: $(.git.git.branch)
           {{- end }}
 {{- end}}
