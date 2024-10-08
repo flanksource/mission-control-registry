@@ -27,6 +27,7 @@ jobs:
             postgres: charts/postgres/**
             prometheus: charts/prometheus/**
             playbooks-kubernetes: charts/playbooks-kubernetes/**
+            playbooks-flux: charts/playbooks-flux/**
 
   # Job to build and test each of modified packages
   test:
