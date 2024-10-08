@@ -95,7 +95,7 @@ spec:
         {{ include "git-pr" (list . "Create namespace $(.params.Name)" ) | nindent 8}}
         repo:
           {{ omit .Values.git "branch" "url" "base" | toYaml | nindent 10 }}
-          url: $(.git.url)
+          url: $(.git.git.url)
           {{- if .Values.createPullRequest}}
           branch: "deploy/create-deploy-$(.params.Name)"
           base: $(.git.git.branch)
