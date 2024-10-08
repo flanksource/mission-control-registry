@@ -137,6 +137,11 @@ topology:
 
     # @schema
     # required: false
+    # @schema
+    nameExpr: 'r.spec.rules.size() > 0 ? r.spec.rules[0].host : r.metadata.name'
+
+    # @schema
+    # required: false
     # default: false
     # @schema
     enableChecks: false

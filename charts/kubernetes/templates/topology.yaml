@@ -163,7 +163,7 @@ spec:
               display:
                 expr: |
                   dyn(results).map(r, r.Object).map(r, {
-                    'name': r.metadata.name,
+                    'name': {{.Values.topology.ingress.nameExpr}},
                     'namespace': r.metadata.namespace,
                     'type': 'Kubernetes::Ingress',
                     'icon': 'k8s-ingress',
