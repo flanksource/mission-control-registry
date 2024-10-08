@@ -179,7 +179,7 @@ spec:
                     'component_checks': [{
                       'inline': {
                         'http': dyn(r.spec.rules).map(rule, {
-                          'name': 'ingress-'+r.metadata.namespace + '/' + r.metadata.name + '-' + rule.host,
+                          'name': 'ingress/' + rule.host,
                           'url': 'https://' + rule.host,
                         })
                       }
