@@ -508,6 +508,11 @@
         "ingress": {
           "additionalProperties": false,
           "properties": {
+            "enableChecks": {
+              "default": false,
+              "required": [],
+              "title": "enableChecks"
+            },
             "enabled": {
               "default": true,
               "required": [],

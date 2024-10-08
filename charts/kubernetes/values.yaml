@@ -135,6 +135,12 @@ topology:
     # @schema
     enabled: true
 
+    # @schema
+    # required: false
+    # default: false
+    # @schema
+    enableChecks: false
+
 # @schema
 # required: false
 # @schema

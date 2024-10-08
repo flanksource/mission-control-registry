@@ -157,12 +157,16 @@ spec:
               {{- if not (empty .Values.kubeconfig)}}
               kubeconfig: {{ .Values.kubeconfig | toYaml | nindent 16}}
               {{- end}}
+              # If no test is provided, and no ingresses are found, topology returns an error
+              test:
+                expr: 'true'
               display:
                 expr: |
                   dyn(results).map(r, r.Object).map(r, {
                     'name': r.metadata.name,
                     'namespace': r.metadata.namespace,
                     'type': 'Kubernetes::Ingress',
+                    'icon': 'k8s-ingress',
                     'external_id': r.metadata.name,
                     'labels': k8s.labels(r).merge({ 'cluster': '{{.Values.clusterName}}' }),
                     'configs': [{'name': r.metadata.name, 'type': 'Kubernetes::Ingress'}],
@@ -170,6 +174,8 @@ spec:
                     'status': k8s.getHealth(r).status,
                     'status_reason': k8s.getHealth(r).status != 'Healthy' ? k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message : '',
                     'config_id': r.metadata.uid,
+
+                    {{- if .Values.topology.ingress.enableChecks }}
                     'component_checks': [{
                       'inline': {
                         'http': dyn(r.spec.rules).map(rule, {
@@ -178,6 +184,8 @@ spec:
                         })
                       }
                     }],
+                    {{- end}}
+
                   }).toJSON()
     {{- end}}
 
