@@ -3,7 +3,7 @@ name: mission-control-playbooks-flux
 description: A Helm chart for Flux Playbooks for Flanksource Mission Control.
 icon: https://github.com/flanksource/docs/blob/main/docs/images/flanksource-icon.png?raw=true
 type: application
-version: 0.1.48
+version: 0.1.49
 appVersion: "1.0.0"
 maintainers:
   - name: Flanksource
