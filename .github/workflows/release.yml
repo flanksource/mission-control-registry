@@ -82,7 +82,7 @@ jobs:
       - name: Push changes to chart repo
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Release ${{ needs.semantic-release.outputs.release-version }} of mission-control-${{ matrix.chart }}"
+          commit_message: "Release ${{ env.NEW_CHART_VERSION }} of mission-control-${{ matrix.chart }}"
           branch: gh-pages
           repository: ./chart-index
 
