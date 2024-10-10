@@ -40,6 +40,6 @@ spec:
               select(
                 .kind=="$(.config.config | jq `.kind`)" and
                 .metadata.name=="$(.config.config | jq `.metadata.name`)"
-              ) |= $(.params.yamlInput | yaml | toJSON)
+              ).spec.values |= $(.params.yamlInput | yaml | toJSON)
 
 {{- end}}
