@@ -38,5 +38,5 @@ spec:
               select(
                 .kind=="HelmRelease" and
                 .metadata.name=="$(.config.config | jq `.metadata.name`)"
-              ).spec.chart.spec.version |= $(.params.version)
+              ).spec.chart.spec.version |= $(.params.version | quote)
 {{- end}}
