@@ -6,10 +6,10 @@ metadata:
   name: kubernetes-logs
 spec:
   runsOn:
-    -  $[[` "$[[- if .agent ]]$[[.agent.id]]$[[ else ]]local$[[ end ]]" `]]
+    -  {{` "{{- if .agent }}{{.agent.id}}{{else}}local{{end}}" `}}
   actions:
-   - name: Kubectl Logs
-     exec:
+  - name: Kubectl Logs
+    exec:
       script: |
         # gotemplate: left-delim=$[[ right-delim=]]
 
