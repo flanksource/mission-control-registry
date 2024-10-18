@@ -429,25 +429,3 @@ scraper:
     # required: false
     # @schema
     changes: []
-
-# @schema
-# required: false
-# @schema
-playbooks:
-  # If this is set to false, no playbooks will be created
-  # If true, all individual playbook values will be honored
-  enabled: true
-  kubectlLogs: true
-  deletePod: true
-  cleanupFailedPods: true
-  podSnapshot: false
-  requestNamespaceAccess: true
-  restartDeployment: true
-  scaleDeployment: true
-  createDeployment: true
-  updateResourceImage: true
-  updateResourceRequestsLimits: true
-  deleteResource: true
-  edit_kubernetes_manifests:
-    enabled: false
-    git_connection: "connection://"
