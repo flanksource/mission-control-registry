@@ -353,6 +353,11 @@ scraper:
           config != null &&
           has(config.apiVersion) && config.apiVersion == "argoproj.io/v1alpha1" &&
           has(config.kind) && config.kind == "Application"
+        - |
+          config_type == 'Kubernetes::Pod' && jq('.metadata?.ownerReferences?[0]?.apiVersion', config) == 'batch/v1' && (
+            severity != 'info' ||
+            (change_type == 'diff' && summary.contains('metadata'))
+          )
       mapping:
         - filter: change.change_type == 'diff' && jq('.status.containerStatuses[0].lastState.terminated.reason', patch) == 'OOMKilled'
           severity: high
@@ -363,6 +368,12 @@ scraper:
             jq('.status.containerStatuses[0].restartCount', patch) > 0
           type: PodCrashLooping
           severity: high
+        - filter: change.change_type == 'diff' && jq('.status.containerStatuses[0].lastState?.terminated?.exitCode', patch) == '0'
+          type: Completed
+        - filter: change.change_type == 'diff' && jq('.status.containerStatuses[0].lastState?.terminated?.exitCode', patch) == '143'
+          type: Terminated
+        - filter: change.change_type == 'diff' && jq('.status.containerStatuses[0].restartCount', patch) != '0'
+          type: Restarted
         - filter: >
             change.change_type == 'diff' &&
             jq('.status.conditions[]? | select(.type == "Healthy").message', patch).contains('Health check passed')
