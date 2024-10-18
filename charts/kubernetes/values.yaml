@@ -355,7 +355,7 @@ scraper:
           has(config.kind) && config.kind == "Application"
         - |
           config_type == 'Kubernetes::Pod' && jq('.metadata?.ownerReferences?[0]?.apiVersion', config) == 'batch/v1' && (
-            severity != 'info' ||
+            severity == 'info' ||
             (change_type == 'diff' && summary.contains('metadata'))
           )
       mapping:
