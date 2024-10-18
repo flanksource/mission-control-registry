@@ -221,6 +221,12 @@
       "required": [],
       "title": "nameOverride"
     },
+    "playbooks": {
+      "additionalProperties": true,
+      "deprecated": true,
+      "required": [],
+      "title": "playbooks"
+    },
     "prometheus": {
       "additionalProperties": false,
       "properties": {

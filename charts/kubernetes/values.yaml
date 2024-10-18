@@ -429,3 +429,10 @@ scraper:
     # required: false
     # @schema
     changes: []
+
+# @schema
+# required: false
+# additionalProperties: true
+# deprecated: true
+# @schema
+playbooks: {}
