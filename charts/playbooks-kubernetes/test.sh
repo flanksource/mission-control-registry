@@ -1,4 +1,3 @@
-
 function runPlaybook() {
   all_args=("$@")
   echo "Running playbook $1 ${all_args[@]:1}"
@@ -13,7 +12,7 @@ runPlaybook "kubernetes-create-deployment" config=$ns  name=$name image=stefanpr
 deployment=$(kubectl get deployment -n default $name -o json  | jq -r '.metadata.uid')
 
 
-incident-commander catalog query namespace:default type=Kubernetes::Deployment  config=$name
+incident-commander catalog query namespace:default type=Kubernetes::Deployment config=$name
 
 runPlaybook "kubernetes-restart" config=$deployment
 runPlaybook "kubernetes-scale" config=$deployment replicas=1
