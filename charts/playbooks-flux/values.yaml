@@ -16,3 +16,4 @@ playbooks:
   updateResources: true
   updateImage: true
   scale: true
+  requestNamespaceAccess: true
