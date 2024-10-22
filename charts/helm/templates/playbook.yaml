@@ -1,0 +1,37 @@
+{{- if .Values.playbook.enable}}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: "{{ tpl .Values.playbook.name . }}"
+  labels: {{- include "helm.labels" . | nindent 4 }}
+spec:
+  title: Install Helm Chart
+  description: Installs helm chart on a namespace
+  category: kubernetes
+  configs:
+    - types:
+        - Kubernetes::Namespace
+  parameters:
+    - name: chart
+      label: Helm Chart
+      type: config
+      properties:
+        filter:
+          - types:
+              - Helm::Chart
+    - name: values
+      label: Values
+      type: code
+      properties:
+        language: yaml
+        schema: $(.params.chart.config.schemaURL)
+      dependsOn:
+        - chart
+  actions:
+    - name: Delete stale events
+      exec:
+        script: "echo install chart $(.params.chart.name) on namespace $(.config.name)"
+    # Todo install the chart
+    # we might need to install helm on flanksource/base-image
+{{- end }}

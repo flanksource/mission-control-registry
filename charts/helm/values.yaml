@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=values.schema.json
+nameOverride: ""
+fullnameOverride: ""
+labels: {}
+
+scraper:
+  name: "helm-chart-scraper"
+  schedule: "@every 1d"
+
+  # @schema
+  # required: true
+  # type: array
+  # items:
+  #   type: string
+  # @schema
+  charts: []
+
+# install a playbook that allows installation of scraped helm charts into a namespace
+playbook:
+  # @schema
+  # required: false
+  # type: boolean
+  # @schema
+  enable: true
+
+  name: "install-helm-chart"
