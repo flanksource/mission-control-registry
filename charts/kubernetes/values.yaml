@@ -362,9 +362,10 @@ scraper:
         - filter: change.change_type == 'diff' && jq('.status.containerStatuses[0].lastState.terminated.reason', patch) == 'OOMKilled'
           severity: high
           type: OOMKilled
+        # We added a 0 in the jq list because CEL was behaving incorrectly for objects that returned just []
         - filter: >
             change.change_type == 'diff' &&
-            jq('[.status.initContainerStatuses[]?.restartCount,.status.containerStatuses[]?.restartCount]', patch).all(rc, rc != 0)
+            jq('[.status.initContainerStatuses[]?.restartCount,.status.containerStatuses[]?.restartCount, 0]', patch).all(rc, rc != 0)
           type: PodCrashed
           severity: high
         - filter: change.change_type == 'diff' && jq('.status.containerStatuses[]?.lastState?.terminated?.exitCode', patch) == 0
