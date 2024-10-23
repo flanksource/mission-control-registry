@@ -8,6 +8,33 @@
       "title": "fullnameOverride",
       "type": "string"
     },
+    "git": {
+      "additionalProperties": false,
+      "properties": {
+        "connection": {
+          "default": "",
+          "required": [],
+          "title": "connection",
+          "type": "string"
+        },
+        "type": {
+          "default": "github",
+          "description": "url: https://github.com/flanksource/demo-gitops.git",
+          "required": [],
+          "title": "type",
+          "type": "string"
+        },
+        "url": {
+          "default": "",
+          "required": [],
+          "title": "url",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "git",
+      "type": "object"
+    },
     "global": {
       "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
       "required": [],
@@ -69,7 +96,7 @@
           "type": "string"
         },
         "schedule": {
-          "default": "@every 15m",
+          "default": "@every 1d",
           "required": [],
           "title": "schedule",
           "type": "string"
