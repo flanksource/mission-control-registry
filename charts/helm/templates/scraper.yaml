@@ -1,0 +1,32 @@
+---
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: "{{ tpl .Values.scraper.name . }}"
+  labels: {{- include "helm.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.scraper.schedule | quote }}
+  http:
+  {{- range $element := .Values.scraper.charts }}
+    - name: "{{ $element }}"
+      url: "https://artifacthub.io/api/v1/packages/helm/{{ $element }}"
+      id: "$.package_id"
+      name: "$.name"
+      type: Helm::Chart
+      properties:
+        - name: "URLs"
+          links:
+            - label: "Values Schema"
+              url: "https://artifacthub.io/api/v1/packages/$(.config.package_id)/$(.config.version)/values-schema"
+      transform:
+        javascript: |
+          if (config.has_values_schema) {
+            config.schemaURL = "https://artifacthub.io/api/v1/packages/" + config.package_id + "/" + config.version + "/values-schema";
+          }
+
+          JSON.stringify([config], null, 2)
+        exclude:
+          - jsonpath: "$.stats"
+          - jsonpath: "$.readme"
+  {{- end}}
+

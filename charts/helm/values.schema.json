@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "fullnameOverride": {
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride",
+      "type": "string"
+    },
+    "git": {
+      "additionalProperties": false,
+      "properties": {
+        "connection": {
+          "default": "",
+          "required": [],
+          "title": "connection",
+          "type": "string"
+        },
+        "type": {
+          "default": "github",
+          "description": "url: https://github.com/flanksource/demo-gitops.git",
+          "required": [],
+          "title": "type",
+          "type": "string"
+        },
+        "url": {
+          "default": "",
+          "required": [],
+          "title": "url",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "git",
+      "type": "object"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "labels": {
+      "additionalProperties": false,
+      "required": [],
+      "title": "labels",
+      "type": "object"
+    },
+    "nameOverride": {
+      "default": "",
+      "description": "yaml-language-server: $schema=values.schema.json",
+      "required": [],
+      "title": "nameOverride",
+      "type": "string"
+    },
+    "playbook": {
+      "additionalProperties": false,
+      "description": "install a playbook that allows installation of scraped helm charts into a namespace",
+      "properties": {
+        "enable": {
+          "default": true,
+          "required": [],
+          "title": "enable",
+          "type": "boolean"
+        },
+        "name": {
+          "default": "install-helm-chart",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "playbook",
+      "type": "object"
+    },
+    "scraper": {
+      "additionalProperties": false,
+      "properties": {
+        "charts": {
+          "items": {
+            "required": [],
+            "type": "string"
+          },
+          "required": [],
+          "title": "charts",
+          "type": "array"
+        },
+        "name": {
+          "default": "helm-chart-scraper",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        },
+        "schedule": {
+          "default": "@every 1d",
+          "required": [],
+          "title": "schedule",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "schedule",
+        "charts"
+      ],
+      "title": "scraper",
+      "type": "object"
+    }
+  },
+  "required": [
+    "nameOverride",
+    "fullnameOverride",
+    "labels",
+    "scraper",
+    "playbook"
+  ],
+  "type": "object"
+}
