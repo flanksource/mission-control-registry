@@ -1,3 +1,8 @@
+{{- define "git-origin" -}}
+{{- omit .Values.git "url" "base" "branch" | toYaml}}
+url: $(.git.git.url | strings.ReplaceAll "ssh://git@" "https://")
+base: "$(.git.git.branch)"
+{{- end}}
 
 {{/*
 Expand the name of the chart.

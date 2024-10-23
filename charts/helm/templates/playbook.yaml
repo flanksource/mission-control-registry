@@ -1,4 +1,4 @@
-{{- if .Values.playbook.enable}}
+{{- if .Values.playbook.enable }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -29,9 +29,52 @@ spec:
       dependsOn:
         - chart
   actions:
-    - name: Delete stale events
-      exec:
-        script: "echo install chart $(.params.chart.name) on namespace $(.config.name)"
-    # Todo install the chart
-    # we might need to install helm on flanksource/base-image
+    - name: Create Pull Request
+      gitops:
+        repo:
+          {{ include "git-origin" . | nindent 10}}
+          connection: {{.Values.git.connection}}
+          branch: "install-chart-$(.params.chart.name)-$(random.Alpha 8)"
+        commit:
+          author: '$(.user.name)'
+          email: '$(.user.email)'
+          message: install helm chart $(.params.chart.name) on namespace $(.config.name)
+        pr:
+          title: |
+            feat: install chart $(.params.chart.name) on namespace $(.config.name)
+        patches:
+          - path: $(.git.kustomize.file)
+            yq: .resources += ["$(printf "%s-helm-repo.yaml" .params.chart.name)"]
+          - path: $(.git.kustomize.file)
+            yq: .resources += ["$(printf "%s-helm-release.yaml" .params.chart.name)"]
+        files:
+          - path: '{{"{{"}} filepath.Join .git.kustomize.path (printf "%s-helm-repo.yaml" .params.chart.name) {{"}}"}}'
+            content: |
+              apiVersion: source.toolkit.fluxcd.io/v1
+              kind: HelmRepository
+              metadata:
+                name: $(.params.chart.config.repository.name)
+                namespace: $(.config.name)
+              spec:
+                url: $(.params.chart.config.repository.url)
+          - path: '{{"{{"}} filepath.Join .git.kustomize.path (printf "%s-helm-release.yaml" .params.chart.name) {{"}}"}}'
+            content: |
+              apiVersion: helm.toolkit.fluxcd.io/v2
+              kind: HelmRelease
+              metadata:
+                name: $(.params.chart.name)
+                namespace: $(.config.name)
+              spec:
+                interval: 30m
+                chart:
+                  spec:
+                    chart: $(.params.chart.name)
+                    version: $(.params.chart.config.version)
+                    sourceRef:
+                      kind: HelmRepository
+                      name: $(.params.chart.config.repository.name)
+                      namespace: $(.config.name)
+                    interval: 30m
+                values:
+              $(.params.values | indent 4)
 {{- end }}

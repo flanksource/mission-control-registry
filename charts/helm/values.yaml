@@ -15,6 +15,30 @@ scraper:
   # @schema
   charts: []
 
+# @schema
+# required: false
+# type: object
+# @schema
+git:
+  # @schema
+  # required: false
+  # type: string
+  # @schema
+  connection: ""
+
+  # @schema
+  # required: false
+  # type: string
+  # @schema
+  url: ""
+
+  # @schema
+  # required: false
+  # type: string
+  # @schema
+  # url: https://github.com/flanksource/demo-gitops.git
+  type: github
+
 # install a playbook that allows installation of scraped helm charts into a namespace
 playbook:
   # @schema
