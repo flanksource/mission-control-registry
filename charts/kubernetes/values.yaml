@@ -118,7 +118,7 @@ topology:
     # @schema
     # required: false
     # @schema
-    tag: ""
+    tag: "cluster"
     # @schema
     # required: false
     # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/ResourceSelector
