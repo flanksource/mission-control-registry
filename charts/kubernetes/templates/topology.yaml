@@ -39,32 +39,28 @@ spec:
         type: virtual
         icon: server
         lookup:
-          kubernetes:
-            - kind: Node
-              name: k8s
-              {{- if not (empty .Values.kubeconfig)}}
-              kubeconfig: {{ .Values.kubeconfig | toYaml | nindent 16}}
-              {{- end}}
+          catalog:
+            - selector:
+              - types: ['Kubernetes::Node']
               display:
                 expr: |
-                  dyn(results).map(r, r.Object).map(r, {
-                    'name': r.metadata.name,
+                  dyn(results).map(r, {
+                    'name': r.name,
                     'type': 'Kubernetes::Node',
-                    'labels': k8s.labels(r).merge({ 'cluster': '{{.Values.clusterName}}' }),
-                    'external_id': r.metadata.name,
+                    'labels': r.labels,
+                    'external_id': r.name,
                     'logs': [{'name': 'Kubernetes', 'type': 'KubernetesNode'}],
-                    'configs': [{'id': r.metadata.uid}],
-                    'selectors': [{'fieldSelector': 'node='+r.metadata.name}],
-                    'status': k8s.getHealth(r).health,
-                    'status_reason': k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message,
-                    'status_expr': k8s.getHealth(r).health.quote(),
-                    'health': k8s.getHealth(r).health,
-                    'config_id': r.metadata.uid,
+                    'configs': [{'id': r.id}],
+                    'selectors': [{'fieldSelector': 'node='+r.name}],
+                    'status': r.status,
+                    'status_reason': r.status + ' ' + k8s.getHealth(r.config).message,
+                    'health': r.health,
+                    'config_id': r.id,
                     'properties': [
-                      {"name": "cpu", "max": k8s.cpuAsMillicores(r.status.allocatable["cpu"]), "unit": "millicores", "headline": true},
-                      {"name": "memory", "max": k8s.memoryAsBytes(r.status.allocatable["memory"]), "unit": "bytes", "headline": true},
-                      {"name": "ephemeral-storage", "max": has(r.status.allocatable) && ("ephemeral-storage" in r.status.allocatable) ? k8s.memoryAsBytes(r.status.allocatable["ephemeral-storage"]) : 0, "unit": "bytes", "headline": true},
-                      {"name": "zone", "text": "topology.kubernetes.io/zone" in r.metadata.labels ? r.metadata.labels["topology.kubernetes.io/zone"]: ""},
+                      {"name": "cpu", "max": k8s.cpuAsMillicores(r.config.status.allocatable["cpu"]), "unit": "millicores", "headline": true},
+                      {"name": "memory", "max": k8s.memoryAsBytes(r.config.status.allocatable["memory"]), "unit": "bytes", "headline": true},
+                      {"name": "ephemeral-storage", "max": has(r.config.status.allocatable) && ("ephemeral-storage" in r.config.status.allocatable) ? k8s.memoryAsBytes(r.config.status.allocatable["ephemeral-storage"]) : 0, "unit": "bytes", "headline": true},
+                      {"name": "zone", "text": "topology.kubernetes.io/zone" in r.labels ? r.labels["topology.kubernetes.io/zone"]: ""},
                     ]
                   }).toJSON()
 
@@ -75,37 +71,31 @@ spec:
       icon: pods
       type: virtual
       lookup:
-        kubernetes:
-          - kind: Pod
-            {{- if not (empty .Values.kubeconfig)}}
-            kubeconfig: {{ .Values.kubeconfig | toYaml | nindent 14}}
-            {{- end}}
-            ready: false
-            ignore:
-              - junit-fail**
-              - junit-pass**
+        catalog:
+          - selector:
+            - types: ['Kubernetes::Pod']
             display:
               expr: |
-                dyn(results).map(r, r.Object).map(r, {
-                  'name': r.metadata.name,
-                  'namespace': r.metadata.namespace,
+                dyn(results).filter(r, !(r.name.startsWith('junit-'))).map(r, {
+                  'name': r.name,
+                  'namespace': r.tags['namespace'],
                   'type': 'Kubernetes::Pod',
-                  'external_id': r.metadata.namespace + '/' + r.metadata.name,
-                  'parentLookup': {'name': r.metadata.namespace, 'type': 'Kubernetes::Namespace'},
-                  'labels': k8s.labels(r).merge({ 'cluster': '{{.Values.clusterName}}' }),
-                  'configs': [{'id': r.metadata.uid}],
+                  'external_id': r.tags['namespace'] + '/' + r.name,
+                  'parentLookup': {'name': r.tags['namespace'], 'type': 'Kubernetes::Namespace'},
+                  'labels': r.labels,
+                  'configs': [{'id': r.id}],
                   'logs': [{'name': 'Kubernetes', 'type': 'KubernetesPod'}],
-                  'status': k8s.getHealth(r).health,
-                  'status_reason': k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message,
-                  'health': k8s.getHealth(r).health,
-                  'config_id': r.metadata.uid,
+                  'status': r.status,
+                  'status_reason': r.status + ' ' + k8s.getHealth(r.config).message,
+                  'health': r.health,
+                  'config_id': r.id,
                   'properties': [
-                    {"name": "image", "text": r.spec.containers[0].image},
-                    {"name": "cpu", "max": [k8s.getResourcesLimit(r, "cpu"), k8s.getResourcesRequests(r, "cpu") * 2, 1000].filter(i, i != 0)[0], "unit": "millicores", "headline": true},
-                    {"name": "memory", "max": [k8s.getResourcesLimit(r, "memory"), k8s.getResourcesRequests(r, "memory") * 3/2, 1073741824].filter(i, i != 0)[0], "unit": "bytes", "headline": true},
-                    {"name": "node", "text": r.spec.?nodeName.orValue('')},
-                    {"name": "created_at", "text": time.Parse('2006-01-02T15:04:05Z07:00', r.metadata.creationTimestamp)},
-                    {"name": "namespace", "text": r.metadata.namespace},
+                    {"name": "image", "text": r.config.spec.containers[0].image},
+                    {"name": "cpu", "max": [k8s.getResourcesLimit(r.config, "cpu"), k8s.getResourcesRequests(r.config, "cpu") * 2, 1000].filter(i, i != 0)[0], "unit": "millicores", "headline": true},
+                    {"name": "memory", "max": [k8s.getResourcesLimit(r.config, "memory"), k8s.getResourcesRequests(r.config, "memory") * 3/2, 1073741824].filter(i, i != 0)[0], "unit": "bytes", "headline": true},
+                    {"name": "node", "text": r.config.spec.?nodeName.orValue('')},
+                    {"name": "created_at", "text": time.Parse('2006-01-02T15:04:05Z07:00', r.config.metadata.creationTimestamp)},
+                    {"name": "namespace", "text": r.tags['namespace']},
                   ]
                 }).toJSON()
 
@@ -119,23 +109,21 @@ spec:
       - name: NamespaceGroup
         type: virtual
         lookup:
-          kubernetes:
-            - kind: Namespace
-              {{- if not (empty .Values.kubeconfig)}}
-              kubeconfig: {{ .Values.kubeconfig | toYaml | nindent 16}}
-              {{- end}}
+          catalog:
+            - selector:
+              - types: ['Kubernetes::Namespace']
               display:
                 expr: |
-                  dyn(results).map(r, r.Object).map(r, {
-                    'name': r.metadata.name,
+                  dyn(results).map(r, {
+                    'name': r.name,
                     'type': 'Kubernetes::Namespace',
-                    'external_id': r.metadata.name,
-                    'labels': k8s.labels(r).merge({ 'cluster': '{{.Values.clusterName}}' }),
-                    'configs': [{'id': r.metadata.uid}],
-                    'health': k8s.getHealth(r).health,
-                    'status': k8s.getHealth(r).status,
-                    'status_reason': k8s.getHealth(r).status != 'Healthy' ? k8s.getHealth(r).status + ' ' + k8s.getHealth(r).message : '',
-                    'config_id': r.metadata.uid,
+                    'external_id': r.name,
+                    'labels': r.labels,
+                    'configs': [{'id': r.id}],
+                    'health': r.health,
+                    'status': r.status,
+                    'status_reason': r.status != 'Healthy' ? r.status + ' ' + k8s.getHealth(r.config).message : '',
+                    'config_id': r.id,
                     'properties': [
                       {'name': 'cpu', 'unit': 'millicores', 'headline': true},
                       {'name': 'memory', 'unit': 'bytes', 'headline': true},
