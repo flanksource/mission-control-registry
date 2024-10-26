@@ -42,7 +42,6 @@ spec:
         filter:
           - types:
               - Kubernetes::ClusterRole
-              - Kubernetes::Role
   actions:
     - name: Create RoleBinding
       gitops:
@@ -67,7 +66,7 @@ spec:
                 namespace: "$(.config.name)"
               roleRef:
                 apiGroup: rbac.authorization.k8s.io
-                kind: $(.params.role.config_class)
+                kind: ClusterRole
                 name: $(.params.role.name)
               subjects:
                 - apiGroup: rbac.authorization.k8s.io
