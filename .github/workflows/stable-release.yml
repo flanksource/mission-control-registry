@@ -1,0 +1,94 @@
+name: Create Stable Release
+on:
+  workflow_dispatch:
+    inputs:
+      chart:
+        description: 'Chart name'
+        required: true
+        type: choice
+        options:
+        - argocd
+        - aws
+        - azure
+        - kubernetes
+        - mission-control
+        - flux
+        - mongo-atlas
+        - postgres
+        - prometheus
+        - playbooks-kubernetes
+        - playbooks-flux
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: "${{ secrets.FLANKBOT }}"
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v1
+        with:
+          version: v3.12.0
+
+      - name: Package Helm chart
+        run: |
+          cd charts/${{ inputs.chart }}
+          NEW_CHART_VERSION=$(cat Chart.yaml | yq '.version' | awk -F. -v OFS=. '{print $1, $2, $3+1}')
+
+          echo NEW_CHART_VERSION=$NEW_CHART_VERSION >> $GITHUB_ENV
+
+          yq -i e ".version |= \"$NEW_CHART_VERSION\"" Chart.yaml
+          helm package -d ../.. .
+
+          git config --global user.name 'flankbot'
+          git config --global user.email 'flankbot@users.noreply.github.com'
+          git add Chart.yaml
+          git commit -m "[skip ci] bump chart ${{inputs.chart}} to $NEW_CHART_VERSION"
+          git push
+
+      - name: Clone charts repo
+        uses: actions/checkout@v3
+        with:
+          repository: "${{ github.repository_owner }}/charts"
+          path: chart-index
+          token: "${{ secrets.FLANKBOT }}"
+
+      - name: Update chart repo
+        run: |
+          cd chart-index
+          cp ../mission-control-*.tgz ./
+          helm repo index --merge index.yaml .
+
+      - name: Push changes to chart repo
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Release ${{ env.NEW_CHART_VERSION }} of mission-control-${{ inputs.chart }}"
+          branch: gh-pages
+          repository: ./chart-index
+
+      - name: Clone mission-control-chart repo
+        if: inputs.chart == 'mission-control'
+        uses: actions/checkout@v3
+        with:
+          repository: "${{ github.repository_owner }}/mission-control-chart"
+          path: mission-control-chart
+          token: "${{ secrets.FLANKBOT }}"
+
+      - name: Update mission-control-agent dependency
+        if: inputs.chart == 'mission-control'
+        run: |
+          # mission-control chart needs to be updated as a dependency for mission-control-agent
+          yq e '.dependencies[] |= select(.name == "mission-control-watchtower").version = env(NEW_CHART_VERSION)' -i ./mission-control-chart/agent-chart/Chart.yaml
+
+          # We sleep for 120 seconds to allow charts repo to publish the mission-control-watchtower helm chart
+          sleep 120
+
+      - name: Push changes to chart repo
+        uses: stefanzweifel/git-auto-commit-action@v4
+        if: inputs.chart == 'mission-control'
+        with:
+          commit_message: "chore: bump mission-control-watchtower to ${{ env.NEW_CHART_VERSION }}"
+          branch: main
+          repository: ./mission-control-chart
