@@ -1,4 +1,3 @@
-
 LOCALBIN ?= $(shell pwd)/.bin
 
 $(LOCALBIN):
