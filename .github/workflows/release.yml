@@ -54,7 +54,33 @@ jobs:
       - name: Package Helm chart
         run: |
           cd charts/${{ matrix.chart }}
-          NEW_CHART_VERSION=$(cat Chart.yaml | yq '.version' | awk -F-beta. -v OFS=-beta. '{print $1,$2+1}')
+          CURRENT_CHART_VERSION=$(cat Chart.yaml | yq '.version')
+
+          # Regex to match SemVer pattern with optional beta version
+          # This matches versions like `1.2.3`, `1.2.3-beta.1`, etc.
+          SEMVER_REGEX="^([0-9]+)\.([0-9]+)\.([0-9]+)(-beta\.([0-9]+))?$"
+
+          # Check if version matches the SemVer pattern
+          if [[ $CURRENT_CHART_VERSION =~ $SEMVER_REGEX ]]; then
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+            BETA="${BASH_REMATCH[5]}"
+
+            if [[ -n "$BETA" ]]; then
+              # If there's a beta version, increment it
+              NEW_BETA=$((BETA + 1))
+              NEW_CHART_VERSION="${MAJOR}.${MINOR}.${PATCH}-beta.${NEW_BETA}"
+            else
+              # If no beta version, bump the PATCH and start with beta.1
+              NEW_PATCH=$((PATCH + 1))
+              NEW_CHART_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}-beta.1"
+            fi
+          else
+            echo "Invalid semantic version format."
+            exit 1
+          fi
+
           echo NEW_CHART_VERSION=$NEW_CHART_VERSION >> $GITHUB_ENV
 
           yq -i e ".version |= \"$NEW_CHART_VERSION\"" Chart.yaml
