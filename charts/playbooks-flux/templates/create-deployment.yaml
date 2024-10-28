@@ -55,7 +55,7 @@ spec:
         commit:
           author: $(.user.name)
           email: $(.user.email | default "" )
-          message: "chore: create namespace $(.params.Name)"
+          message: "chore: create deployment $(.params.name)"
         files:
            - path: "$(.git.kustomize.path)/deploy-$(.params.name).yaml"
              content: |
@@ -92,12 +92,12 @@ spec:
         patches:
           - path: "$(.git.kustomize.file)"
             yq: '.resources += "deploy-$(.params.name).yaml"'
-        {{ include "git-pr" (list . "Create namespace $(.params.Name)" ) | nindent 8}}
+        {{ include "git-pr" (list . "Create namespace $(.params.name)" ) | nindent 8}}
         repo:
           {{ omit .Values.git "branch" "url" "base" | toYaml | nindent 10 }}
           url: $(.git.git.url)
           {{- if .Values.createPullRequest}}
-          branch: "deploy/create-deploy-$(.params.Name)"
+          branch: "deploy/create-deploy-$(.params.name)"
           base: $(.git.git.branch)
           {{- else }}
           branch: $(.git.git.branch)

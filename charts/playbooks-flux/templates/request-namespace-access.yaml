@@ -1,5 +1,4 @@
 {{- if .Values.playbooks.requestNamespaceAccess }}
----
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
@@ -67,7 +66,7 @@ spec:
                 namespace: "$(.config.name)"
               roleRef:
                 apiGroup: rbac.authorization.k8s.io
-                kind: Role
+                kind: ClusterRole
                 name: $(.params.role.name)
               subjects:
                 - apiGroup: rbac.authorization.k8s.io
