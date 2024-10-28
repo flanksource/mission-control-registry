@@ -42,7 +42,7 @@ spec:
           catalog:
             - selector:
               - types: ['Kubernetes::Node']
-                scope: {{.Release.Namespace}}/{{ tpl .Values.scraper.name . }}
+                tagSelector: 'cluster={{.Values.clusterName}}'
               display:
                 expr: |
                   dyn(results).map(r, {
@@ -75,7 +75,7 @@ spec:
         catalog:
           - selector:
             - types: ['Kubernetes::Pod']
-              scope: {{.Release.Namespace}}/{{ tpl .Values.scraper.name . }}
+              tagSelector: 'cluster={{.Values.clusterName}}'
             display:
               expr: |
                 dyn(results).filter(r, !(r.name.startsWith('junit-'))).map(r, {
@@ -114,7 +114,7 @@ spec:
           catalog:
             - selector:
               - types: ['Kubernetes::Namespace']
-                scope: {{.Release.Namespace}}/{{ tpl .Values.scraper.name . }}
+                tagSelector: 'cluster={{.Values.clusterName}}'
               display:
                 expr: |
                   dyn(results).map(r, {
@@ -146,7 +146,7 @@ spec:
           catalog:
             - selector:
               - types: ['Kubernetes::Ingress']
-                scope: {{.Release.Namespace}}/{{ tpl .Values.scraper.name . }}
+                tagSelector: 'cluster={{.Values.clusterName}}'
               display:
                 expr: |
                   dyn(results).map(r, {
