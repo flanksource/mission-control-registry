@@ -5,7 +5,7 @@ helm install --devel mission-control-crds flanksource/mission-control-crds --wai
 
 function testChart() {
     cd $1
-    ct lint-and-install  --charts . --namespace default  2>&1 > stdout.log
+    ct lint-and-install  --charts . --namespace default --helm-lint-extra-args "--set=clusterName=test" --helm-extra-set-args '--set=clusterName=test'  2>&1 > stdout.log
     exitCode=$?
     cat stdout.log
 
