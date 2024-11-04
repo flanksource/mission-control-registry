@@ -3,7 +3,8 @@
   "additionalProperties": false,
   "properties": {
     "clusterName": {
-      "default": "kubernetes",
+      "default": "",
+      "minLength": 1,
       "required": [],
       "title": "clusterName",
       "type": "string"

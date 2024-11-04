@@ -22,7 +22,12 @@ labels: {}
 # @schema
 kubeconfig: {}
 
-clusterName: kubernetes
+# @schema
+# required: true
+# type: string
+# minLength: 1
+# @schema
+clusterName: ''
 
 # @schema
 # required: false
