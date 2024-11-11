@@ -1,0 +1,4 @@
+git:
+  connection:  connection://mission-control/github
+  url: https://github.com/flanksource/demo-gitops.git
+  type: github

@@ -1,0 +1,161 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "createPullRequest": {
+      "default": true,
+      "description": "yaml-language-server: $schema=values.schema.json",
+      "required": [],
+      "title": "createPullRequest",
+      "type": "boolean"
+    },
+    "git": {
+      "additionalProperties": false,
+      "properties": {
+        "connection": {
+          "default": "",
+          "description": "Git connection to use when opening Pull Requests and pushing changes",
+          "required": [],
+          "title": "connection"
+        },
+        "type": {
+          "default": "github",
+          "required": [],
+          "title": "type",
+          "type": "string"
+        },
+        "url": {
+          "default": "",
+          "description": "URL for the default git repository to use",
+          "required": [],
+          "title": "url"
+        }
+      },
+      "required": [
+        "connection",
+        "type"
+      ],
+      "title": "git",
+      "type": "object"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "playbooks": {
+      "additionalProperties": false,
+      "properties": {
+        "createDeployment": {
+          "default": true,
+          "required": [],
+          "title": "createDeployment",
+          "type": "boolean"
+        },
+        "createHelmRelease": {
+          "default": true,
+          "required": [],
+          "title": "createHelmRelease",
+          "type": "boolean"
+        },
+        "debug": {
+          "default": false,
+          "required": [],
+          "title": "debug",
+          "type": "boolean"
+        },
+        "edit": {
+          "default": true,
+          "required": [],
+          "title": "edit",
+          "type": "boolean"
+        },
+        "enabled": {
+          "default": true,
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "reconcile": {
+          "default": true,
+          "required": [],
+          "title": "reconcile",
+          "type": "boolean"
+        },
+        "requestNamespaceAccess": {
+          "default": true,
+          "required": [],
+          "title": "requestNamespaceAccess",
+          "type": "boolean"
+        },
+        "resume": {
+          "default": true,
+          "required": [],
+          "title": "resume",
+          "type": "boolean"
+        },
+        "scale": {
+          "default": true,
+          "required": [],
+          "title": "scale",
+          "type": "boolean"
+        },
+        "suspend": {
+          "default": true,
+          "required": [],
+          "title": "suspend",
+          "type": "boolean"
+        },
+        "updateHelmChartVersion": {
+          "default": true,
+          "required": [],
+          "title": "updateHelmChartVersion",
+          "type": "boolean"
+        },
+        "updateHelmValues": {
+          "default": true,
+          "required": [],
+          "title": "updateHelmValues",
+          "type": "boolean"
+        },
+        "updateImage": {
+          "default": true,
+          "required": [],
+          "title": "updateImage",
+          "type": "boolean"
+        },
+        "updateResources": {
+          "default": true,
+          "required": [],
+          "title": "updateResources",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled",
+        "resume",
+        "suspend",
+        "reconcile",
+        "edit",
+        "debug",
+        "createDeployment",
+        "updateHelmValues",
+        "updateHelmChartVersion",
+        "createHelmRelease",
+        "updateResources",
+        "updateImage",
+        "scale",
+        "requestNamespaceAccess"
+      ],
+      "title": "playbooks",
+      "type": "object"
+    }
+  },
+  "required": [
+    "createPullRequest",
+    "git",
+    "playbooks"
+  ],
+  "type": "object"
+}
