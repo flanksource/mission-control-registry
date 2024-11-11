@@ -1,0 +1,97 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if .Values.playbooks.createHelmRelease }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kustomize-create-helmrelease
+spec:
+  title: Create Helm Release
+  icon: helm
+  category: Flux
+  description: Create a new Helm Release
+  parameters:
+    - name: name
+      label: Name
+      required: true
+
+    - name: repo
+      label: Helm Repo
+      required: true
+
+    - name: chart
+      label: Helm Chart
+      required: true
+
+    - name: version
+      label: Version
+      default: "*"
+      required: true
+    - label: ""
+      name: yamlInput
+      type: code
+  configs:
+    - labelSelector:  kustomize.toolkit.fluxcd.io/name
+      types:
+        - Kubernetes::Namespace
+  actions:
+    - name: "Create manifest"
+      gitops:
+        commit:
+          author: $(.user.name)
+          email: $(.user.email | default "" )
+          message: "chore: create helm-release $(.params.name)"
+        files:
+          - path: "$(.git.dir)/helmrelease-$(.params.name).yaml"
+            content: |
+              apiVersion: source.toolkit.fluxcd.io/v1
+              kind: HelmRepository
+              metadata:
+                name: $(.params.name)
+                namespace: $(.config.name)
+                annotations:
+                  "mission-control/playbook": $(.playbook.name)
+                  "mission-control/run": $(.run.id)
+                  "mission-control/createdBy": $(.user.name)
+              spec:
+                url: $(.params.repo)
+                interval: 10m
+                provider: generic
+              ---
+              apiVersion: helm.toolkit.fluxcd.io/v2
+              kind: HelmRelease
+              metadata:
+                name: $(.params.name)
+                namespace: $(.config.name)
+                annotations:
+                  "mission-control/playbook": $(.playbook.name)
+                  "mission-control/run": $(.run.id)
+                  "mission-control/createdBy": $(.user.name)
+              spec:
+                interval: 10m
+                chart:
+                  spec:
+                    chart: $(.params.chart)
+                    version: "$(.params.version)"
+                    interval: 10m
+                    sourceRef:
+                      kind: HelmRepository
+                      name: $(.params.name)
+                      namespace: $(.config.name)
+                    reconcileStrategy: ChartVersion
+
+        patches:
+          - path: "$(.git.dir)/kustomization.yaml"
+            yq: '.resources += "helmrelease-$(.params.name).yaml"'
+        {{ include "git-pr" (list . "Create Helm Release $(.params.name)" ) | nindent 8}}
+        repo:
+          {{ omit .Values.git "branch" "url" "base" | toYaml | nindent 10 }}
+          url: $(.git.url)
+          {{- if .Values.createPullRequest}}
+          branch: "deploy/create-helmrelease-$(.params.name)"
+          base: $(.git.branch)
+          {{- else }}
+          branch: $(.git.branch)
+          {{- end }}
+{{- end}}
