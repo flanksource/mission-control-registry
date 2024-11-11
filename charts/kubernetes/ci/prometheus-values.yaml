@@ -1,4 +1,5 @@
 # yaml-language-server: $schema=../values.schema.json
+clusterName: kubernetes
 prometheus:
   url:
     value: http://prometheus
