@@ -47,8 +47,6 @@ spec:
     - labelSelector:  kustomize.toolkit.fluxcd.io/name
       types:
         - Kubernetes::Namespace
-
-
   actions:
     - name: "Create manifest"
       gitops:
@@ -57,7 +55,7 @@ spec:
           email: $(.user.email | default "" )
           message: "chore: create deployment $(.params.name)"
         files:
-           - path: "$(.git.kustomize.path)/deploy-$(.params.name).yaml"
+           - path: "$(.git.dir)/deploy-$(.params.name).yaml"
              content: |
                 apiVersion: apps/v1
                 kind: Deployment
