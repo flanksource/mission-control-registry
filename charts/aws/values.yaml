@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=./values.schema.json
 nameOverride: ""
 fullnameOverride: ""
 labels: {}
@@ -67,8 +68,11 @@ transform:
     mapping:
       - filter: change.change_type == 'TerminateInstances'
         action: delete
+      - filter: config_type == 'AWS::IAM::User' && change.change_type == 'diff' && change.summary == 'PasswordLastUsed'
+        type: Login
     exclude:
-      - change_type in ['AttachNetworkInterface', 'CreateNetworkInterface', 'DeregisterInstancesFromLoadBalancer', 'RegisterInstancesWithLoadBalancer']
+      - change_type in ['AttachNetworkInterface', 'CreateNetworkInterface', 'DeregisterInstancesFromLoadBalancer', 'RegisterInstancesWithLoadBalancer','DetachLoadBalancerFromSubnets']
+      - change_type == 'diff' &&  summary in ['AvailableIpAddressCount', 'ApproximateNumberOfMessages', 'RunningTasksCount', 'PendingTasksCount','ApproximateNumberOfMessagesNotVisible']
   relationship:
     # EKS Cluster to Kubernetes Cluster & Kubernetes Node
     - filter: config_type == 'AWS::EKS::Cluster'
