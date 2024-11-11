@@ -1,7 +1,18 @@
+# yaml-language-server: $schema=values.schema.json
 createPullRequest: true
 git:
-  # connection: connection://mission-control/github
-  # url: https://github.com/flanksource/demo-gitops.git
+  # Git connection to use when opening Pull Requests and pushing changes
+  # @schema
+  # required: true
+  # example: connection://mission-control/github
+  # @schema
+  connection:
+  # URL for the default git repository to use
+  # @schema
+  # required: false
+  # example: https://github.com/flanksource/demo-gitops.git
+  # @schema
+  url:
   type: github
 playbooks:
   enabled: true
@@ -13,6 +24,7 @@ playbooks:
   createDeployment: true
   updateHelmValues: true
   updateHelmChartVersion: true
+  createHelmRelease: true
   updateResources: true
   updateImage: true
   scale: true
