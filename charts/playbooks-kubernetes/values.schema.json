@@ -1,0 +1,170 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "delete": {
+      "additionalProperties": false,
+      "properties": {
+        "types": {
+          "items": {
+            "anyOf": [
+              {
+                "required": [],
+                "type": "string"
+              },
+              {
+                "required": [],
+                "type": "string"
+              },
+              {
+                "required": [],
+                "type": "string"
+              },
+              {
+                "required": [],
+                "type": "string"
+              },
+              {
+                "required": [],
+                "type": "string"
+              },
+              {
+                "required": [],
+                "type": "string"
+              },
+              {
+                "required": [],
+                "type": "string"
+              },
+              {
+                "required": [],
+                "type": "string"
+              }
+            ],
+            "required": []
+          },
+          "required": [],
+          "title": "types",
+          "type": "array"
+        }
+      },
+      "required": [
+        "types"
+      ],
+      "title": "delete",
+      "type": "object"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "playbooks": {
+      "additionalProperties": false,
+      "properties": {
+        "cleanupFailedPods": {
+          "default": true,
+          "required": [],
+          "title": "cleanupFailedPods",
+          "type": "boolean"
+        },
+        "createDeployment": {
+          "default": true,
+          "required": [],
+          "title": "createDeployment",
+          "type": "boolean"
+        },
+        "delete": {
+          "default": true,
+          "required": [],
+          "title": "delete",
+          "type": "boolean"
+        },
+        "deployHelmChart": {
+          "default": true,
+          "required": [],
+          "title": "deployHelmChart",
+          "type": "boolean"
+        },
+        "enabled": {
+          "default": true,
+          "description": "If this is set to false, no playbooks will be created",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "ignoreChanges": {
+          "default": true,
+          "required": [],
+          "title": "ignoreChanges",
+          "type": "boolean"
+        },
+        "logs": {
+          "default": true,
+          "required": [],
+          "title": "logs",
+          "type": "boolean"
+        },
+        "podSnapshot": {
+          "default": false,
+          "required": [],
+          "title": "podSnapshot",
+          "type": "boolean"
+        },
+        "requestNamespaceAccess": {
+          "default": true,
+          "required": [],
+          "title": "requestNamespaceAccess",
+          "type": "boolean"
+        },
+        "restart": {
+          "default": true,
+          "required": [],
+          "title": "restart",
+          "type": "boolean"
+        },
+        "scale": {
+          "default": true,
+          "required": [],
+          "title": "scale",
+          "type": "boolean"
+        },
+        "updateImage": {
+          "default": true,
+          "required": [],
+          "title": "updateImage",
+          "type": "boolean"
+        },
+        "updateResources": {
+          "default": true,
+          "required": [],
+          "title": "updateResources",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled",
+        "createDeployment",
+        "logs",
+        "delete",
+        "ignoreChanges",
+        "cleanupFailedPods",
+        "podSnapshot",
+        "requestNamespaceAccess",
+        "restart",
+        "scale",
+        "updateImage",
+        "updateResources",
+        "deployHelmChart"
+      ],
+      "title": "playbooks",
+      "type": "object"
+    }
+  },
+  "required": [
+    "playbooks",
+    "delete"
+  ],
+  "type": "object"
+}

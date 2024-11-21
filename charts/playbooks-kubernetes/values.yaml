@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=values.schema.json
 playbooks:
   # If this is set to false, no playbooks will be created
   enabled: true
@@ -12,6 +13,7 @@ playbooks:
   scale: true
   updateImage: true
   updateResources: true
+  deployHelmChart: true
 
 delete:
   types:
