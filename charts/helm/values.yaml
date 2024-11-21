@@ -13,7 +13,42 @@ scraper:
   # items:
   #   type: string
   # @schema
-  charts: []
+  charts: 
+    - flanksource/mission-control-agent
+    - flanksource/mission-control-argocd
+    - flanksource/mission-control-flux
+    - flanksource/mission-control-aws
+    - flanksource/mission-control-azure
+    - flanksource/mission-control-flux
+    - flanksource/mission-control-mongo-atlas
+    - flanksource/mission-control-playbooks-flux
+    - flanksource/mission-control-playbooks-kubernetes
+    - flanksource/mission-control-postgres
+    - flanksource/mission-control-prometheus
+    - bitnami/postgresql
+    - bitnami/postgresql-ha
+    - bitnami/mysql
+    - bitnami/rabbitmq
+    - bitnami/kafka
+    - bitnami/mongodb
+    - bitnami/keycloak
+    - bitnami/minio
+    - bitnami/opensearch
+    - bitnami/jaeger
+    - bitnami/harbor
+    - bitnami/memcached
+    - bitnami/cert-manager
+    - bitnami/external-secrets
+    - bitnami/clickhouse
+    - bitnami/jupyterhub
+    - bitnami/grafana-operator
+    - bitnami/argo-cd
+    - bitnami/sonarqube
+    - bitnami/oauth2-proxy
+
+
+
+
 
 # @schema
 # required: false
