@@ -28,6 +28,7 @@ jobs:
             prometheus: charts/prometheus/**
             playbooks-kubernetes: charts/playbooks-kubernetes/**
             playbooks-flux: charts/playbooks-flux/**
+            helm: charts/helm/**
 
   # Job to build and test each of modified packages
   test:
