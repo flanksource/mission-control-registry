@@ -1,4 +1,4 @@
-{{- if .Values.playbook.enable }}
+{{- if .Values.playbook.enabled }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook

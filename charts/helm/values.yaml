@@ -13,7 +13,7 @@ scraper:
   # items:
   #   type: string
   # @schema
-  charts: 
+  charts:
     - flanksource/mission-control-agent
     - flanksource/mission-control-argocd
     - flanksource/mission-control-flux
@@ -46,10 +46,6 @@ scraper:
     - bitnami/sonarqube
     - bitnami/oauth2-proxy
 
-
-
-
-
 # @schema
 # required: false
 # type: object
@@ -80,6 +76,6 @@ playbook:
   # required: false
   # type: boolean
   # @schema
-  enable: true
+  enabled: true
 
   name: "install-helm-chart"
