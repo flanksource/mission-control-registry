@@ -24,7 +24,6 @@ spec:
         size: large
       type: code
 
-
   configs:
     - types:
         - Kubernetes::Namespace
@@ -32,7 +31,8 @@ spec:
     - name: Create Deployment
       exec:
         script: |
-          helm repo add {{.params.chart}} {{params.repo}}
+          # gotemplate: left-delim=$[[ right-delim=]]
+          helm repo add $[[.params.chart]] $[[.params.repo]]
           helm repo update
-          helm install {{.params.chart}} -n {{.config.name}}
+          helm install $[[.params.chart]] -n $[[.config.name]]
 {{- end}}
