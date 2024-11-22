@@ -90,6 +90,7 @@ jobs:
           git config --global user.name 'flankbot'
           git config --global user.email 'flankbot@users.noreply.github.com'
           git add Chart.yaml
+          git pull --rebase origin main --autostash
           git commit -m "[skip ci] bump chart ${{matrix.chart}} to $NEW_CHART_VERSION"
           git push
 
