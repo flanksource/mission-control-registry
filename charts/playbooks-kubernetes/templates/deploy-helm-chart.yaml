@@ -5,7 +5,7 @@
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
-  name: kubernetes-create-deployment
+  name: kubernetes-deploy-helm-chart
 spec:
   title: Deploy Helm Chart
   icon: helm
