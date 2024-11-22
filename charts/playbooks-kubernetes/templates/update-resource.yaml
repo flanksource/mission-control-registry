@@ -10,7 +10,8 @@ spec:
   icon: scale-up
   category: Kubernetes
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Deployment
         - Kubernetes::StatefulSet
         - Kubernetes::DaemonSet
@@ -18,26 +19,26 @@ spec:
   - name: cpu_request
     label: CPU
     properties:
-      colSpan: 3
+      colSpan: 4
     type: millicores
     default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.requests.cpu" | default "" )'
   - name: cpu_limit
     properties:
-      colSpan: 3
+      colSpan: 4
     label: Limit
     type: millicores
     default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.limits.cpu" | default "")'
   - name: memory_request
     label: Memory
     properties:
-      colSpan: 3
+      colSpan: 4
     type: bytes
 
     default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.requests.memory" | default "" )'
   - name: memory_limit
     label: Memory Limit
     properties:
-      colSpan: 3
+      colSpan: 4
     type: bytes
     default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.limits.memory" | default "")'
 

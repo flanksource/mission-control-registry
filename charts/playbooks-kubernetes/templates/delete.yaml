@@ -12,7 +12,8 @@ spec:
   category: Kubernetes
   description: Deletes the resource
   configs:
-    - types:
+    - agent: all
+      types:
       {{- range $k := .Values.delete.types }}
       - {{$k}}
       {{- end }}

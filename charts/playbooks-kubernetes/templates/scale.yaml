@@ -11,7 +11,8 @@ spec:
   icon: scale-out
   category: Kubernetes
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Deployment
         - Kubernetes::StatefulSet
   parameters:

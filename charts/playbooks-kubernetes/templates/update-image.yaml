@@ -11,7 +11,8 @@ spec:
   icon: docker
   category: Kubernetes
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Deployment
         - Kubernetes::StatefulSet
         - Kubernetes::DaemonSet

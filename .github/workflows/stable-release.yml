@@ -3,21 +3,22 @@ on:
   workflow_dispatch:
     inputs:
       chart:
-        description: 'Chart name'
+        description: "Chart name"
         required: true
         type: choice
         options:
-        - argocd
-        - aws
-        - azure
-        - kubernetes
-        - mission-control
-        - flux
-        - mongo-atlas
-        - postgres
-        - prometheus
-        - playbooks-kubernetes
-        - playbooks-flux
+          - argocd
+          - aws
+          - azure
+          - kubernetes
+          - mission-control
+          - flux
+          - mongo-atlas
+          - postgres
+          - prometheus
+          - playbooks-kubernetes
+          - playbooks-flux
+          - helm
 
 jobs:
   release:

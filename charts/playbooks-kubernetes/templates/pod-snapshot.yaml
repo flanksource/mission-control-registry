@@ -12,7 +12,8 @@ spec:
   description: Takes a snapshot of a pod (logs, manifest and events)
   icon: add-snapshot
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Pod
   actions:
     - name: Take snapshot

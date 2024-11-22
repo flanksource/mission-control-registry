@@ -11,7 +11,8 @@ spec:
   icon: reload
   category: Kubernetes
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Deployment
         - Kubernetes::Statefulset
         - Kubernetes::DaemonSet

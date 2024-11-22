@@ -19,7 +19,8 @@ spec:
       label: Container Image
 
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Namespace
   actions:
     - name: Create Deployment

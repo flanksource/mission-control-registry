@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.deployHelmChart }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-deploy-helm-chart
+spec:
+  title: Deploy Helm Chart
+  icon: helm
+  category: Kubernetes
+  description: Deploy Helm Chart
+  parameters:
+    - label: Helm Repository
+      name: repo
+
+    - name: chart
+      label: Helm Chart
+
+    - label: ""
+      name: values
+      properties:
+        size: large
+      type: code
+
+  configs:
+    - types:
+        - Kubernetes::Namespace
+  actions:
+    - name: Create Deployment
+      exec:
+        script: |
+          # gotemplate: left-delim=$[[ right-delim=]]
+          helm repo add $[[.params.chart]] $[[.params.repo]]
+          helm repo update
+          helm install $[[.params.chart]] -n $[[.config.name]]
+{{- end}}

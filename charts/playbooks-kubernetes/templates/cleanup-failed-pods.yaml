@@ -14,7 +14,8 @@ spec:
   runsOn:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Cluster
   actions:
     - name: Delete pods

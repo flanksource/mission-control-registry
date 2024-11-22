@@ -1,4 +1,3 @@
-
 LOCALBIN ?= $(shell pwd)/.bin
 
 $(LOCALBIN):
@@ -8,10 +7,14 @@ $(LOCALBIN):
 values.schema.json: .bin/helm-schema
 	.bin/helm-schema -r -f values.yaml
 
+
+.PHONY: chart
+chart: values.schema.json  README.md
+
+
 .PHONY: README.md
 README.md: .bin/helm-docs
 	.bin/helm-docs   -t README.md.tpl
-
 
 .bin/helm-docs:
 	test -s $(LOCALBIN)/helm-docs  || \
@@ -20,6 +23,7 @@ README.md: .bin/helm-docs
 .bin/helm-schema:
 	test -s $(LOCALBIN)/helm-schema  || \
 	GOBIN=$(LOCALBIN) go install github.com/dadav/helm-schema/cmd/helm-schema@latest
+
 
 .PHONY: lint
 lint: chart

@@ -41,7 +41,8 @@ spec:
           - types:
               - Kubernetes::ClusterRole
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Namespace
   actions:
     - name: Create RoleBinding

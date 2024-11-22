@@ -105,7 +105,8 @@ spec:
       name: Ignore Resources
   category: Kubernetes
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Pod
         - Kubernetes::Deployment
         - Kubernetes::Statefulset
