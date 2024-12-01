@@ -42,6 +42,8 @@ spec:
     type: bytes
     default: '$(  .config.config | jq ".spec.template.spec.containers[0].resources.limits.memory" | default "")'
 
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
     - name: Update Resource Requests and Limits

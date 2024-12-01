@@ -11,6 +11,9 @@ spec:
   icon: trash
   category: Kubernetes
   description: Deletes the resource
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
   configs:
     - agent: all
       types:

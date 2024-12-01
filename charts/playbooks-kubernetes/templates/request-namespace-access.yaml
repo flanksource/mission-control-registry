@@ -44,6 +44,9 @@ spec:
     - agent: all
       types:
         - Kubernetes::Namespace
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
   actions:
     - name: Create RoleBinding
       exec:

@@ -20,6 +20,9 @@ spec:
       label: Replicas
       type: text
       default: "$(.config.config.spec.replicas)"
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
   actions:
     - name: Scale resource
       exec:

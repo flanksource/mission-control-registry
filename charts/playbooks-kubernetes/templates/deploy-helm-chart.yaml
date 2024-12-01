@@ -25,8 +25,12 @@ spec:
       type: code
 
   configs:
-    - types:
+    - agent: all
+      types:
         - Kubernetes::Namespace
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
   actions:
     - name: Create Deployment
       exec:
@@ -34,5 +38,5 @@ spec:
           # gotemplate: left-delim=$[[ right-delim=]]
           helm repo add $[[.params.chart]] $[[.params.repo]]
           helm repo update
-          helm install $[[.params.chart]] -n $[[.config.name]]
+          helm install $[[.params.chart]] $[[.params.repo]]/$[[.params.chart]] -n $[[.config.name]]
 {{- end}}

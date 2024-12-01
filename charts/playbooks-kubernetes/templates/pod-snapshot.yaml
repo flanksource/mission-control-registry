@@ -15,6 +15,9 @@ spec:
     - agent: all
       types:
         - Kubernetes::Pod
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
   actions:
     - name: Take snapshot
       exec:
