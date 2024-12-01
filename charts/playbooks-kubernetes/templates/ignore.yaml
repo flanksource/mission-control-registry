@@ -6,6 +6,9 @@ kind: Playbook
 metadata:
   name: kubernetes-ignore-changes
 spec:
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
   actions:
     - exec:
         script: |

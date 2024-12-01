@@ -17,6 +17,9 @@ spec:
         - Kubernetes::Statefulset
         - Kubernetes::DaemonSet
 
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
   actions:
     - name: Restart
       exec:

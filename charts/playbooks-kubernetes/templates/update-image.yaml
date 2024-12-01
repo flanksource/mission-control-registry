@@ -25,6 +25,9 @@ spec:
       label: Image
       type: text
       default: '$( .config.config | jq ".spec.template.spec.containers[0].image" )'
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
   actions:
     - name: Update image
       exec:
