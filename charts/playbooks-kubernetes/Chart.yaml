@@ -3,7 +3,7 @@ name: mission-control-playbooks-kubernetes
 description: Flanksource Mission Control Playbooks that interact directly with the Kubernetes API
 icon: https://github.com/flanksource/docs/blob/main/docs/images/flanksource-icon.png?raw=true
 type: application
-version: 0.1.47-beta.1
+version: 0.1.48
 appVersion: "1.0.0"
 maintainers:
   - name: Flanksource
