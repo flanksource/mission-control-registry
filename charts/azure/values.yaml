@@ -1,44 +1,58 @@
-nameOverride: ""
-fullnameOverride: ""
+# yaml-language-server: $schema=values.schema.json
+
+# @schema
+# description: list of labels to add the Scrape config
+# @schema
 labels: {}
 scraper:
   name: azure
 
+# @schema
+# required: true
+# @schema
 subscriptionID: ""
+# @schema
+# required: true
+# @schema
+
 organisation: ""
+# @schema
+# required: true
+# @schema
+
 tenantID: ""
 
-# connection: ''
-#
-# clientID:
-#   name: ''
-#   value: ''
-#   valueFrom:
-#     serviceAccount: ''
-#     helmRef:
-#       key: ''
-#       name: ''
-#     configMapKeyRef:
-#       key: ''
-#       name: ''
-#     secretKeyRef:
-#       key: ''
-#       name: ''
+connection: ''
 
-# clientSecret:
-#   name: ''
-#   value: ''
-#   valueFrom:
-#     serviceAccount: ''
-#     helmRef:
-#       key: ''
-#       name: ''
-#     configMapKeyRef:
-#       key: ''
-#       name: ''
-#     secretKeyRef:
-#       key: ''
-#       name: ''
+clientID:
+  name: ''
+  value: ''
+  valueFrom:
+    serviceAccount: ''
+    helmRef:
+      key: ''
+      name: ''
+    configMapKeyRef:
+      key: ''
+      name: ''
+    secretKeyRef:
+      key: ''
+      name: ''
+
+clientSecret:
+  name: ''
+  value: ''
+  valueFrom:
+    serviceAccount: ''
+    helmRef:
+      key: ''
+      name: ''
+    configMapKeyRef:
+      key: ''
+      name: ''
+    secretKeyRef:
+      key: ''
+      name: ''
 
 transform:
   relationship:
@@ -64,8 +78,11 @@ transform:
         }].toJSON()
 
 exclusions:
-  # ActivityLogs is a list of operations to exclude from activity logs.
-  # Example:
-  # - Microsoft.ContainerService/managedClusters/listClusterAdminCredential/action
-  # - Microsoft.ContainerService/managedClusters/listClusterUserCredential/action
+  # @scheme
+  # description: list of operations to exclude from activity logs
+  # examples:
+  #   - Microsoft.ContainerService/managedClusters/listClusterAdminCredential/action
+  #   - Microsoft.ContainerService/managedClusters/listClusterUserCredential/action
+  # type: array
+  # @scema
   activityLogs: []

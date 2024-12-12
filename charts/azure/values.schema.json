@@ -1,153 +1,376 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "type": "object",
-  "required": ["subscriptionID", "scraper", "tenantID"],
+  "additionalProperties": false,
   "properties": {
-    "nameOverride": {
-      "type": "string"
-    },
-    "fullnameOverride": {
-      "type": "string"
-    },
-    "labels": {
-      "type": "object"
-    },
-    "scraper": {
-      "type": "object",
+    "clientID": {
+      "additionalProperties": false,
       "properties": {
         "name": {
+          "default": "",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        },
+        "value": {
+          "default": "",
+          "required": [],
+          "title": "value",
+          "type": "string"
+        },
+        "valueFrom": {
+          "additionalProperties": false,
+          "properties": {
+            "configMapKeyRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "configMapKeyRef",
+              "type": "object"
+            },
+            "helmRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "helmRef",
+              "type": "object"
+            },
+            "secretKeyRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "secretKeyRef",
+              "type": "object"
+            },
+            "serviceAccount": {
+              "default": "",
+              "required": [],
+              "title": "serviceAccount",
+              "type": "string"
+            }
+          },
+          "required": [
+            "serviceAccount",
+            "helmRef",
+            "configMapKeyRef",
+            "secretKeyRef"
+          ],
+          "title": "valueFrom",
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "valueFrom"
+      ],
+      "title": "clientID",
+      "type": "object"
+    },
+    "clientSecret": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "default": "",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        },
+        "value": {
+          "default": "",
+          "required": [],
+          "title": "value",
+          "type": "string"
+        },
+        "valueFrom": {
+          "additionalProperties": false,
+          "properties": {
+            "configMapKeyRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "configMapKeyRef",
+              "type": "object"
+            },
+            "helmRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "helmRef",
+              "type": "object"
+            },
+            "secretKeyRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "secretKeyRef",
+              "type": "object"
+            },
+            "serviceAccount": {
+              "default": "",
+              "required": [],
+              "title": "serviceAccount",
+              "type": "string"
+            }
+          },
+          "required": [
+            "serviceAccount",
+            "helmRef",
+            "configMapKeyRef",
+            "secretKeyRef"
+          ],
+          "title": "valueFrom",
+          "type": "object"
+        }
+      },
+      "required": [
+        "name",
+        "value",
+        "valueFrom"
+      ],
+      "title": "clientSecret",
+      "type": "object"
+    },
+    "connection": {
+      "default": "",
+      "required": [],
+      "title": "connection",
+      "type": "string"
+    },
+    "exclusions": {
+      "additionalProperties": false,
+      "properties": {
+        "activityLogs": {
+          "description": "\ndescription: list of operations to exclude from activity logs\nexamples:\n  - Microsoft.ContainerService/managedClusters/listClusterAdminCredential/action\n  - Microsoft.ContainerService/managedClusters/listClusterUserCredential/action\ntype: array",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "activityLogs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "activityLogs"
+      ],
+      "title": "exclusions",
+      "type": "object"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "labels": {
+      "additionalProperties": false,
+      "description": "list of labels to add the Scrape config",
+      "required": [],
+      "title": "labels"
+    },
+    "organisation": {
+      "default": "",
+      "required": [],
+      "title": "organisation",
+      "type": "string"
+    },
+    "scraper": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "default": "azure",
+          "required": [],
+          "title": "name",
           "type": "string"
         }
       },
-      "required": ["name"]
+      "required": [
+        "name"
+      ],
+      "title": "scraper",
+      "type": "object"
     },
     "subscriptionID": {
-      "type": "string"
-    },
-    "organisation": {
-      "type": "string"
+      "default": "",
+      "required": [],
+      "title": "subscriptionID"
     },
     "tenantID": {
+      "default": "",
+      "required": [],
+      "title": "tenantID",
       "type": "string"
     },
-    "connection": {
-      "type": "string"
-    },
-    "clientID": {
-      "type": "object",
+    "transform": {
+      "additionalProperties": false,
       "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "valueFrom": {
-          "type": "object",
-          "properties": {
-            "serviceAccount": {
-              "type": "string"
-            },
-            "helmRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              }
-            },
-            "configMapKeyRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              }
-            },
-            "secretKeyRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "clientSecret": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "valueFrom": {
-          "type": "object",
-          "properties": {
-            "serviceAccount": {
-              "type": "string"
-            },
-            "helmRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              }
-            },
-            "configMapKeyRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              }
-            },
-            "secretKeyRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "exclusions": {
-      "type": "object",
-      "properties": {
-        "activityLogs": {
-          "type": "array",
+        "relationship": {
           "items": {
-            "type": "string"
-          }
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "expr": {
+                    "default": "[{\n  \"type\": \"Kubernetes::Cluster\",\n  \"labels\": {\n    \"aks-nodeResourceGroup\": config[\"properties\"][\"nodeResourceGroup\"],\n    \"subscriptionID\": labels[\"subscriptionID\"]\n  },\n}].toJSON()\n",
+                    "required": [],
+                    "title": "expr",
+                    "type": "string"
+                  },
+                  "filter": {
+                    "default": "config_class == 'KubernetesCluster'",
+                    "required": [],
+                    "title": "filter",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "filter",
+                  "expr"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "expr": {
+                    "default": "[{\n  \"type\": \"Kubernetes::Node\",\n  \"labels\": {\n    \"azure/vm-scale-set\": name,\n    \"subscriptionID\": labels[\"subscriptionID\"]\n  },\n}].toJSON()\n",
+                    "required": [],
+                    "title": "expr",
+                    "type": "string"
+                  },
+                  "filter": {
+                    "default": "config_class == 'Node'",
+                    "required": [],
+                    "title": "filter",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "filter",
+                  "expr"
+                ],
+                "type": "object"
+              }
+            ],
+            "required": []
+          },
+          "required": [],
+          "title": "relationship",
+          "type": "array"
         }
-      }
+      },
+      "required": [
+        "relationship"
+      ],
+      "title": "transform",
+      "type": "object"
     }
-  }
+  },
+  "required": [
+    "scraper",
+    "subscriptionID",
+    "organisation",
+    "tenantID",
+    "connection",
+    "clientID",
+    "clientSecret",
+    "transform",
+    "exclusions"
+  ],
+  "type": "object"
 }
-

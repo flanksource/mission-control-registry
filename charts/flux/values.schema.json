@@ -1,24 +1,134 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Generated schema for Root",
-  "type": "object",
+  "additionalProperties": false,
   "properties": {
-    "nameOverride": {
-      "type": "string"
-    },
     "fullnameOverride": {
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride",
       "type": "string"
     },
-    "topologyName": {
-      "type": "string"
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
     },
     "labels": {
-      "type": "object",
-      "properties": {},
-      "required": []
+      "additionalProperties": false,
+      "required": [],
+      "title": "labels",
+      "type": "object"
+    },
+    "nameOverride": {
+      "default": "",
+      "description": "yaml-language-server: $schema=values.schema.json\nyaml-language-server: $schema=./values.schema.json",
+      "required": [],
+      "title": "nameOverride",
+      "type": "string"
+    },
+    "playbooks": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "git": {
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "default": "connection://",
+              "required": [],
+              "title": "connection",
+              "type": "string"
+            }
+          },
+          "required": [
+            "connection"
+          ],
+          "title": "git",
+          "type": "object"
+        },
+        "reconcile": {
+          "default": true,
+          "required": [],
+          "title": "reconcile",
+          "type": "boolean"
+        },
+        "resume": {
+          "default": true,
+          "required": [],
+          "title": "resume",
+          "type": "boolean"
+        },
+        "suspend": {
+          "default": true,
+          "required": [],
+          "title": "suspend",
+          "type": "boolean"
+        },
+        "updateHelmChartVersion": {
+          "default": true,
+          "required": [],
+          "title": "updateHelmChartVersion",
+          "type": "boolean"
+        },
+        "updateHelmValues": {
+          "default": true,
+          "required": [],
+          "title": "updateHelmValues",
+          "type": "boolean"
+        },
+        "updateResourceImage": {
+          "default": true,
+          "required": [],
+          "title": "updateResourceImage",
+          "type": "boolean"
+        },
+        "updateResourceReplicas": {
+          "default": true,
+          "required": [],
+          "title": "updateResourceReplicas",
+          "type": "boolean"
+        },
+        "updateResourceResources": {
+          "default": true,
+          "required": [],
+          "title": "updateResourceResources",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled",
+        "git",
+        "resume",
+        "suspend",
+        "reconcile",
+        "updateHelmValues",
+        "updateHelmChartVersion",
+        "updateResourceResources",
+        "updateResourceImage",
+        "updateResourceReplicas"
+      ],
+      "title": "playbooks",
+      "type": "object"
+    },
+    "topologyName": {
+      "default": "flux",
+      "required": [],
+      "title": "topologyName",
+      "type": "string"
     }
   },
   "required": [
-    "topologyName"
-  ]
+    "nameOverride",
+    "fullnameOverride",
+    "labels",
+    "topologyName",
+    "playbooks"
+  ],
+  "type": "object"
 }

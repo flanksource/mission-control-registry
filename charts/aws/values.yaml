@@ -1,6 +1,4 @@
-# yaml-language-server: $schema=./values.schema.json
-nameOverride: ""
-fullnameOverride: ""
+# yaml-language-server: $schema=values.schema.json
 labels: {}
 
 topology:
@@ -8,56 +6,86 @@ topology:
 scraper:
   name: aws
 
-# connection: ""
-# accessKey:
-#   name: ""
-#   value: ""
-#   valueFrom:
-#     serviceAccount: ""
-#     helmRef:
-#       key: ""
-#       name: ""
-#     configMapKeyRef:
-#       key: ""
-#       name: ""
-#     secretKeyRef:
-#       key: ""
-#       name: ""
+connection: ""
+accessKey:
+   value: ""
+   valueFrom:
+     serviceAccount: ""
+     helmRef:
+       key: ""
+       name: ""
+     configMapKeyRef:
+       key: ""
+       name: ""
+     secretKeyRef:
+       key: ""
+       name: ""
 
-# secretKey:
-#   name: ""
-#   value: ""
-#   valueFrom:
-#     serviceAccount: ""
-#     helmRef:
-#       key: ""
-#       name: ""
-#     configMapKeyRef:
-#       key: ""
-#       name: ""
-#     secretKeyRef:
-#       key: ""
-#       name: ""
+secretKey:
+   value: ""
+   valueFrom:
+     serviceAccount: ""
+     helmRef:
+       key: ""
+       name: ""
+     configMapKeyRef:
+       key: ""
+       name: ""
+     secretKeyRef:
+       key: ""
+       name: ""
 
-region: []  # AWS regions to pull from
-# endpoint:
-# assumeRole:
+# @schema
+# description: AWS regions to pull from
+# type: array
+# @schema
+region: []
+# @schema
+# description: Custom AWS endpoint e.g. for testing with LocalStack
+# @schema
+endpoint: ""
+
+# @schema
+# description: Name of an IAM role to assume
+# @schema
+assumeRole: ""
+
+# @schema
+# description: Skip TLS verification
+# @schema
 skipTLSVerify: false
 
+# @schema
+# type: object
+# description: Import and correlate cloudtrail events with AWS resources
+# @schema
 cloudtrail:
+  # @schema
+  # description: Maximum lookback age when querying cloudtrail
+  # @schema
   maxAge: 7d
+  # @schema
+  # type: array
+  # description: list of events to to exclude
+  # @schema
   exclude: []
 
-# Import AWS Config Rule failures as insights
+# @schema
+# description: Import AWS Config Rule failures as insights
+# @schema
 compliance: true
 
-# Scrape cost reports and match them with catalog items
+# @schema
+# description: Scrape cost reports and match them with catalog items
+# type: object
+# @schema
 costReporting:
   enabled: false
   database: ""
   region: ""
   s3BucketPath: ""
   table: ""
+
 
 includeResources: []
 
@@ -74,7 +102,6 @@ transform:
       - change_type in ['AttachNetworkInterface', 'CreateNetworkInterface', 'DeregisterInstancesFromLoadBalancer', 'RegisterInstancesWithLoadBalancer','DetachLoadBalancerFromSubnets']
       - change_type == 'diff' &&  summary in ['AvailableIpAddressCount', 'ApproximateNumberOfMessages', 'RunningTasksCount', 'PendingTasksCount','ApproximateNumberOfMessagesNotVisible']
   relationship:
-    # EKS Cluster to Kubernetes Cluster & Kubernetes Node
     - filter: config_type == 'AWS::EKS::Cluster'
       expr: |
         [
@@ -82,17 +109,16 @@ transform:
           {"type": "Kubernetes::Node", "labels": {"account": labels['account'], "alpha.eksctl.io/cluster-name": labels["alpha.eksctl.io/cluster-name"]}}
         ].toJSON()
 
-    # EC2 Instance to kubernetes node
+
     - filter: config_type == 'AWS::EC2:Instance'
       expr: |
         [{"type": "Kubernetes::Node", "labels": {"alpha.eksctl.io/instance-id": config["instance_id"]}}].toJSON()
 
-    # IAM Role to Kubernetes Node
+
     - filter: config_type == 'AWS::IAM::Role'
       expr: |
         [{"type": "Kubernetes::Node", "labels": {"aws/iam-role": config["Arn"]}}].toJSON()
 
-    # AvailabilityZone to Zone ID & Kubernetes Node
     - filter: config_type == 'AWS::AvailabilityZone'
       expr: |
         [
@@ -100,7 +126,6 @@ transform:
           {"type": "AWS::AvailabilityZoneID", "name": config["ZoneId"]}
         ].toJSON()
 
-    # Region to ZoneID
     - filter: config_type == 'AWS::Region'
       expr: |
         [{"type": "AWS::AvailabilityZoneID", "labels": {"region": name}}].toJSON()

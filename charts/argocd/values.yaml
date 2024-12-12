@@ -1,7 +1,12 @@
-# yaml-language-server: $schema=./values.schema.json
-nameOverride: ""
-fullnameOverride: ""
-labels: {}
+# yaml-language-server: $schema=values.schema.json
+
+# @schema
+# default: argocd
+# @schema
 topologyName: argocd
 argocd:
+  # @schema
+  # description: The namespace that Argo is installed in
+  # default: argocd
+  # @schema
   namespace: argocd

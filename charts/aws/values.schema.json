@@ -1,160 +1,93 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Schema for AWS bundle for Flanksource Mission Control",
-  "type": "object",
+  "additionalProperties": false,
   "properties": {
-    "nameOverride": {
-      "type": "string"
-    },
-    "fullnameOverride": {
-      "type": "string"
-    },
-    "labels": {
-      "type": "object",
-      "properties": {},
-      "required": []
-    },
-    "scraper": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "name"
-      ]
-    },
-    "connection": {
-      "type": "string"
-    },
     "accessKey": {
-      "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "name": {
-          "type": "string"
-        },
         "value": {
+          "default": "",
+          "required": [],
+          "title": "value",
           "type": "string"
         },
         "valueFrom": {
-          "type": "object",
+          "additionalProperties": false,
           "properties": {
-            "serviceAccount": {
-              "type": "string"
+            "configMapKeyRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "configMapKeyRef",
+              "type": "object"
             },
             "helmRef": {
-              "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
                   "type": "string"
                 },
                 "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
                   "type": "string"
                 }
               },
               "required": [
                 "key",
                 "name"
-              ]
-            },
-            "configMapKeyRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ]
+              ],
+              "title": "helmRef",
+              "type": "object"
             },
             "secretKeyRef": {
-              "type": "object",
+              "additionalProperties": false,
               "properties": {
                 "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
                   "type": "string"
                 },
                 "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
                   "type": "string"
                 }
               },
               "required": [
                 "key",
                 "name"
-              ]
-            }
-          },
-          "required": [
-          ]
-        }
-      },
-      "required": [
-      ]
-    },
-    "secretKey": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string"
-        },
-        "valueFrom": {
-          "type": "object",
-          "properties": {
+              ],
+              "title": "secretKeyRef",
+              "type": "object"
+            },
             "serviceAccount": {
+              "default": "",
+              "required": [],
+              "title": "serviceAccount",
               "type": "string"
-            },
-            "helmRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ]
-            },
-            "configMapKeyRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ]
-            },
-            "secretKeyRef": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string"
-                },
-                "name": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ]
             }
           },
           "required": [
@@ -162,62 +95,92 @@
             "helmRef",
             "configMapKeyRef",
             "secretKeyRef"
-          ]
+          ],
+          "title": "valueFrom",
+          "type": "object"
         }
       },
       "required": [
-      ]
-    },
-    "region": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    },
-    "endpoint": {
-      "type": "string"
-    },
-    "skipTLSVerify": {
-      "type": "boolean"
+        "value",
+        "valueFrom"
+      ],
+      "title": "accessKey",
+      "type": "object"
     },
     "assumeRole": {
-      "type": "string"
+      "default": "",
+      "description": "Name of an IAM role to assume",
+      "required": [],
+      "title": "assumeRole"
     },
     "cloudtrail": {
-      "type": "object",
+      "additionalProperties": false,
+      "description": "Import and correlate cloudtrail events with AWS resources",
       "properties": {
-        "maxAge": {
-          "type": "string"
-        },
         "exclude": {
-          "type": "array",
-          "items": {}
+          "description": "list of events to to exclude",
+          "items": {
+            "required": []
+          },
+          "required": [],
+          "title": "exclude",
+          "type": "array"
+        },
+        "maxAge": {
+          "default": "7d",
+          "description": "Maximum lookback age when querying cloudtrail",
+          "required": [],
+          "title": "maxAge"
         }
       },
-      "required": [
-        "maxAge"
-      ]
+      "required": [],
+      "title": "cloudtrail",
+      "type": "object"
     },
     "compliance": {
-      "type": "boolean"
+      "default": "true",
+      "description": "Import AWS Config Rule failures as insights",
+      "required": [],
+      "title": "compliance"
+    },
+    "connection": {
+      "default": "",
+      "required": [],
+      "title": "connection",
+      "type": "string"
     },
     "costReporting": {
-      "type": "object",
+      "additionalProperties": false,
+      "description": "Scrape cost reports and match them with catalog items",
       "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
         "database": {
+          "default": "",
+          "required": [],
+          "title": "database",
           "type": "string"
         },
+        "enabled": {
+          "default": false,
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
         "region": {
+          "default": "",
+          "required": [],
+          "title": "region",
           "type": "string"
         },
         "s3BucketPath": {
+          "default": "",
+          "required": [],
+          "title": "s3BucketPath",
           "type": "string"
         },
         "table": {
+          "default": "",
+          "required": [],
+          "title": "table",
           "type": "string"
         }
       },
@@ -227,86 +190,422 @@
         "region",
         "s3BucketPath",
         "table"
-      ]
+      ],
+      "title": "costReporting",
+      "type": "object"
     },
-    "includeResources": {
-      "type": "array",
-      "items": {}
+    "endpoint": {
+      "default": "",
+      "description": "Custom AWS endpoint e.g. for testing with LocalStack",
+      "required": [],
+      "title": "endpoint"
     },
     "excludeResources": {
-      "type": "array",
-      "items": {}
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "excludeResources",
+      "type": "array"
     },
-    "transform": {
-      "type": "object",
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "includeResources": {
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "includeResources",
+      "type": "array"
+    },
+    "labels": {
+      "additionalProperties": false,
+      "description": "yaml-language-server: $schema=values.schema.json",
+      "required": [],
+      "title": "labels",
+      "type": "object"
+    },
+    "region": {
+      "description": "AWS regions to pull from",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "region",
+      "type": "array"
+    },
+    "scraper": {
+      "additionalProperties": false,
       "properties": {
-        "changes": {
-          "type": "object",
+        "name": {
+          "default": "aws",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "scraper",
+      "type": "object"
+    },
+    "secretKey": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "default": "",
+          "required": [],
+          "title": "value",
+          "type": "string"
+        },
+        "valueFrom": {
+          "additionalProperties": false,
           "properties": {
-            "exclude": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+            "configMapKeyRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "configMapKeyRef",
+              "type": "object"
+            },
+            "helmRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "helmRef",
+              "type": "object"
+            },
+            "secretKeyRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "secretKeyRef",
+              "type": "object"
+            },
+            "serviceAccount": {
+              "default": "",
+              "required": [],
+              "title": "serviceAccount",
+              "type": "string"
             }
           },
           "required": [
+            "serviceAccount",
+            "helmRef",
+            "configMapKeyRef",
+            "secretKeyRef"
+          ],
+          "title": "valueFrom",
+          "type": "object"
+        }
+      },
+      "required": [
+        "value",
+        "valueFrom"
+      ],
+      "title": "secretKey",
+      "type": "object"
+    },
+    "skipTLSVerify": {
+      "default": "false",
+      "description": "Skip TLS verification",
+      "required": [],
+      "title": "skipTLSVerify"
+    },
+    "topology": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "default": "aws",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "topology",
+      "type": "object"
+    },
+    "transform": {
+      "additionalProperties": false,
+      "properties": {
+        "changes": {
+          "additionalProperties": false,
+          "properties": {
+            "exclude": {
+              "items": {
+                "anyOf": [
+                  {
+                    "required": [],
+                    "type": "string"
+                  },
+                  {
+                    "required": [],
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "required": [],
+              "title": "exclude",
+              "type": "array"
+            },
+            "mapping": {
+              "items": {
+                "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "action": {
+                        "default": "delete",
+                        "required": [],
+                        "title": "action",
+                        "type": "string"
+                      },
+                      "filter": {
+                        "default": "change.change_type == 'TerminateInstances'",
+                        "required": [],
+                        "title": "filter",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "filter",
+                      "action"
+                    ],
+                    "type": "object"
+                  },
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "filter": {
+                        "default": "config_type == 'AWS::IAM::User' \u0026\u0026 change.change_type == 'diff' \u0026\u0026 change.summary == 'PasswordLastUsed'",
+                        "required": [],
+                        "title": "filter",
+                        "type": "string"
+                      },
+                      "type": {
+                        "default": "Login",
+                        "required": [],
+                        "title": "type",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "filter",
+                      "type"
+                    ],
+                    "type": "object"
+                  }
+                ],
+                "required": []
+              },
+              "required": [],
+              "title": "mapping",
+              "type": "array"
+            }
+          },
+          "required": [
+            "mapping",
             "exclude"
-          ]
+          ],
+          "title": "changes",
+          "type": "object"
         },
         "relationship": {
-          "type": "array",
           "items": {
-            "type": "object",
-            "properties": {
-              "filter": {
-                "type": "string"
+            "anyOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "expr": {
+                    "default": "[\n  {\"type\": \"Kubernetes::Cluster\", \"labels\": {\"account\": labels['account'], \"eks-cluster-name\": labels[\"alpha.eksctl.io/cluster-name\"]}},\n  {\"type\": \"Kubernetes::Node\", \"labels\": {\"account\": labels['account'], \"alpha.eksctl.io/cluster-name\": labels[\"alpha.eksctl.io/cluster-name\"]}}\n].toJSON()\n",
+                    "required": [],
+                    "title": "expr",
+                    "type": "string"
+                  },
+                  "filter": {
+                    "default": "config_type == 'AWS::EKS::Cluster'",
+                    "required": [],
+                    "title": "filter",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "filter",
+                  "expr"
+                ],
+                "type": "object"
               },
-              "expr": {
-                "type": "string"
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "expr": {
+                    "default": "[{\"type\": \"Kubernetes::Node\", \"labels\": {\"alpha.eksctl.io/instance-id\": config[\"instance_id\"]}}].toJSON()\n",
+                    "required": [],
+                    "title": "expr",
+                    "type": "string"
+                  },
+                  "filter": {
+                    "default": "config_type == 'AWS::EC2:Instance'",
+                    "required": [],
+                    "title": "filter",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "filter",
+                  "expr"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "expr": {
+                    "default": "[{\"type\": \"Kubernetes::Node\", \"labels\": {\"aws/iam-role\": config[\"Arn\"]}}].toJSON()\n",
+                    "required": [],
+                    "title": "expr",
+                    "type": "string"
+                  },
+                  "filter": {
+                    "default": "config_type == 'AWS::IAM::Role'",
+                    "required": [],
+                    "title": "filter",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "filter",
+                  "expr"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "expr": {
+                    "default": "[\n  {\"type\": \"Kubernetes::Node\", \"labels\": {\"account\": labels['account'], \"topology.kubernetes.io/zone\": name}},\n  {\"type\": \"AWS::AvailabilityZoneID\", \"name\": config[\"ZoneId\"]}\n].toJSON()\n",
+                    "required": [],
+                    "title": "expr",
+                    "type": "string"
+                  },
+                  "filter": {
+                    "default": "config_type == 'AWS::AvailabilityZone'",
+                    "required": [],
+                    "title": "filter",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "filter",
+                  "expr"
+                ],
+                "type": "object"
+              },
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "expr": {
+                    "default": "[{\"type\": \"AWS::AvailabilityZoneID\", \"labels\": {\"region\": name}}].toJSON()\n",
+                    "required": [],
+                    "title": "expr",
+                    "type": "string"
+                  },
+                  "filter": {
+                    "default": "config_type == 'AWS::Region'",
+                    "required": [],
+                    "title": "filter",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "filter",
+                  "expr"
+                ],
+                "type": "object"
               }
-            },
-            "required": [
-              "filter",
-              "expr"
-            ]
-          }
+            ],
+            "required": []
+          },
+          "required": [],
+          "title": "relationship",
+          "type": "array"
         }
       },
       "required": [
         "changes",
         "relationship"
-      ]
-    },
-    "retention": {
-      "type": "object",
-      "properties": {
-        "changes": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "age": {
-                "type": "string"
-              },
-              "count": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "name"
-            ]
-          }
-        }
-      },
-      "required": [
-        "changes"
-      ]
+      ],
+      "title": "transform",
+      "type": "object"
     }
   },
   "required": [
-  ]
+    "labels",
+    "topology",
+    "scraper",
+    "connection",
+    "accessKey",
+    "secretKey",
+    "includeResources",
+    "excludeResources",
+    "transform"
+  ],
+  "type": "object"
 }
