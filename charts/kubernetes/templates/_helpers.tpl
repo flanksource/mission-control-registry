@@ -76,6 +76,11 @@ Metrics
       display:
         expr: |
           [{'name': 'cpu', 'value': int(results[0].value), 'headline': true, 'unit': 'millicores'}].toJSON()
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).cluster_max_cpu) .}}
+      connection: connection://{{ .Values.prometheus.connection }}
+      display:
+        expr: |
+          [{'name': 'cpu', 'max': int(results[0].value)].toJSON()
 - name: memory
   lookup:
     prometheus:
@@ -84,6 +89,12 @@ Metrics
       display:
         expr: |
           [{'name': 'memory', 'value': int(results[0].value), 'headline': true, 'unit': 'bytes'}].toJSON()
+    - query: {{tpl ((get .Values.metrics.queries .Values.metrics.type).cluster_max_memory) .}}
+      connection: connection://{{ .Values.prometheus.connection }}
+      display:
+        expr: |
+          [{'name': 'memory', 'max': int(results[0].value)}].toJSON()
+
 {{- end }}
 
 
@@ -189,6 +200,16 @@ Metrics
           [
             {'name': 'cpu', 'headline': true, 'unit': 'millicores', 'value': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.cpuAsMillicores(c.usage.cpu)))))},
             {'name': 'memory', 'headline': true, 'unit': 'bytes', 'value': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.memoryAsBytes(c.usage.memory)))))},
+          ].toJSON()
+    - kind: Pod
+      {{- with .Values.kubeconfig }}
+      kubeconfig: {{ toYaml . | nindent 8}}
+      {{- end}}
+      display:
+        expr: |
+          [
+            {'name': 'cpu', 'max': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.cpuAsMillicores(c.resources.?limits.orValue({'cpu': '0'}).?cpu.orValue('0'))))))},
+            {'name': 'memory', 'max': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.memoryAsBytes(c.resources.?limits.orValue({'memory': '0'}).?memory.orValue('0'))))))},
           ].toJSON()
 {{- end }}
 
