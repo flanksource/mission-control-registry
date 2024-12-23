@@ -46,9 +46,21 @@
               "additionalProperties": false,
               "properties": {
                 "cluster_cpu": {
-                  "default": "sum(rate(kubernetes_io:container_cpu_core_usage_time{container_name!=\"\",cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}[5m]))",
+                  "default": "1000 * sum(rate(kubernetes_io:container_cpu_core_usage_time{container_name!=\"\",cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}[5m]))",
                   "required": [],
                   "title": "cluster_cpu",
+                  "type": "string"
+                },
+                "cluster_max_cpu": {
+                  "default": "1000 * sum(kubernetes_io:container_cpu_limit_cores{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}})",
+                  "required": [],
+                  "title": "cluster_max_cpu",
+                  "type": "string"
+                },
+                "cluster_max_memory": {
+                  "default": "sum(kubernetes_io:container_memory_limit_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}})",
+                  "required": [],
+                  "title": "cluster_max_memory",
                   "type": "string"
                 },
                 "cluster_memory": {
@@ -109,7 +121,9 @@
               "required": [
                 "cluster_name",
                 "cluster_cpu",
+                "cluster_max_cpu",
                 "cluster_memory",
+                "cluster_max_memory",
                 "node_cpu",
                 "node_memory",
                 "node_storage",
@@ -128,6 +142,18 @@
                   "default": "1000 * sum(rate(container_cpu_usage_seconds_total{container!=\"\"{{.Values.prometheus.labels}}}[5m]))",
                   "required": [],
                   "title": "cluster_cpu",
+                  "type": "string"
+                },
+                "cluster_max_cpu": {
+                  "default": "1000 * sum(kube_pod_container_resource_limits{resource=\"cpu\"{{.Values.prometheus.labels}}}))",
+                  "required": [],
+                  "title": "cluster_max_cpu",
+                  "type": "string"
+                },
+                "cluster_max_memory": {
+                  "default": "sum(kube_pod_container_resource_limits{resource=\"memory\"{{.Values.prometheus.labels}}})",
+                  "required": [],
+                  "title": "cluster_max_memory",
                   "type": "string"
                 },
                 "cluster_memory": {
@@ -181,7 +207,9 @@
               },
               "required": [
                 "cluster_cpu",
+                "cluster_max_cpu",
                 "cluster_memory",
+                "cluster_max_memory",
                 "node_cpu",
                 "node_memory",
                 "node_storage",
