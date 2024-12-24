@@ -80,7 +80,7 @@ Metrics
       connection: connection://{{ .Values.prometheus.connection }}
       display:
         expr: |
-          [{'name': 'cpu', 'max': int(results[0].value)].toJSON()
+          [{'name': 'cpu', 'max': int(results[0].value)}].toJSON()
 - name: memory
   lookup:
     prometheus:
@@ -208,8 +208,8 @@ Metrics
       display:
         expr: |
           [
-            {'name': 'cpu', 'max': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.cpuAsMillicores(c.resources.?limits.orValue({'cpu': '0'}).?cpu.orValue('0'))))))},
-            {'name': 'memory', 'max': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.memoryAsBytes(c.resources.?limits.orValue({'memory': '0'}).?memory.orValue('0'))))))},
+            {'name': 'cpu', 'max': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.spec.containers.map(c, k8s.cpuAsMillicores(c.resources.?limits.orValue({'cpu': '0'}).?cpu.orValue('0'))))))},
+            {'name': 'memory', 'max': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.spec.containers.map(c, k8s.memoryAsBytes(c.resources.?limits.orValue({'memory': '0'}).?memory.orValue('0'))))))},
           ].toJSON()
 {{- end }}
 

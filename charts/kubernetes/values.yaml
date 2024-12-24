@@ -74,7 +74,7 @@ metrics:
   queries:
     prometheus:
       cluster_cpu: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels}}}[5m]))'
-      cluster_max_cpu: '1000 * sum(kube_pod_container_resource_limits{resource="cpu"{{.Values.prometheus.labels}}}))'
+      cluster_max_cpu: '1000 * sum(kube_pod_container_resource_limits{resource="cpu"{{.Values.prometheus.labels}}})'
       cluster_memory: 'sum(container_memory_working_set_bytes{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}})'
       cluster_max_memory: 'sum(kube_pod_container_resource_limits{resource="memory"{{.Values.prometheus.labels}}})'
       node_cpu: '1000 * sum(rate(container_cpu_usage_seconds_total{container!=""{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (node)'
