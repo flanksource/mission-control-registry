@@ -53,6 +53,8 @@ spec:
       display:
         expr: config.spec.rules[0].host
   components:
+
+  # Incident commander
   - components:
     - icon: group
       lookup:
@@ -86,6 +88,29 @@ spec:
           query: SELECT count(*) FROM incidents WHERE (resolved IS NULL) OR (closed
             IS NULL)
           results: 1
+    - lookup:
+        postgres:
+        - connection: "connection://{{ .Values.connectionName }}"
+          display:
+            expr: results.rows[0].props
+          name: Incident commander pod usage query
+          query: |
+            SELECT
+                jsonb_agg(property) AS props
+            FROM (
+                SELECT
+                    jsonb_array_elements(properties) AS property
+                FROM components
+                WHERE
+                    name LIKE 'mission-control-%'
+                    AND type = 'Kubernetes::Pod'
+                    AND status = 'Running'
+                    AND deleted_at IS NULL
+                    AND agent_id = '00000000-0000-0000-0000-000000000000'
+                ORDER BY created_at desc
+            ) sub
+            WHERE property->>'name' IN ('memory', 'cpu') LIMIT 1;
+
       name: Incidents
     - name: Docs
       text: https://docs.flanksource.com
@@ -232,6 +257,29 @@ spec:
     - name: Docs
       text: https://docs.flanksource.com/canary-checker/overview
       type: url
+    - lookup:
+        postgres:
+        - connection: "connection://{{ .Values.connectionName }}"
+          display:
+            expr: results.rows[0].props
+          name: Canary checker pod usage query
+          query: |
+            SELECT
+                jsonb_agg(property) AS props
+            FROM (
+                SELECT
+                    jsonb_array_elements(properties) AS property
+                FROM components
+                WHERE
+                    name LIKE 'canary-checker-%'
+                    AND type = 'Kubernetes::Pod'
+                    AND status = 'Running'
+                    AND deleted_at IS NULL
+                    AND agent_id = '00000000-0000-0000-0000-000000000000'
+                ORDER BY created_at desc
+            ) sub
+            WHERE property->>'name' IN ('memory', 'cpu') LIMIT 1;
+
     selectors:
     - labelSelector: app.kubernetes.io/name=canary-checker
     type: API
@@ -383,6 +431,29 @@ spec:
     - name: Docs
       text: https://docs.flanksource.com/config-db/overview
       type: url
+    - lookup:
+        postgres:
+        - connection: "connection://{{ .Values.connectionName }}"
+          display:
+            expr: results.rows[0].props
+          name: Config DB pod usage query
+          query: |
+            SELECT
+                jsonb_agg(property) AS props
+            FROM (
+                SELECT
+                    jsonb_array_elements(properties) AS property
+                FROM components
+                WHERE
+                    name LIKE 'config-db-%'
+                    AND type = 'Kubernetes::Pod'
+                    AND status = 'Running'
+                    AND deleted_at IS NULL
+                    AND agent_id = '00000000-0000-0000-0000-000000000000'
+                ORDER BY created_at desc
+            ) sub
+            WHERE property->>'name' IN ('memory', 'cpu') LIMIT 1;
+
     selectors:
     - labelSelector: app.kubernetes.io/name=config-db
     type: API
