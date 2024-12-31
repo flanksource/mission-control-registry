@@ -434,7 +434,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            expr: results.rows[0].props
+            expr: results.rows[0].props.toJSON()
           name: Config DB pod usage query
           query: |
             SELECT
