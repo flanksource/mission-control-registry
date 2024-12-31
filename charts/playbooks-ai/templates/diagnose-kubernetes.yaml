@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
-{{- if and .Values.playbooks.enabled .Values.playbooks.ai.enabled }}
+{{- if and .Values.diagnose.enabled }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
@@ -8,7 +8,7 @@ metadata:
 spec:
   description: Use AI to diagnose unhealthy kubernetes resources
   configs:
-    - tagSelector: 'cluster={{.Values.playbooks.ai.diagnose.cluster}}'
+    - tagSelector: 'cluster={{.Values.diagnose.cluster}}'
       healths:
         - unhealthy
         - warning
@@ -22,10 +22,10 @@ spec:
   actions:
     - name: query
       ai:
-        connection: '{{.Values.playbooks.ai.connection}}'
+        connection: '{{.Values.connection}}'
         systemPrompt: |-
-          {{- if .Values.playbooks.ai.diagnose.systemPrompt }}
-            {{- .Values.playbooks.ai.diagnose.systemPrompt | nindent 10 }}
+          {{- if .Values.diagnose.systemPrompt }}
+            {{- .Values.diagnose.systemPrompt | nindent 10 }}
           {{- else }}
             **Role:** Seasoned Kubernetes engineer and Diagnostic Expert
 

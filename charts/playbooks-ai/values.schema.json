@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "connection": {
+      "default": "",
+      "description": "yaml-language-server: $schema=values.schema.json\nLLM connection: one of ollama, openai or anthropic",
+      "required": [],
+      "title": "connection",
+      "type": "string"
+    },
+    "diagnose": {
+      "additionalProperties": false,
+      "properties": {
+        "cluster": {
+          "default": "",
+          "description": "name of the cluster",
+          "required": [],
+          "title": "cluster",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "description": "enable kubernetes diagnosing playbook",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "systemPrompt": {
+          "default": "",
+          "description": "Optional system prompt for the LLM. If not provided, a default prompt will be used.",
+          "required": [],
+          "title": "systemPrompt",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cluster"
+      ],
+      "title": "diagnose",
+      "type": "object"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    }
+  },
+  "required": [
+    "connection",
+    "diagnose"
+  ],
+  "type": "object"
+}
