@@ -106,7 +106,6 @@ spec:
                 WHERE
                     name LIKE 'mission-control-%'
                     AND type = 'Kubernetes::Pod'
-                    AND status = 'Running'
                     AND deleted_at IS NULL
                     AND agent_id = '00000000-0000-0000-0000-000000000000'
                 ORDER BY created_at desc
@@ -274,7 +273,6 @@ spec:
                 WHERE
                     name LIKE 'canary-checker-%'
                     AND type = 'Kubernetes::Pod'
-                    AND status = 'Running'
                     AND deleted_at IS NULL
                     AND agent_id = '00000000-0000-0000-0000-000000000000'
                 ORDER BY created_at desc
@@ -448,7 +446,6 @@ spec:
                 WHERE
                     name LIKE 'config-db-%'
                     AND type = 'Kubernetes::Pod'
-                    AND status = 'Running'
                     AND deleted_at IS NULL
                     AND agent_id = '00000000-0000-0000-0000-000000000000'
                 ORDER BY created_at desc
