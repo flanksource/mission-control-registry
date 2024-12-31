@@ -79,6 +79,7 @@ spec:
         schedule: '@every 1m'
     properties:
     - headline: true
+      name: Incidents
       lookup:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
@@ -88,11 +89,12 @@ spec:
           query: SELECT count(*) FROM incidents WHERE (resolved IS NULL) OR (closed
             IS NULL)
           results: 1
-    - lookup:
+    - name: percentage_lookup
+      lookup:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            expr: results.rows[0].props
+            expr: results.rows[0].props.toJSON()
           name: Incident commander pod usage query
           query: |
             SELECT
@@ -111,7 +113,6 @@ spec:
             ) sub
             WHERE property->>'name' IN ('memory', 'cpu') LIMIT 1;
 
-      name: Incidents
     - name: Docs
       text: https://docs.flanksource.com
       type: url
@@ -261,7 +262,7 @@ spec:
         postgres:
         - connection: "connection://{{ .Values.connectionName }}"
           display:
-            expr: results.rows[0].props
+            expr: results.rows[0].props.toJSON()
           name: Canary checker pod usage query
           query: |
             SELECT
