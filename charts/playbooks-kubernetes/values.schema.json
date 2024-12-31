@@ -62,7 +62,57 @@
     },
     "playbooks": {
       "additionalProperties": false,
+      "description": "yaml-language-server: $schema=values.schema.json",
       "properties": {
+        "ai": {
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "default": "",
+              "description": "LLM connection: one of ollama, openai or anthropic",
+              "required": [],
+              "title": "connection",
+              "type": "string"
+            },
+            "diagnose": {
+              "additionalProperties": false,
+              "properties": {
+                "cluster": {
+                  "default": "",
+                  "description": "name of the cluster",
+                  "required": [],
+                  "title": "cluster",
+                  "type": "string"
+                },
+                "systemPrompt": {
+                  "default": "",
+                  "description": "Optional system prompt for the LLM. If not provided, a default prompt will be used.",
+                  "required": [],
+                  "title": "systemPrompt",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "cluster"
+              ],
+              "title": "diagnose",
+              "type": "object"
+            },
+            "enabled": {
+              "default": false,
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled",
+            "connection",
+            "diagnose"
+          ],
+          "title": "ai",
+          "type": "object"
+        },
         "cleanupFailedPods": {
           "default": true,
           "required": [],
@@ -88,7 +138,7 @@
           "type": "boolean"
         },
         "enabled": {
-          "default": true,
+          "default": false,
           "description": "If this is set to false, no playbooks will be created",
           "required": [],
           "title": "enabled",
@@ -156,7 +206,8 @@
         "scale",
         "updateImage",
         "updateResources",
-        "deployHelmChart"
+        "deployHelmChart",
+        "ai"
       ],
       "title": "playbooks",
       "type": "object"

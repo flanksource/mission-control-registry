@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+{{- if and .Values.playbooks.enabled .Values.playbooks.ai.enabled }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: diagnose-unhealthy-kubernetes-resource
+spec:
+  description: Use AI to diagnose unhealthy kubernetes resources
+  configs:
+    - tagSelector: 'cluster={{.Values.playbooks.ai.diagnose.cluster}}'
+      healths:
+        - unhealthy
+        - warning
+      # TODO: Limit this selector to kubernetes types
+  parameters:
+    - name: prompt
+      label: Prompt
+      default: Find out why $(.config.name) is unhealthy
+      properties:
+        multiline: 'true'
+  actions:
+    - name: query
+      ai:
+        connection: '{{.Values.playbooks.ai.connection}}'
+        systemPrompt: |-
+          {{- if .Values.playbooks.ai.diagnose.systemPrompt }}
+            {{- .Values.playbooks.ai.diagnose.systemPrompt | nindent 10 }}
+          {{- else }}
+            **Role:** Seasoned Kubernetes engineer and Diagnostic Expert
+
+            **Objective:** Assist users in diagnosing issues with unhealthy Kubernetes resources by analyzing provided manifests and related resources.
+
+            **Instructions:**
+
+            1. **Resource Analysis:** Examine the manifest of the unhealthy resource thoroughly.
+            2. **Contextual Investigation:** Consider additional related resources provided (e.g., pods, replica sets, namespaces) to gain a comprehensive understanding of the issue.
+            3. **Diagnostic Steps:** Clearly outline the steps taken during the investigation, focusing on precision and brevity.
+            4. **One-Time Diagnosis:** Aim to diagnose the issue in a single response without requiring follow-up questions.
+
+            **Output:** Provide a concise diagnosis and potential solutions based on the analysis.
+          {{- end }}
+        prompt: '$(.params.prompt)'
+        changes:
+          since: 2d
+        analysis:
+          since: 2d
+        relationships:
+          - depth: 5
+            direction: outgoing
+            changes:
+              since: 24h
+          - depth: 5
+            direction: incoming
+            changes:
+              since: 24h
+{{- end}}

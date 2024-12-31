@@ -14,11 +14,15 @@ Flanksource Mission Control Playbooks that interact directly with the Kubernetes
 | delete.types[5] | string | `"Kubernetes::CronJob"` |  |
 | delete.types[6] | string | `"Kubernetes::DaemonSet"` |  |
 | delete.types[7] | string | `"Kubernetes::ConfigMap"` |  |
+| playbooks.ai.connection | string | `""` |  |
+| playbooks.ai.diagnose.cluster | string | `""` |  |
+| playbooks.ai.diagnose.systemPrompt | string | `""` |  |
+| playbooks.ai.enabled | bool | `false` |  |
 | playbooks.cleanupFailedPods | bool | `true` |  |
 | playbooks.createDeployment | bool | `true` |  |
 | playbooks.delete | bool | `true` |  |
 | playbooks.deployHelmChart | bool | `true` |  |
-| playbooks.enabled | bool | `true` |  |
+| playbooks.enabled | bool | `false` |  |
 | playbooks.ignoreChanges | bool | `true` |  |
 | playbooks.logs | bool | `true` |  |
 | playbooks.podSnapshot | bool | `false` |  |

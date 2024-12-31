@@ -14,6 +14,30 @@ playbooks:
   updateImage: true
   updateResources: true
   deployHelmChart: true
+  ai:
+    enabled: false
+
+    # @schema
+    # type: string
+    # required: true
+    # @schema
+    # LLM connection: one of ollama, openai or anthropic
+    connection: ""
+
+    diagnose:
+      # @schema
+      # type: string
+      # required: true
+      # @schema
+      # name of the cluster
+      cluster: ""
+
+      # @schema
+      # type: string
+      # required: false
+      # @schema
+      # Optional system prompt for the LLM. If not provided, a default prompt will be used.
+      systemPrompt: ""
 
 delete:
   types:
