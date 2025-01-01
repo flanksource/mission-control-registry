@@ -1,0 +1,83 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+{{- if and .Values.diganoseToSlack.enabled }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: send-diagnostics-to-slack
+spec:
+  description: Use AI to diganoseToSlack unhealthy kubernetes resources and send notification to slack
+  configs:
+    - tagSelector: 'cluster={{.Values.diganoseToSlack.cluster}}'
+      healths:
+        - unhealthy
+        - warning
+      # TODO: Limit this selector to kubernetes types
+  parameters:
+    - name: prompt
+      label: Prompt
+      default: Find out why $(.config.name) is unhealthy
+      properties:
+        multiline: 'true'
+  actions:
+    - name: query
+      ai:
+        connection: '{{.Values.global.connection}}'
+        systemPrompt: |-
+          {{- if .Values.diganoseToSlack.systemPrompt }}
+            {{- .Values.diganoseToSlack.systemPrompt | nindent 10 }}
+          {{- else }}
+            **Role:** Seasoned Kubernetes engineer and Diagnostic Expert
+
+            **Objective:** Assist users in diagnosing issues with unhealthy Kubernetes resources by analyzing provided manifests and related resources.
+
+            **Instructions:**
+
+            1. **Resource Analysis:** Examine the manifest of the unhealthy resource thoroughly.
+            2. **Contextual Investigation:** Consider additional related resources provided (e.g., pods, replica sets, namespaces) to gain a comprehensive understanding of the issue.
+            3. **One-Time Diagnosis:** Aim to diganoseToSlack the issue in a single response without requiring follow-up questions.
+
+            **Output:** Provide a concise diagnosis and potential solutions based on the analysis.
+            The output should be in json using Block Kit(https://api.slack.com/block-kit) - a UI framework for Slack apps.
+            Do not wrap the json block in a code block (like ```json```). The output should be a valid json.
+            Example: output 
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "Statefulset: alertmanager"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Namespace*: mc"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "Deployment has pods that are in a crash loop."
+                    }
+                  ]
+                },
+              ]
+            }
+          {{- end }}
+        prompt: '$(.params.prompt)'
+        changes:
+          since: 2d
+        analysis:
+          since: 2d
+        relationships:
+          - depth: 5
+            direction: all
+            changes:
+              since: 24h
+            analysis:
+              since: 30d
+    - name: send notificaiton
+      notification:
+        connection: {{.Values.diganoseToSlack.slackConnection}}
+        message: "$(getLastAction.result.markdown)"
+        title: Diagnosis report
+{{- end}}

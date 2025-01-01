@@ -62,7 +62,6 @@
     },
     "playbooks": {
       "additionalProperties": false,
-      "description": "yaml-language-server: $schema=values.schema.json",
       "properties": {
         "cleanupFailedPods": {
           "default": true,

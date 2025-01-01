@@ -1,18 +1,49 @@
 # yaml-language-server: $schema=values.schema.json
-# @schema
-# type: string
-# required: true
-# @schema
-# -- LLM connection: one of ollama, openai or anthropic
-connection: ""
+global:
+  # @schema
+  # type: string
+  # required: true
+  # @schema
+  # -- LLM connection: one of ollama, openai or anthropic
+  connection: ""
 
 diagnose:
   # @schema
   # type: boolean
   # required: false
   # @schema
-  # -- enable kubernetes diagnosing playbook
+  # -- create a playbook that can diagnose an unhealthy kubernetes resource in the given cluster.
   enabled: true
+
+  # @schema
+  # type: string
+  # required: true
+  # @schema
+  # -- name of the cluster
+  cluster: ""
+
+  # @schema
+  # type: string
+  # required: false
+  # @schema
+  # -- Optional system prompt for the LLM. If not provided, a default prompt will be used.
+  systemPrompt: ""
+
+diganoseToSlack:
+  # @schema
+  # type: boolean
+  # required: false
+  # @schema
+  # -- create a playbook that can diagnose an unhealthy kubernetes resource in the given cluster
+  # -- and send the diagnosis to slack.
+  enabled: true
+
+  # @schema
+  # type: string
+  # required: true
+  # @schema
+  # -- connection string for slack
+  slackConnection: ""
 
   # @schema
   # type: string

@@ -14,6 +14,7 @@ playbooks:
   updateImage: true
   updateResources: true
   deployHelmChart: true
+
 delete:
   types:
     - Kubernetes::Pod

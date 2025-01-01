@@ -2,13 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "properties": {
-    "connection": {
-      "default": "",
-      "description": "yaml-language-server: $schema=values.schema.json\nLLM connection: one of ollama, openai or anthropic",
-      "required": [],
-      "title": "connection",
-      "type": "string"
-    },
     "diagnose": {
       "additionalProperties": false,
       "properties": {
@@ -21,7 +14,7 @@
         },
         "enabled": {
           "default": true,
-          "description": "enable kubernetes diagnosing playbook",
+          "description": "create a playbook that can diagnose an unhealthy kubernetes resource in the given cluster.",
           "required": [],
           "title": "enabled",
           "type": "boolean"
@@ -40,16 +33,68 @@
       "title": "diagnose",
       "type": "object"
     },
+    "diganoseToSlack": {
+      "additionalProperties": false,
+      "properties": {
+        "cluster": {
+          "default": "",
+          "description": "name of the cluster",
+          "required": [],
+          "title": "cluster",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "description": "create a playbook that can diagnose an unhealthy kubernetes resource in the given cluster\nand send the diagnosis to slack.",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "slackConnection": {
+          "default": "",
+          "description": "connection string for slack",
+          "required": [],
+          "title": "slackConnection",
+          "type": "string"
+        },
+        "systemPrompt": {
+          "default": "",
+          "description": "Optional system prompt for the LLM. If not provided, a default prompt will be used.",
+          "required": [],
+          "title": "systemPrompt",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slackConnection",
+        "cluster"
+      ],
+      "title": "diganoseToSlack",
+      "type": "object"
+    },
     "global": {
-      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
-      "required": [],
+      "additionalProperties": false,
+      "description": "yaml-language-server: $schema=values.schema.json",
+      "properties": {
+        "connection": {
+          "default": "",
+          "description": "LLM connection: one of ollama, openai or anthropic",
+          "required": [],
+          "title": "connection",
+          "type": "string"
+        }
+      },
+      "required": [
+        "connection"
+      ],
       "title": "global",
       "type": "object"
     }
   },
   "required": [
-    "connection",
-    "diagnose"
+    "global",
+    "diagnose",
+    "diganoseToSlack"
   ],
   "type": "object"
 }
