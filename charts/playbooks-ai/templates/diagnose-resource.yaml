@@ -1,28 +1,26 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
-{{- if and .Values.diagnose.enabled }}
+{{- if .Values.diagnose.enabled }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
-  name: diagnose-unhealthy-kubernetes-resource
+  name: diagnose-catalogs
 spec:
-  description: Use AI to diagnose unhealthy kubernetes resources
+  description: Use AI to diagnose catalogs
   configs:
-    - tagSelector: 'cluster={{.Values.diagnose.cluster}}'
-      healths:
-        - unhealthy
-        - warning
-      # TODO: Limit this selector to kubernetes types
+    {{- with .Values.diagnose.selector }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   parameters:
     - name: prompt
       label: Prompt
-      default: Find out why $(.config.name) is unhealthy
+      default: 'Find out why $(.config.name) is unhealthy'
       properties:
         multiline: 'true'
   actions:
     - name: query
       ai:
-        connection: '{{.Values.global.connection}}'
+        connection: '{{.Values.global.llm_connection}}'
         systemPrompt: |-
           {{- if .Values.diagnose.systemPrompt }}
             {{- .Values.diagnose.systemPrompt | nindent 10 }}

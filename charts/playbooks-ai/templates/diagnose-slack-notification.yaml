@@ -1,31 +1,29 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
-{{- if and .Values.diganoseToSlack.enabled }}
+{{- if and .Values.diagnose.enabled .Values.diagnose.notification.enabled }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: send-diagnostics-to-slack
 spec:
-  description: Use AI to diganoseToSlack unhealthy kubernetes resources and send notification to slack
+  description: Use AI to configs and send the report to slack
   configs:
-    - tagSelector: 'cluster={{.Values.diganoseToSlack.cluster}}'
-      healths:
-        - unhealthy
-        - warning
-      # TODO: Limit this selector to kubernetes types
+    {{- with .Values.diagnose.selector }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
   parameters:
     - name: prompt
       label: Prompt
-      default: Find out why $(.config.name) is unhealthy
+      default: 'Find out why $(.config.name) is unhealthy'
       properties:
         multiline: 'true'
   actions:
     - name: query
       ai:
-        connection: '{{.Values.global.connection}}'
+        connection: '{{.Values.global.llm_connection}}'
         systemPrompt: |-
-          {{- if .Values.diganoseToSlack.systemPrompt }}
-            {{- .Values.diganoseToSlack.systemPrompt | nindent 10 }}
+          {{- if .Values.diagnose.notification.systemPrompt }}
+            {{- .Values.diagnose.notification.systemPrompt | nindent 10 }}
           {{- else }}
             **Role:** Seasoned Kubernetes engineer and Diagnostic Expert
 
@@ -35,7 +33,7 @@ spec:
 
             1. **Resource Analysis:** Examine the manifest of the unhealthy resource thoroughly.
             2. **Contextual Investigation:** Consider additional related resources provided (e.g., pods, replica sets, namespaces) to gain a comprehensive understanding of the issue.
-            3. **One-Time Diagnosis:** Aim to diganoseToSlack the issue in a single response without requiring follow-up questions.
+            3. **One-Time Diagnosis:** Aim to diagnose the issue in a single response without requiring follow-up questions.
 
             **Output:** Provide a concise diagnosis and potential solutions based on the analysis.
             The output should be in json using Block Kit(https://api.slack.com/block-kit) - a UI framework for Slack apps.
@@ -77,7 +75,7 @@ spec:
               since: 30d
     - name: send notificaiton
       notification:
-        connection: {{.Values.diganoseToSlack.slackConnection}}
+        connection: {{.Values.slack.connection}}
         message: "$(getLastAction.result.markdown)"
         title: Diagnosis report
 {{- end}}

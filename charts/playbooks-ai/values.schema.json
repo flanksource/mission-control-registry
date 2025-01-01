@@ -5,19 +5,45 @@
     "diagnose": {
       "additionalProperties": false,
       "properties": {
-        "cluster": {
-          "default": "",
-          "description": "name of the cluster",
-          "required": [],
-          "title": "cluster",
-          "type": "string"
-        },
         "enabled": {
           "default": true,
-          "description": "create a playbook that can diagnose an unhealthy kubernetes resource in the given cluster.",
+          "description": "create a playbook that diagnoses cataloges",
           "required": [],
           "title": "enabled",
           "type": "boolean"
+        },
+        "notification": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "create a playbook that diagnoses cataloges and send the diagnosis report to slack.",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "systemPrompt": {
+              "default": "",
+              "description": "Optional system prompt for the LLM. If not provided, a default prompt will be used.",
+              "required": [],
+              "title": "systemPrompt",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "notification",
+          "type": "object"
+        },
+        "selector": {
+          "description": "selector the configs for the playbook resource",
+          "items": {
+            "additionalProperties": true,
+            "required": [],
+            "type": "object"
+          },
+          "required": [],
+          "title": "selector",
+          "type": "array"
         },
         "systemPrompt": {
           "default": "",
@@ -28,57 +54,34 @@
         }
       },
       "required": [
-        "cluster"
+        "notification"
       ],
       "title": "diagnose",
       "type": "object"
     },
-    "diganoseToSlack": {
+    "global": {
       "additionalProperties": false,
       "properties": {
-        "cluster": {
+        "llm_connection": {
           "default": "",
-          "description": "name of the cluster",
+          "description": "LLM connection: one of ollama, openai or anthropic",
           "required": [],
-          "title": "cluster",
-          "type": "string"
-        },
-        "enabled": {
-          "default": true,
-          "description": "create a playbook that can diagnose an unhealthy kubernetes resource in the given cluster\nand send the diagnosis to slack.",
-          "required": [],
-          "title": "enabled",
-          "type": "boolean"
-        },
-        "slackConnection": {
-          "default": "",
-          "description": "connection string for slack",
-          "required": [],
-          "title": "slackConnection",
-          "type": "string"
-        },
-        "systemPrompt": {
-          "default": "",
-          "description": "Optional system prompt for the LLM. If not provided, a default prompt will be used.",
-          "required": [],
-          "title": "systemPrompt",
+          "title": "llm_connection",
           "type": "string"
         }
       },
       "required": [
-        "slackConnection",
-        "cluster"
+        "llm_connection"
       ],
-      "title": "diganoseToSlack",
+      "title": "global",
       "type": "object"
     },
-    "global": {
+    "slack": {
       "additionalProperties": false,
-      "description": "yaml-language-server: $schema=values.schema.json",
       "properties": {
         "connection": {
           "default": "",
-          "description": "LLM connection: one of ollama, openai or anthropic",
+          "description": "connection string for slack",
           "required": [],
           "title": "connection",
           "type": "string"
@@ -87,14 +90,14 @@
       "required": [
         "connection"
       ],
-      "title": "global",
+      "title": "slack",
       "type": "object"
     }
   },
   "required": [
     "global",
-    "diagnose",
-    "diganoseToSlack"
+    "slack",
+    "diagnose"
   ],
   "type": "object"
 }
