@@ -17,6 +17,7 @@ on:
           - postgres
           - prometheus
           - playbooks-kubernetes
+          - playbooks-ai
           - playbooks-flux
           - helm
 
