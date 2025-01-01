@@ -29,6 +29,7 @@ jobs:
             postgres: charts/postgres/**
             prometheus: charts/prometheus/**
             playbooks-kubernetes: charts/playbooks-kubernetes/**
+            playbooks-ai: charts/playbooks-ai/**
             playbooks-flux: charts/playbooks-flux/**
             helm: charts/helm/**
 
