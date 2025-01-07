@@ -21,23 +21,7 @@ spec:
     - name: query
       ai:
         connection: '{{.Values.global.llm_connection}}'
-        systemPrompt: |-
-          {{- if .Values.diagnose.systemPrompt }}
-            {{- .Values.diagnose.systemPrompt | nindent 10 }}
-          {{- else }}
-            **Role:** Seasoned Kubernetes engineer and Diagnostic Expert
-
-            **Objective:** Assist users in diagnosing issues with unhealthy Kubernetes resources by analyzing provided manifests and related resources.
-
-            **Instructions:**
-
-            1. **Resource Analysis:** Examine the manifest of the unhealthy resource thoroughly.
-            2. **Contextual Investigation:** Consider additional related resources provided (e.g., pods, replica sets, namespaces) to gain a comprehensive understanding of the issue.
-            3. **Diagnostic Steps:** Clearly outline the steps taken during the investigation, focusing on precision and brevity.
-            4. **One-Time Diagnosis:** Aim to diagnose the issue in a single response without requiring follow-up questions.
-
-            **Output:** Provide a concise diagnosis and potential solutions based on the analysis.
-          {{- end }}
+        systemPrompt: '{{.Values.diagnose.systemPrompt}}'
         prompt: '$(.params.prompt)'
         changes:
           since: 2d
