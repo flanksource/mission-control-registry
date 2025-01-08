@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+{{- if and .Values.diagnose.enabled .Values.diagnose.notification.enabled }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: send-diagnostics-to-slack
+spec:
+  description: Use AI to configs and send the report to slack
+  configs:
+    {{- with .Values.diagnose.selector }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  parameters:
+    - name: prompt
+      label: Prompt
+      default: 'Find out why $(.config.name) is unhealthy'
+      properties:
+        multiline: 'true'
+  actions:
+    - name: query
+      ai:
+        connection: '{{.Values.global.llm_connection}}'
+        systemPrompt: '{{.Values.diagnose.notification.systemPrompt}}'
+        prompt: '$(.params.prompt)'
+        formats:
+          - slack
+        changes:
+          since: 2d
+        analysis:
+          since: 2d
+        relationships:
+          - depth: 5
+            direction: all
+            changes:
+              since: 24h
+            analysis:
+              since: 30d
+    - name: send notification
+      notification:
+        connection: {{.Values.slack.connection}}
+        message: "$(getLastAction.result.slack)"
+        title: Diagnosis report
+{{- end}}

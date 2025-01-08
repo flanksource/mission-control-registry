@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+{{- if .Values.diagnose.enabled }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: diagnose-catalogs
+spec:
+  description: Use AI to diagnose catalogs
+  configs:
+    {{- with .Values.diagnose.selector }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  parameters:
+    - name: prompt
+      label: Prompt
+      default: 'Find out why $(.config.name) is unhealthy'
+      properties:
+        multiline: 'true'
+  actions:
+    - name: query
+      ai:
+        connection: '{{.Values.global.llm_connection}}'
+        systemPrompt: '{{.Values.diagnose.systemPrompt}}'
+        prompt: '$(.params.prompt)'
+        changes:
+          since: 2d
+        analysis:
+          since: 2d
+        relationships:
+          - depth: 5
+            direction: all
+            changes:
+              since: 24h
+            analysis:
+              since: 30d
+{{- end}}

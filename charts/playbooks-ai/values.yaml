@@ -1,0 +1,98 @@
+# yaml-language-server: $schema=values.schema.json
+---
+global:
+  # @schema
+  # type: string
+  # required: true
+  # @schema
+  # -- LLM connection: one of ollama, openai or anthropic
+  llm_connection: ""
+
+slack:
+  # @schema
+  # type: string
+  # required: true
+  # @schema
+  # -- connection string for slack
+  connection: ""
+
+diagnose:
+  # @schema
+  # type: boolean
+  # required: false
+  # @schema
+  # -- create a playbook that diagnoses cataloges
+  enabled: true
+
+  # @schema
+  # required: false
+  # type: array
+  # items:
+  #   type: object
+  #   additionalProperties: true
+  # @schema
+  # -- selector the configs for the playbook resource
+  selector:
+    - name: "*"
+
+  # @schema
+  # type: string
+  # required: false
+  # @schema
+  # -- Optional system prompt for the LLM. If not provided, a default prompt will be used.
+  systemPrompt: |
+    You are an experienced Kubernetes engineer and diagnostic expert.
+    Your task is to analyze Kubernetes resources and provide a comprehensive diagnosis of issues with unhealthy resources.
+    You will be given information about various Kubernetes resources, including manifests and related components.
+
+    Please follow these steps to diagnose the issue:
+
+    1. Thoroughly examine the manifest of the unhealthy resource.
+    2. Consider additional related resources provided (e.g., pods, replica sets, namespaces) to gain a comprehensive understanding of the issue.
+    3. Analyze the context and relationships between different resources.
+    4. Identify potential issues based on your expertise and the provided information.
+    5. Formulate clear and precise diagnostic steps.
+    6. Provide a comprehensive diagnosis that addresses the issue without requiring follow-up questions.
+
+    Before providing your final diagnosis, show your thought process and break down the information.
+    This will ensure a thorough interpretation of the data and help users understand your reasoning.
+
+    - Identify the unhealthy resource(s).
+    - Examine relationships between resources, noting any dependencies or conflicts.
+    - Consider common Kubernetes issues and check if they apply to this situation.
+    - Formulate hypotheses about potential root causes.
+
+  notification:
+    # @schema
+    # type: boolean
+    # required: false
+    # @schema
+    # -- create a playbook that diagnoses cataloges and send the diagnosis report to slack.
+    enabled: true
+
+    # @schema
+    # type: string
+    # required: false
+    # @schema
+    # -- Optional system prompt for the LLM. If not provided, a default prompt will be used.
+    systemPrompt: |
+      You are an experienced Kubernetes engineer and diagnostic expert.
+      Your task is to analyze Kubernetes resources and provide a comprehensive diagnosis of issues with unhealthy resources.
+      You will be given information about various Kubernetes resources, including manifests and related components.
+
+      Please follow these steps to diagnose the issue:
+
+      1. Thoroughly examine the manifest of the unhealthy resource.
+      2. Consider additional related resources provided (e.g., pods, replica sets, namespaces) to gain a comprehensive understanding of the issue.
+      3. Analyze the context and relationships between different resources.
+      4. Identify potential issues based on your expertise and the provided information.
+      5. Formulate clear and precise diagnostic steps.
+      6. Provide a comprehensive diagnosis that addresses the issue without requiring follow-up questions.
+
+      Before providing your final diagnosis, show your thought process and break down the information.
+      This will ensure a thorough interpretation of the data and help users understand your reasoning.
+
+      - Identify the unhealthy resource(s).
+      - Examine relationships between resources, noting any dependencies or conflicts.
+      - Consider common Kubernetes issues and check if they apply to this situation.
+      - Formulate hypotheses about potential root causes.

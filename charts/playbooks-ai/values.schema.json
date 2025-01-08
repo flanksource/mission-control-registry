@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "diagnose": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "create a playbook that diagnoses cataloges",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "notification": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "create a playbook that diagnoses cataloges and send the diagnosis report to slack.",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "systemPrompt": {
+              "default": "",
+              "description": "Optional system prompt for the LLM. If not provided, a default prompt will be used.",
+              "required": [],
+              "title": "systemPrompt",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "notification",
+          "type": "object"
+        },
+        "selector": {
+          "description": "selector the configs for the playbook resource",
+          "items": {
+            "additionalProperties": true,
+            "required": [],
+            "type": "object"
+          },
+          "required": [],
+          "title": "selector",
+          "type": "array"
+        },
+        "systemPrompt": {
+          "default": "",
+          "description": "Optional system prompt for the LLM. If not provided, a default prompt will be used.",
+          "required": [],
+          "title": "systemPrompt",
+          "type": "string"
+        }
+      },
+      "required": [
+        "notification"
+      ],
+      "title": "diagnose",
+      "type": "object"
+    },
+    "global": {
+      "additionalProperties": false,
+      "properties": {
+        "llm_connection": {
+          "default": "",
+          "description": "LLM connection: one of ollama, openai or anthropic",
+          "required": [],
+          "title": "llm_connection",
+          "type": "string"
+        }
+      },
+      "required": [
+        "llm_connection"
+      ],
+      "title": "global",
+      "type": "object"
+    },
+    "slack": {
+      "additionalProperties": false,
+      "properties": {
+        "connection": {
+          "default": "",
+          "description": "connection string for slack",
+          "required": [],
+          "title": "connection",
+          "type": "string"
+        }
+      },
+      "required": [
+        "connection"
+      ],
+      "title": "slack",
+      "type": "object"
+    }
+  },
+  "required": [
+    "global",
+    "slack",
+    "diagnose"
+  ],
+  "type": "object"
+}
