@@ -23,6 +23,7 @@ scraper:
     - flanksource/mission-control-mongo-atlas
     - flanksource/mission-control-playbooks-flux
     - flanksource/mission-control-playbooks-kubernetes
+    - flanksource/mission-control-playbooks-ai
     - flanksource/mission-control-postgres
     - flanksource/mission-control-prometheus
     - bitnami/postgresql
