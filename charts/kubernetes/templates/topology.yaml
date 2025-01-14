@@ -67,6 +67,33 @@ spec:
 
         properties:
           {{- include "kubernetes.topology.metricProperties.node" . | nindent 8 }}
+    
+    - name: DeploymentGroups
+      icon: deployment
+      lookup:
+        catalog:
+          - selector:
+              - types: ['Kubernetes::Deployment']
+                tagSelector: 'cluster={{.Values.clusterName}}'
+            display:
+              expr: |
+                dyn(results).map(r, {
+                  'name': r.name,
+                  'namespace': r.tags['namespace'],
+                  'type': 'Kubernetes::Deployment',
+                  'external_id': r.tags['namespace'] + '/' + r.name,
+                  'parentLookup': {'name': r.tags['namespace'], 'type': 'Kubernetes::Namespace'},
+                  'labels': r.labels,
+                  'configs': [{'id': r.id}],
+                  'status': r.status,
+                  'status_reason': r.status + ' ' + k8s.getHealth(r.config).message,
+                  'health': r.health,
+                  'config_id': r.id,
+                  'properties': [
+                    {"name": "created_at", "text": time.Parse('2006-01-02T15:04:05Z07:00', r.config.metadata.creationTimestamp)},
+                    {"name": "namespace", "text": r.tags['namespace']},
+                  ]
+                }).toJSON()
 
     - name: PodGroup
       icon: pods
@@ -78,12 +105,16 @@ spec:
               tagSelector: 'cluster={{.Values.clusterName}}'
             display:
               expr: |
-                dyn(results).filter(r, !(r.name.startsWith('junit-'))).map(r, {
+                dyn(results).filter(r, has(r.config.metadata.ownerReferences) && r.config.metadata.ownerReferences[0].kind == 'ReplicaSet').map(r, {
                   'name': r.name,
                   'namespace': r.tags['namespace'],
                   'type': 'Kubernetes::Pod',
                   'external_id': r.tags['namespace'] + '/' + r.name,
-                  'parentLookup': {'name': r.tags['namespace'], 'type': 'Kubernetes::Namespace'},
+                  'parentLookup': {
+                    'name': r.config.metadata.ownerReferences[0].name.split("-").slice(0, r.config.metadata.ownerReferences[0].name.split("-").size() - 1).join("-"),
+                    'namespace': r.tags['namespace'], 
+                    'type': 'Kubernetes::Deployment'
+                  },
                   'labels': r.labels,
                   'configs': [{'id': r.id}],
                   'logs': [{'name': 'Kubernetes', 'type': 'KubernetesPod'}],
