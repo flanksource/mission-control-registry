@@ -166,6 +166,41 @@ spec:
         properties:
           {{- include "kubernetes.topology.metricProperties.namespace" . | nindent 8 }}
 
+    
+    - name: PodNamespaceGroup
+      icon: pods
+      lookup:
+        catalog:
+          - selector:
+              - types: ['Kubernetes::Pod']
+            display:
+              expr: |
+                dyn(results).map(r, {
+                  'name': r.name,
+                  'namespace': r.tags['namespace'],
+                  'type': 'Kubernetes::Pod',
+                  'external_id': r.tags['namespace'] + '/' + r.name,
+                  'parentLookup': {
+                    'name': r.tags['namespace'], 
+                    'type': 'Kubernetes::Namespace'
+                  },
+                  'labels': r.labels,
+                  'configs': [{'id': r.id}],
+                  'logs': [{'name': 'Kubernetes', 'type': 'KubernetesPod'}],
+                  'status': r.status,
+                  'status_reason': r.status + ' ' + k8s.getHealth(r.config).message,
+                  'health': r.health,
+                  'config_id': r.id,
+                  'properties': [
+                    {"name": "image", "text": r.config.spec.containers[0].image},
+                    {"name": "cpu", "max": [k8s.getResourcesLimit(r.config, "cpu"), k8s.getResourcesRequests(r.config, "cpu") * 2, 1000].filter(i, i != 0)[0], "unit": "millicores", "headline": true},
+                    {"name": "memory", "max": [k8s.getResourcesLimit(r.config, "memory"), k8s.getResourcesRequests(r.config, "memory") * 3/2, 1073741824].filter(i, i != 0)[0], "unit": "bytes", "headline": true},
+                    {"name": "node", "text": r.config.spec.?nodeName.orValue('')},
+                    {"name": "created_at", "text": time.Parse('2006-01-02T15:04:05Z07:00', r.config.metadata.creationTimestamp)},
+                    {"name": "namespace", "text": r.tags['namespace']},
+                  ]
+                }).toJSON()
+
     {{- if .Values.topology.ingress }}
     - name: Ingresses
       icon: k8s-ingress
