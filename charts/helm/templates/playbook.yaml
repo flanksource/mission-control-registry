@@ -32,8 +32,7 @@ spec:
     - name: Create Pull Request
       gitops:
         repo:
-          {{ include "git-origin" . | nindent 10}}
-          connection: {{.Values.git.connection}}
+          {{- include "git-origin" . | nindent 10}}
           branch: "install-chart-$(.params.chart.name)-$(random.Alpha 8)"
         commit:
           author: '$(.user.name)'
