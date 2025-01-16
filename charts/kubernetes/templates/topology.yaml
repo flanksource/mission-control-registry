@@ -151,9 +151,17 @@ spec:
                   dyn(results).map(r, {
                     'name': r.name,
                     'type': 'Kubernetes::Namespace',
-                    'external_id': r.name,
+                    'external_id': "namespace/" + r.name,
                     'labels': r.labels,
                     'configs': [{'id': r.id}],
+                    'components': [
+                      {
+                        "name": "Pods",
+                        "namespace": r.name,
+                        "type": "NamespacePods",
+                        "icon": "pods"
+                      }
+                    ],
                     'health': r.health,
                     'status': r.status,
                     'status_reason': r.status != 'Healthy' ? r.status + ' ' + k8s.getHealth(r.config).message : '',
@@ -173,6 +181,7 @@ spec:
         catalog:
           - selector:
               - types: ['Kubernetes::Pod']
+                tagSelector: 'cluster={{.Values.clusterName}}'
             display:
               expr: |
                 dyn(results).map(r, {
@@ -181,8 +190,9 @@ spec:
                   'type': 'Kubernetes::Pod',
                   'external_id': r.tags['namespace'] + '/' + r.name,
                   'parentLookup': {
-                    'name': r.tags['namespace'], 
-                    'type': 'Kubernetes::Namespace'
+                    'name': 'Pods',
+                    'namespace': r.tags['namespace'],
+                    'type': 'NamespacePods'
                   },
                   'labels': r.labels,
                   'configs': [{'id': r.id}],
