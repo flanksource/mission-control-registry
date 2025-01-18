@@ -11,6 +11,8 @@ spec:
 
   actions:
     - exec:
+        connections:
+          fromConfigItem: '$(.config.id)'
         script: |
           #! /usr/bin/pwsh
           # gotemplate: left-delim=$[[ right-delim=]]
