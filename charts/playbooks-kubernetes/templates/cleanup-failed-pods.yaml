@@ -20,6 +20,8 @@ spec:
   actions:
     - name: Delete pods
       exec:
+        connections:
+          fromConfigItem: '$(.config.id)'
         script: >
           kubectl get pods -A --no-headers |
           grep -E 'Completed|Error|CrashLoopBackOff|ErrImagePull|ImagePullBackOff|ContainerStatusUnknown|CreateContainerConfigError|Evicted' |

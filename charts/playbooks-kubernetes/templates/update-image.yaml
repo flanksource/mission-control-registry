@@ -31,6 +31,8 @@ spec:
   actions:
     - name: Update image
       exec:
+        connections:
+          fromConfigItem: '$(.config.id)'
         script: |
           kubectl set image -n $(.config.tags.namespace) \
             $(.config.config_class)/$(.config.name) \
