@@ -7,6 +7,9 @@ metadata:
   name: send-diagnostics-to-slack
 spec:
   description: Use AI to configs and send the report to slack
+  title: Diagnose and report to Slack
+  icon: cpu
+  category: AI
   configs:
     {{- with .Values.diagnose.selector }}
     {{- toYaml . | nindent 4 }}
@@ -26,16 +29,16 @@ spec:
         formats:
           - slack
         changes:
-          since: 2d
+          since: {{.Values.diagnose.timeframe.changes}}
         analysis:
-          since: 2d
+          since: {{.Values.diagnose.timeframe.analysis}}
         relationships:
           - depth: 5
             direction: all
             changes:
-              since: 24h
+              since: {{.Values.diagnose.timeframe.relatedChanges}}
             analysis:
-              since: 30d
+              since: {{.Values.diagnose.timeframe.relatedAnalysis}}
     - name: send notification
       notification:
         connection: {{.Values.slack.connection}}

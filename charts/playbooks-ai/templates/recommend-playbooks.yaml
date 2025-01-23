@@ -1,0 +1,63 @@
+{{- if .Values.diagnose.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: recommend-playbook
+spec:
+  title: Recommend Playbooks
+  description: |
+    Use AI to find the best playbook to run on the config and send the
+    recommendatation to Slack
+  icon: cpu
+  category: AI
+  configs:
+    {{- with .Values.diagnose.selector }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  parameters:
+    - name: prompt
+      label: Prompt
+      default: Find out why $(.config.name) is unhealthy and report in one short sentence.
+      properties:
+        multiline: 'true'
+  actions:
+    - name: query LLM
+      ai:
+        formats:
+          - slack
+          - recommendPlaybook
+        recommendPlaybooks:
+          {{- with .Values.diagnose.playbooksRecommender.selector }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+        connection: '{{.Values.global.llm_connection}}'
+        systemPrompt: '{{.Values.diagnose.systemPrompt}}'
+        prompt: '$(.params.prompt)'
+        changes:
+          since: {{.Values.diagnose.timeframe.changes}}
+        analysis:
+          since: {{.Values.diagnose.timeframe.analysis}}
+        relationships:
+          - depth: 3
+            direction: outgoing
+            changes:
+              since: {{.Values.diagnose.timeframe.relatedChanges}}
+            analysis:
+              since: {{.Values.diagnose.timeframe.relatedAnalysis}}
+          - depth: 5
+            direction: incoming
+            changes:
+              since: {{.Values.diagnose.timeframe.relatedChanges}}
+            analysis:
+              since: {{.Values.diagnose.timeframe.relatedAnalysis}}
+    - name: send diagnosis report to slack
+      notification:
+        connection: '{{.Values.slack.connection}}'
+        title: Diagnosis report
+        message: '$(getLastAction.result.slack)'
+    - name: send recommended playbooks
+      notification:
+        connection: '{{.Values.slack.connection}}'
+        title: Recommended playbooks
+        message: '{{"{{"}} index (getAction "query LLM").result.recommendedPlaybooks {{"}}"}}'
+{{- end }}
