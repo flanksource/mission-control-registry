@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.uncordonNode }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-uncordon-node
+spec:
+  title: Uncordon Node
+  icon: k8s-node
+  category: Kubernetes
+  configs:
+    - agent: all
+      types:
+        - Kubernetes::Node
+
+  parameters:
+    - name: selector
+      label: 'Selector'
+      type: text
+      default: ""
+    - name: dry_run
+      label: 'Dry Run'
+      type: list
+      default: 'none'
+      properties:
+        options:
+          - label: none
+            value: none
+          - label: server
+            value: server
+          - label: client
+            value: client
+
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
+  actions:
+    - name: Uncordon node
+      exec:
+        connections:
+          fromConfigItem: '$(.config.id)'
+        script: |
+          kubectl uncordon $(.config.name) --selector=$(.params.selector | quote) --dry-run=$(.params.dry_run | quote)
+{{- end}}
