@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.drainNode }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubernetes-drain-node
+spec:
+  title: Drain Node
+  icon: k8s-node
+  category: Kubernetes
+  configs:
+    - agent: all
+      types:
+        - Kubernetes::Node
+
+  parameters:
+    - name: delete_emptydir_data
+      label: 'Delete emptydir data'
+      type: text
+      default: "false"
+    - name: force
+      label: '--force'
+      type: text
+      default: "false"
+    - name: grace_period
+      label: 'Grace period'
+      type: text
+      default: "-1"
+    - name: timeout
+      label: 'Timeout'
+      type: text
+      default: "0s"
+    - name: selector
+      label: 'Selector'
+      type: text
+      default: ""
+
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
+  actions:
+    - name: Drain node
+      exec:
+        connections:
+          fromConfigItem: '$(.config.id)'
+        script: |
+          kubectl drain $(.config.name) --delete-emptydir-data=$(.params.delete_emptydir_data) --force=$(.params.force) --grace-period=$(.params.grace_period) --timeout=$(.params.timeout) --selector=$(.params.selector)
+{{- end}}
