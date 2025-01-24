@@ -44,6 +44,31 @@
               "title": "enabled",
               "type": "boolean"
             },
+            "notification": {
+              "additionalProperties": false,
+              "properties": {
+                "create": {
+                  "default": true,
+                  "description": "creates a notification that listens on the following events\nand triggers the recommender playbook",
+                  "required": [],
+                  "title": "create",
+                  "type": "boolean"
+                },
+                "events": {
+                  "description": "notifications on these events will trigger the recommender playbook",
+                  "items": {
+                    "required": [],
+                    "type": "string"
+                  },
+                  "required": [],
+                  "title": "events",
+                  "type": "array"
+                }
+              },
+              "required": [],
+              "title": "notification",
+              "type": "object"
+            },
             "selector": {
               "description": "selector the playbooks to recommend",
               "items": {
@@ -56,14 +81,16 @@
               "type": "array"
             },
             "systemPrompt": {
-              "default": "You are an expert Kubernetes troubleshooter tasked with diagnosing issues in unhealthy Kubernetes resources. \nYour goal is to provide quick, accurate, and concise diagnoses based on the provided information.\n\nInstructions:\n1. Examine the provided configuration thoroughly.\n2. Consider any additional related resources that might be relevant (e.g., pods, replica sets, namespaces).\n3. Analyze potential issues based on the information available.\n4. Formulate a diagnosis of why the resource is unhealthy.\n5. Report your findings in a single, concise sentence.\n\nBefore providing your final diagnosis, wrap your troubleshooting process in \u003ctroubleshooting_process\u003e tags. This will ensure a thorough examination of the issue. In your troubleshooting process:\n- Identify any missing or misconfigured elements.\n- Consider potential conflicts with related resources.\n- Evaluate common issues associated with this type of resource.\n- Synthesize the findings into a diagnosis.\n\nAfter your troubleshooting process, provide your final diagnosis in a single sentence.\n\nRemember to prioritize accuracy in your analysis and diagnosis.\nYour goal is to provide a clear, actionable insight that can help resolve the issue quickly.\n\nPlease proceed with your troubleshooting process and diagnosis of the unhealthy Kubernetes resource.\n",
+              "default": "You are an expert Kubernetes troubleshooter tasked with diagnosing issues in unhealthy Kubernetes resources.\nYour goal is to provide quick, accurate, and concise diagnoses based on the provided information.\n\nInstructions:\n1. Examine the provided configuration thoroughly.\n2. Consider any additional related resources that might be relevant (e.g., pods, replica sets, namespaces).\n3. Analyze potential issues based on the information available.\n4. Formulate a diagnosis of why the resource is unhealthy.\n5. Report your findings in a single, concise sentence.\n\nBefore providing your final diagnosis, wrap your troubleshooting process in \u003ctroubleshooting_process\u003e tags. This will ensure a thorough examination of the issue. In your troubleshooting process:\n- Identify any missing or misconfigured elements.\n- Consider potential conflicts with related resources.\n- Evaluate common issues associated with this type of resource.\n- Synthesize the findings into a diagnosis.\n\nAfter your troubleshooting process, provide your final diagnosis in a single sentence.\n\nRemember to prioritize accuracy in your analysis and diagnosis.\nYour goal is to provide a clear, actionable insight that can help resolve the issue quickly.\n\nPlease proceed with your troubleshooting process and diagnosis of the unhealthy Kubernetes resource.\n",
               "description": "Optional system prompt for the LLM. If not provided, a default prompt will be used.",
               "required": [],
               "title": "systemPrompt",
               "type": "string"
             }
           },
-          "required": [],
+          "required": [
+            "notification"
+          ],
           "title": "playbooksRecommender",
           "type": "object"
         },
@@ -87,7 +114,6 @@
         },
         "timeframe": {
           "additionalProperties": false,
-          "description": "Defines the time windows for analyzing resource changes and related events",
           "properties": {
             "analysis": {
               "default": "7d",

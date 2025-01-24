@@ -1,4 +1,4 @@
-{{- if .Values.diagnose.enabled }}
+{{- if .Values.diagnose.playbooksRecommender.enabled }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:

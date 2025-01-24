@@ -99,6 +99,26 @@ diagnose:
     # -- create a playbook that diagnoses cataloges and send the diagnosis report to slack.
     enabled: true
 
+    notification:
+      # @schema
+      # type: boolean
+      # required: false
+      # @schema
+      # -- creates a notification that listens on the following events
+      # and triggers the recommender playbook
+      create: true
+
+      # @schema
+      # type: array
+      # required: false
+      # items:
+      #   type: string
+      # @schema
+      # -- notifications on these events will trigger the recommender playbook
+      events:
+        - config.unhealthy
+        - config.warning
+
     # @schema
     # required: false
     # type: array
