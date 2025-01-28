@@ -17,7 +17,7 @@ spec:
   parameters:
     - name: prompt
       label: Prompt
-      default: Find out why $(.config.name) is unhealthy and report in one short sentence.
+      default: Find out why $(.config.name) is unhealthy
       properties:
         multiline: 'true'
   actions:
@@ -50,14 +50,9 @@ spec:
               since: {{.Values.diagnose.timeframe.relatedChanges}}
             analysis:
               since: {{.Values.diagnose.timeframe.relatedAnalysis}}
-    - name: send diagnosis report to slack
-      notification:
-        connection: '{{.Values.slack.connection}}'
-        title: Diagnosis report
-        message: '$(getLastAction.result.slack)'
     - name: send recommended playbooks
       notification:
         connection: '{{.Values.slack.connection}}'
         title: Recommended playbooks
-        message: '{{"{{"}} index (getAction "query LLM").result.recommendedPlaybooks {{"}}"}}'
+        message: '$(getLastAction.result.recommendedPlaybooks)'
 {{- end }}
