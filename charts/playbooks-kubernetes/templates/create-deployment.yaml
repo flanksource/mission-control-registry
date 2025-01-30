@@ -29,6 +29,12 @@ spec:
       exec:
         connections:
           fromConfigItem: '$(.config.id)'
+          {{- if .Values.connections.podIdentity }}
+          eksPodIdentity: true
+          {{- end }}
+          {{- if .Values.connections.serviceAccount }}
+          serviceAccount: true
+          {{- end }}
         script: |
           # gotemplate: left-delim=$[[ right-delim=]]
           echo "Running on $(hostname)" >&2

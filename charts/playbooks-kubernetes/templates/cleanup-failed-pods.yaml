@@ -22,6 +22,12 @@ spec:
       exec:
         connections:
           fromConfigItem: '$(.config.id)'
+          {{- if .Values.connections.podIdentity }}
+          eksPodIdentity: true
+          {{- end }}
+          {{- if .Values.connections.serviceAccount }}
+          serviceAccount: true
+          {{- end }}
         script: >
           kubectl get pods -A --no-headers |
           grep -E 'Completed|Error|CrashLoopBackOff|ErrImagePull|ImagePullBackOff|ContainerStatusUnknown|CreateContainerConfigError|Evicted' |

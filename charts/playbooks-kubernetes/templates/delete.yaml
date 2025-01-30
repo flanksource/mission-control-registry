@@ -25,6 +25,12 @@ spec:
       exec:
         connections:
           fromConfigItem: '$(.config.id)'
+          {{- if .Values.connections.podIdentity }}
+          eksPodIdentity: true
+          {{- end }}
+          {{- if .Values.connections.serviceAccount }}
+          serviceAccount: true
+          {{- end }}
         script: |
           kubectl delete $(.config.config_class) -n $(.config.tags.namespace) $(.config.name) -v 1
 {{- end}}
