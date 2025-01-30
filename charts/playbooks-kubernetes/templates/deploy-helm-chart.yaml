@@ -34,14 +34,7 @@ spec:
   actions:
     - name: Create Deployment
       exec:
-        connections:
-          fromConfigItem: '$(.config.id)'
-          {{- if .Values.connections.podIdentity }}
-          eksPodIdentity: true
-          {{- end }}
-          {{- if .Values.connections.serviceAccount }}
-          serviceAccount: true
-          {{- end }}
+        {{- include "exec-action-connections" . | nindent 8}}
         script: |
           # gotemplate: left-delim=$[[ right-delim=]]
           helm repo add $[[.params.chart]] $[[.params.repo]]

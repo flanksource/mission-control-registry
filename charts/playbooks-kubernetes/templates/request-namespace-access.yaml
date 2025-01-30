@@ -50,14 +50,7 @@ spec:
   actions:
     - name: Create RoleBinding
       exec:
-        connections:
-          fromConfigItem: '$(.config.id)'
-          {{- if .Values.connections.podIdentity }}
-          eksPodIdentity: true
-          {{- end }}
-          {{- if .Values.connections.serviceAccount }}
-          serviceAccount: true
-          {{- end }}
+        {{- include "exec-action-connections" . | nindent 8}}
         script: >-
           kubectl create rolebinding "playbook-$(.run.id)"
           --namespace=$(.config.name)
@@ -67,14 +60,7 @@ spec:
       if: 'success() && params.expiry != "0"'
       delay: "params.expiry"
       exec:
-        connections:
-          fromConfigItem: '$(.config.id)'
-          {{- if .Values.connections.podIdentity }}
-          eksPodIdentity: true
-          {{- end }}
-          {{- if .Values.connections.serviceAccount }}
-          serviceAccount: true
-          {{- end }}
+        {{- include "exec-action-connections" . | nindent 8}}
         script: |
           kubectl delete rolebinding "playbook-$(.run.id)" --namespace=$(.config.name)
 {{- end}}

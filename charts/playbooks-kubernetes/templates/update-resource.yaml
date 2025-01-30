@@ -48,14 +48,7 @@ spec:
   actions:
     - name: Update Resource Requests and Limits
       exec:
-        connections:
-          fromConfigItem: '$(.config.id)'
-          {{- if .Values.connections.podIdentity }}
-          eksPodIdentity: true
-          {{- end }}
-          {{- if .Values.connections.serviceAccount }}
-          serviceAccount: true
-          {{- end }}
+        {{- include "exec-action-connections" . | nindent 8}}
         script: |
           cmd="kubectl set resources -v=2 $(.config.config_class | strings.ToLower) $(.config.name) -n $(.config.tags.namespace) --containers=$( .config.config | jq ".spec.template.spec.containers[0].name" )"
 

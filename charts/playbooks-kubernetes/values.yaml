@@ -15,6 +15,9 @@ playbooks:
   updateResources: true
   deployHelmChart: true
 
+# @schema
+# required: false
+# @schema
 connections:
   # @schema
   # type: boolean
