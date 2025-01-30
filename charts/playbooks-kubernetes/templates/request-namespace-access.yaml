@@ -52,6 +52,12 @@ spec:
       exec:
         connections:
           fromConfigItem: '$(.config.id)'
+          {{- if .Values.connections.podIdentity }}
+          eksPodIdentity: true
+          {{- end }}
+          {{- if .Values.connections.serviceAccount }}
+          serviceAccount: true
+          {{- end }}
         script: >-
           kubectl create rolebinding "playbook-$(.run.id)"
           --namespace=$(.config.name)
@@ -63,6 +69,12 @@ spec:
       exec:
         connections:
           fromConfigItem: '$(.config.id)'
+          {{- if .Values.connections.podIdentity }}
+          eksPodIdentity: true
+          {{- end }}
+          {{- if .Values.connections.serviceAccount }}
+          serviceAccount: true
+          {{- end }}
         script: |
           kubectl delete rolebinding "playbook-$(.run.id)" --namespace=$(.config.name)
 {{- end}}

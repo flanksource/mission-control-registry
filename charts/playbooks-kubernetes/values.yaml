@@ -15,6 +15,25 @@ playbooks:
   updateResources: true
   deployHelmChart: true
 
+connections:
+  # @schema
+  # type: boolean
+  # required: false
+  # @schema
+  # -- enables AWS authentication using EKS Pod Identity.
+  # When enabled, AWS environment variables (AWS_*) will be passed through
+  # to allow playbooks to authenticate with AWS services
+  podIdentity: false
+
+  # @schema
+  # type: boolean
+  # required: false
+  # @schema
+  # -- enables Kubernetes authentication using ServiceAccount token.
+  # When enabled, Kubernetes environment variables will be passed through
+  # to allow playbooks to authenticate with the Kubernetes API server
+  serviceAccount: false
+
 delete:
   types:
     - Kubernetes::Pod

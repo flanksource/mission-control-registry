@@ -13,6 +13,12 @@ spec:
     - exec:
         connections:
           fromConfigItem: '$(.config.id)'
+          {{- if .Values.connections.podIdentity }}
+          eksPodIdentity: true
+          {{- end }}
+          {{- if .Values.connections.serviceAccount }}
+          serviceAccount: true
+          {{- end }}
         script: |
           #! /usr/bin/pwsh
           # gotemplate: left-delim=$[[ right-delim=]]

@@ -50,6 +50,12 @@ spec:
       exec:
         connections:
           fromConfigItem: '$(.config.id)'
+          {{- if .Values.connections.podIdentity }}
+          eksPodIdentity: true
+          {{- end }}
+          {{- if .Values.connections.serviceAccount }}
+          serviceAccount: true
+          {{- end }}
         script: |
           cmd="kubectl set resources -v=2 $(.config.config_class | strings.ToLower) $(.config.name) -n $(.config.tags.namespace) --containers=$( .config.config | jq ".spec.template.spec.containers[0].name" )"
 

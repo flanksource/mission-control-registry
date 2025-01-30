@@ -36,6 +36,12 @@ spec:
       exec:
         connections:
           fromConfigItem: '$(.config.id)'
+          {{- if .Values.connections.podIdentity }}
+          eksPodIdentity: true
+          {{- end }}
+          {{- if .Values.connections.serviceAccount }}
+          serviceAccount: true
+          {{- end }}
         script: |
           # gotemplate: left-delim=$[[ right-delim=]]
           helm repo add $[[.params.chart]] $[[.params.repo]]
