@@ -21,8 +21,7 @@
         }
       },
       "required": [],
-      "title": "connections",
-      "type": "object"
+      "title": "connections"
     },
     "delete": {
       "additionalProperties": false,
@@ -84,7 +83,7 @@
     },
     "playbooks": {
       "additionalProperties": false,
-      "description": "yaml-language-server: $schema=values.schema.json",
+      "description": "",
       "properties": {
         "cleanupFailedPods": {
           "default": true,
@@ -187,7 +186,6 @@
   },
   "required": [
     "playbooks",
-    "connections",
     "delete"
   ],
   "type": "object"

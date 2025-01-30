@@ -31,14 +31,7 @@ spec:
   actions:
     - name: Update image
       exec:
-        connections:
-          fromConfigItem: '$(.config.id)'
-          {{- if .Values.connections.podIdentity }}
-          eksPodIdentity: true
-          {{- end }}
-          {{- if .Values.connections.serviceAccount }}
-          serviceAccount: true
-          {{- end }}
+        {{- include "exec-action-connections" . | nindent 8}}
         script: |
           kubectl set image -n $(.config.tags.namespace) \
             $(.config.config_class)/$(.config.name) \
