@@ -1,4 +1,5 @@
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/connection.schema.json
 apiVersion: mission-control.flanksource.com/v1
 kind: Connection
 metadata:
@@ -27,6 +28,7 @@ spec:
           name: incident-commander-postgres
           key: POSTGRES_PASSWORD
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/topology.schema.json
 apiVersion: canaries.flanksource.com/v1
 kind: Topology
 metadata:
@@ -290,6 +292,7 @@ spec:
         lookup:
           postgres:
             - query: SELECT count(*) FROM event_queue
+              name: backlog
               connection: "connection://{{ .Values.connectionName }}"
               display:
                 expr: results.rows[0].count
@@ -340,7 +343,11 @@ spec:
     selectors:
     - labelSelector: app.kubernetes.io/name=apm-hub
     type: API
-  - checks:
+
+  # Config DB
+  - name: Config DB
+    icon: config
+    checks:
     - inline:
         http:
         - display: {}
@@ -388,6 +395,42 @@ spec:
                   {'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
                   {'name': 'Success Count', 'value': r.success_count, 'headline': true},
                   {'name': 'Error Count', 'value': r.error_count, 'headline': true},
+                  {
+                    'name': 'Max consume Lag',
+                    'lookup': {
+                      'prometheus': [{
+                        'query': 'max(histogram_quantile(1.0, rate(informer_consume_lag_bucket{scraper="' + r.resource_id + '"}[5m])))',
+                        'url': {{ .Values.prometheusURL | quote}},
+                        'display': {
+                          'expr': 'results[?0].orValue({'value': ''}).value'
+                        }
+                      }],
+                    },
+                  },
+                  {
+                    'name': 'New items / hr',
+                    'lookup': {
+                      'prometheus': [{
+                        'query': 'sum(increase(scraper_added{scraper_id="' + r.resource_id + '"}[24h])) / 24',
+                        'url': {{ .Values.prometheusURL | quote}},
+                        'display': {
+                          'expr': 'results[?0].orValue({'value': ''}).value'
+                        }
+                      }],
+                    },
+                  },
+                  {
+                    'name': 'Updated items / hr',
+                    'lookup': {
+                      'prometheus': [{
+                        'query': 'sum(increase(scraper_updated{scraper_id="' + r.resource_id + '"}[24h])) / 24',
+                        'url': {{ .Values.prometheusURL | quote}},
+                        'display': {
+                          'expr': 'results[?0].orValue({'value': ''}).value'
+                        }
+                      }],
+                    },
+                  },
                 ],
               }).toJSON()
 
@@ -404,8 +447,12 @@ spec:
           results: 1
       name: ConfigScrapers
       type: lookup
-    icon: config
-    name: Config DB
+
+    - name: Scrape Lag
+      icon: s
+      properties:
+      - name: a/informer_receive_lag/informer_consume_lag
+
     properties:
     - headline: true
       lookup:
