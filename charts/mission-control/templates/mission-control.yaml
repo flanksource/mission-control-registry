@@ -395,42 +395,7 @@ spec:
                   {'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
                   {'name': 'Success Count', 'value': r.success_count, 'headline': true},
                   {'name': 'Error Count', 'value': r.error_count, 'headline': true},
-                  {
-                    'name': 'Max consume Lag',
-                    'lookup': {
-                      'prometheus': [{
-                        'query': 'max(histogram_quantile(1.0, rate(informer_consume_lag_bucket{scraper="' + r.resource_id + '"}[5m])))',
-                        'url': {{ .Values.prometheusURL | quote}},
-                        'display': {
-                          'expr': 'results[?0].orValue({'value': ''}).value'
-                        }
-                      }],
-                    },
-                  },
-                  {
-                    'name': 'New items / hr',
-                    'lookup': {
-                      'prometheus': [{
-                        'query': 'sum(increase(scraper_added{scraper_id="' + r.resource_id + '"}[24h])) / 24',
-                        'url': {{ .Values.prometheusURL | quote}},
-                        'display': {
-                          'expr': 'results[?0].orValue({'value': ''}).value'
-                        }
-                      }],
-                    },
-                  },
-                  {
-                    'name': 'Updated items / hr',
-                    'lookup': {
-                      'prometheus': [{
-                        'query': 'sum(increase(scraper_updated{scraper_id="' + r.resource_id + '"}[24h])) / 24',
-                        'url': {{ .Values.prometheusURL | quote}},
-                        'display': {
-                          'expr': 'results[?0].orValue({'value': ''}).value'
-                        }
-                      }],
-                    },
-                  },
+                  {'name': 'scraper_id', 'text': r.resource_id},
                 ],
               }).toJSON()
 
@@ -439,7 +404,7 @@ spec:
             SELECT * FROM (
               SELECT
                 ROW_NUMBER() OVER (PARTITION BY c.name ORDER BY time_end DESC) AS rn, c.name, jh.status, jh.success_count,
-                jh.error_count, jh.duration_millis, jh.time_end
+                jh.error_count, jh.duration_millis, jh.time_end, jh.resource_id
               FROM config_scrapers c
               INNER JOIN job_history jh ON c.id::text = jh.resource_id
               WHERE jh.status NOT in ('RUNNING', 'STALE', 'SKIPPED')
@@ -448,10 +413,31 @@ spec:
       name: ConfigScrapers
       type: lookup
 
-    - name: Scrape Lag
-      icon: s
-      properties:
-      - name: a/informer_receive_lag/informer_consume_lag
+      {{- if .Values.prometheusURL }}
+      forEach:
+        properties:
+        - name: 'Max consume lag (ms)'
+          lookup:
+            prometheus:
+            - query: 'max(histogram_quantile(1.0, rate(informer_consume_lag_bucket{scraper="$(.properties.scraper_id)"}[5m])))'
+              url: {{ .Values.prometheusURL | quote}}
+              display:
+                expr: "results[?0].orValue({'value': ''}).value"
+        - name: 'New items/hr'
+          lookup:
+            prometheus:
+            - query: 'sum(increase(scraper_added{scraper_id="$(.properties.scraper_id)"}[24h])) / 24'
+              url: {{ .Values.prometheusURL | quote}}
+              display:
+                expr: "results[?0].orValue({'value': ''}).value"
+        - name: 'Updated items/hr'
+          lookup:
+            prometheus:
+            - query: 'sum(increase(scraper_updated{scraper_id="$(.properties.scraper_id)"}[24h])) / 24'
+              url: {{ .Values.prometheusURL | quote}}
+              display:
+                expr: "results[?0].orValue({'value': ''}).value"
+      {{- end }}
 
     properties:
     - headline: true
