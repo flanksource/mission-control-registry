@@ -126,9 +126,9 @@ diagnose:
     #   type: object
     #   additionalProperties: true
     # @schema
-    # -- selector the playbooks to recommend
+    # -- selector selects the playbooks to recommend
     selector:
-      - name: "*"
+      - search: category!=AI
 
     # @schema
     # type: string
