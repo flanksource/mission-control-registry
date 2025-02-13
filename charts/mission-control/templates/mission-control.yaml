@@ -393,9 +393,9 @@ spec:
                 'properties': [
                   {'name': 'Last runtime', 'text': r.time_end != null ? string(r.time_end) : 'N/A' },
                   {'name': 'Duration', 'text': r.duration_millis != null ? string(r.duration_millis) : 'N/A', 'unit': 'ms', 'headline': true},
-                  {'name': 'Success Count', 'value': r.success_count, 'headline': true},
-                  {'name': 'Error Count', 'value': r.error_count, 'headline': true},
-                  {'name': 'scraper_id', 'text': r.resource_id},
+                  {'name': 'Success', 'value': r.success_count, 'headline': true},
+                  {'name': 'Error', 'value': r.error_count, 'headline': true},
+                  {'name': 'scraper_id', 'text': r.resource_id, 'hidden': true},
                 ],
               }).toJSON()
 
@@ -416,7 +416,9 @@ spec:
       {{- if .Values.prometheusURL }}
       forEach:
         properties:
-        - name: 'Max consume lag (ms)'
+        - name: 'Lag'
+          headline: true
+          label: 'Max consume lag (ms)'
           lookup:
             prometheus:
             - query: 'max(histogram_quantile(1.0, rate(informer_consume_lag_bucket{scraper="$(.properties.scraper_id)"}[5m])))'
