@@ -6,7 +6,10 @@ kind: Playbook
 metadata:
   name: diagnose-catalogs
 spec:
+  title: Diagnose
   description: Use AI to diagnose catalogs
+  icon: cpu
+  category: AI
   configs:
     {{- with .Values.diagnose.selector }}
     {{- toYaml . | nindent 4 }}
@@ -24,14 +27,14 @@ spec:
         systemPrompt: '{{.Values.diagnose.systemPrompt}}'
         prompt: '$(.params.prompt)'
         changes:
-          since: 2d
+          since: {{.Values.diagnose.timeframe.changes}}
         analysis:
-          since: 2d
+          since: {{.Values.diagnose.timeframe.analysis}}
         relationships:
           - depth: 5
             direction: all
             changes:
-              since: 24h
+              since: {{.Values.diagnose.timeframe.relatedChanges}}
             analysis:
-              since: 30d
+              since: {{.Values.diagnose.timeframe.relatedAnalysis}}
 {{- end}}

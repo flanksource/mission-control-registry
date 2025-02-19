@@ -35,6 +35,35 @@ diagnose:
   selector:
     - name: "*"
 
+  timeframe:
+    # @schema
+    # required: false
+    # type: string
+    # @schema
+    # -- Duration to look back at configs changes.
+    changes: 24h
+
+    # @schema
+    # required: false
+    # type: string
+    # @schema
+    # -- Duration to look back at changes of related configs.
+    relatedChanges: 24h
+
+    # @schema
+    # required: false
+    # type: string
+    # @schema
+    # -- Duration to look back at config's analyses.
+    analysis: 7d
+
+    # @schema
+    # required: false
+    # type: string
+    # @schema
+    # -- Duration to look back at the analyses of related configs.
+    relatedAnalysis: 7d
+
   # @schema
   # type: string
   # required: false
@@ -61,6 +90,74 @@ diagnose:
     - Examine relationships between resources, noting any dependencies or conflicts.
     - Consider common Kubernetes issues and check if they apply to this situation.
     - Formulate hypotheses about potential root causes.
+
+  playbooksRecommender:
+    # @schema
+    # type: boolean
+    # required: false
+    # @schema
+    # -- create a playbook that diagnoses cataloges and send the diagnosis report to slack.
+    enabled: true
+
+    notification:
+      # @schema
+      # type: boolean
+      # required: false
+      # @schema
+      # -- creates a notification that listens on the following events
+      # and triggers the recommender playbook
+      create: true
+
+      # @schema
+      # type: array
+      # required: false
+      # items:
+      #   type: string
+      # @schema
+      # -- notifications on these events will trigger the recommender playbook
+      events:
+        - config.unhealthy
+        - config.warning
+
+    # @schema
+    # required: false
+    # type: array
+    # items:
+    #   type: object
+    #   additionalProperties: true
+    # @schema
+    # -- selector selects the playbooks to recommend
+    selector:
+      - search: category!=AI
+
+    # @schema
+    # type: string
+    # required: false
+    # @schema
+    # -- Optional system prompt for the LLM. If not provided, a default prompt will be used.
+    systemPrompt: |
+      You are an expert Kubernetes troubleshooter tasked with diagnosing issues in unhealthy Kubernetes resources.
+      Your goal is to provide quick, accurate, and concise diagnoses based on the provided information.
+
+      Instructions:
+      1. Examine the provided configuration thoroughly.
+      2. Consider any additional related resources that might be relevant (e.g., pods, replica sets, namespaces).
+      3. Analyze potential issues based on the information available.
+      4. Formulate a diagnosis of why the resource is unhealthy.
+      5. Report your findings in a single, concise sentence.
+
+      Before providing your final diagnosis, wrap your troubleshooting process in <troubleshooting_process> tags. This will ensure a thorough examination of the issue. In your troubleshooting process:
+      - Identify any missing or misconfigured elements.
+      - Consider potential conflicts with related resources.
+      - Evaluate common issues associated with this type of resource.
+      - Synthesize the findings into a diagnosis.
+
+      After your troubleshooting process, provide your final diagnosis in a single sentence.
+
+      Remember to prioritize accuracy in your analysis and diagnosis.
+      Your goal is to provide a clear, actionable insight that can help resolve the issue quickly.
+
+      Please proceed with your troubleshooting process and diagnosis of the unhealthy Kubernetes resource.
 
   notification:
     # @schema

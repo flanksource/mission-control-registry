@@ -1,0 +1,29 @@
+{{- if and .Values.diagnose.enabled .Values.diagnose.playbooksRecommender.enabled .Values.diagnose.playbooksRecommender.notification.create }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Notification
+metadata:
+  name: notify-recommender-playbook
+spec:
+  events:
+    {{- with .Values.diagnose.playbooksRecommender.notification.events }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  to:
+    playbook: {{.Release.Namespace}}/recommend-playbook
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Permission
+metadata:
+  name: allow-notify-recommender-playbook-playbook-run
+spec:
+  description: allow notification "notify-recommender-playbook" to run the AI playbook recommender playbook
+  subject:
+    notification: {{.Release.Namespace}}/notify-recommender-playbook
+  actions:
+    - playbook:*
+  object:
+    playbooks:
+      - name: recommend-playbook
+        namespace: {{.Release.Namespace}}
+{{- end }}
