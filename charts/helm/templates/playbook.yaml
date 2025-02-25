@@ -8,7 +8,7 @@ metadata:
 spec:
   title: Install Helm Chart
   description: Installs helm chart on a namespace
-  category: kubernetes
+  category: Kubernetes
   configs:
     - types:
         - Kubernetes::Namespace
