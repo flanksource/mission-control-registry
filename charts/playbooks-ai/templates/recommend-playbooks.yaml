@@ -21,10 +21,9 @@ spec:
       properties:
         multiline: 'true'
   actions:
-    - name: query LLM
+    - name: analyse
       ai:
         formats:
-          - slack
           - recommendPlaybook
         recommendPlaybooks:
           {{- with .Values.diagnose.playbooksRecommender.selector }}
