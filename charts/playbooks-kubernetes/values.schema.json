@@ -83,12 +83,18 @@
     },
     "playbooks": {
       "additionalProperties": false,
-      "description": "",
+      "description": "yaml-language-server: $schema=values.schema.json",
       "properties": {
         "cleanupFailedPods": {
           "default": true,
           "required": [],
           "title": "cleanupFailedPods",
+          "type": "boolean"
+        },
+        "cordonNode": {
+          "default": true,
+          "required": [],
+          "title": "cordonNode",
           "type": "boolean"
         },
         "createDeployment": {
@@ -107,6 +113,12 @@
           "default": true,
           "required": [],
           "title": "deployHelmChart",
+          "type": "boolean"
+        },
+        "drainNode": {
+          "default": true,
+          "required": [],
+          "title": "drainNode",
           "type": "boolean"
         },
         "enabled": {
@@ -152,6 +164,12 @@
           "title": "scale",
           "type": "boolean"
         },
+        "uncordonNode": {
+          "default": true,
+          "required": [],
+          "title": "uncordonNode",
+          "type": "boolean"
+        },
         "updateImage": {
           "default": true,
           "required": [],
@@ -178,7 +196,10 @@
         "scale",
         "updateImage",
         "updateResources",
-        "deployHelmChart"
+        "deployHelmChart",
+        "drainNode",
+        "cordonNode",
+        "uncordonNode"
       ],
       "title": "playbooks",
       "type": "object"
