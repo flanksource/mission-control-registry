@@ -11,6 +11,10 @@ spec:
     {{- end }}
   to:
     playbook: {{.Release.Namespace}}/recommend-playbook
+  {{- if .Values.slack.connection}}
+  fallback:
+    connection: {{.Values.slack.connection}}
+  {{- end}}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Permission
