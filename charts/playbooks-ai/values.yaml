@@ -119,6 +119,34 @@ diagnose:
         - config.unhealthy
         - config.warning
 
+      # @schema
+      # type: string
+      # required: false
+      # @schema
+      # -- repeat Interval for the notification
+      repeatInterval: ""
+
+      # @schema
+      # type: string
+      # required: false
+      # @schema
+      # -- waitFor duration for the notification
+      waitFor: ""
+
+      # @schema
+      # type: string
+      # required: false
+      # @schema
+      # -- waitFor eval period duration for the notification
+      waitForEvalPeriod: ""
+
+      # @schema
+      # type: string
+      # required: false
+      # @schema
+      # -- notification filter
+      filter: ""
+
     # @schema
     # required: false
     # type: array

@@ -63,6 +63,34 @@
                   "required": [],
                   "title": "events",
                   "type": "array"
+                },
+                "filter": {
+                  "default": "",
+                  "description": "notification filter",
+                  "required": [],
+                  "title": "filter",
+                  "type": "string"
+                },
+                "repeatInterval": {
+                  "default": "",
+                  "description": "repeat Interval for the notification",
+                  "required": [],
+                  "title": "repeatInterval",
+                  "type": "string"
+                },
+                "waitFor": {
+                  "default": "",
+                  "description": "waitFor duration for the notification",
+                  "required": [],
+                  "title": "waitFor",
+                  "type": "string"
+                },
+                "waitForEvalPeriod": {
+                  "default": "",
+                  "description": "waitFor eval period duration for the notification",
+                  "required": [],
+                  "title": "waitForEvalPeriod",
+                  "type": "string"
                 }
               },
               "required": [],
@@ -70,7 +98,7 @@
               "type": "object"
             },
             "selector": {
-              "description": "selector the playbooks to recommend",
+              "description": "selector selects the playbooks to recommend",
               "items": {
                 "additionalProperties": true,
                 "required": [],

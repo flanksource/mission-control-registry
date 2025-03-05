@@ -11,6 +11,18 @@ spec:
     {{- end }}
   to:
     playbook: {{.Release.Namespace}}/recommend-playbook
+  {{- if .Values.diagnose.playbooksRecommender.notification.waitFor}}
+  waitFor: {{.Values.diagnose.playbooksRecommender.notification.waitFor}}
+  {{- end}}
+  {{- if .Values.diagnose.playbooksRecommender.notification.repeatInterval}}
+  repeatInterval: {{.Values.diagnose.playbooksRecommender.notification.repeatInterval}}
+  {{- end}}
+  {{- if .Values.diagnose.playbooksRecommender.notification.filter}}
+  filter: {{.Values.diagnose.playbooksRecommender.notification.filter}}
+  {{- end}}
+  {{- if .Values.diagnose.playbooksRecommender.notification.waitForEvalPeriod}}
+  waitForEvalPeriod: {{.Values.diagnose.playbooksRecommender.notification.waitForEvalPeriod}}
+  {{- end}}
   {{- if .Values.slack.connection}}
   fallback:
     connection: {{.Values.slack.connection}}
