@@ -31,15 +31,31 @@ spec:
 apiVersion: mission-control.flanksource.com/v1
 kind: Permission
 metadata:
-  name: allow-notify-recommender-playbook-playbook-run
+  name: allow-notify-recommender-playbook-run
 spec:
   description: allow notification "notify-recommender-playbook" to run the AI playbook recommender playbook
   subject:
-    notification: {{.Release.Namespace}}/notify-recommender-playbook
+    notification: "{{.Release.Namespace}}/notify-recommender-playbook"
   actions:
     - playbook:*
   object:
     playbooks:
       - name: recommend-playbook
         namespace: {{.Release.Namespace}}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Permission
+metadata:
+  name: allow-notify-recommender-config-component-read
+spec:
+  description: allow notification "notify-recommender-playbook" to read configs & components
+  subject:
+    notification: "{{.Release.Namespace}}/notify-recommender-playbook"
+  actions:
+    - read
+  object:
+    configs:
+      - name: "*"
+    components:
+      - name: "*"    
 {{- end }}
