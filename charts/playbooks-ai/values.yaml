@@ -55,14 +55,14 @@ diagnose:
     # type: string
     # @schema
     # -- Duration to look back at config's analyses.
-    analysis: 7d
+    analysis: 1d
 
     # @schema
     # required: false
     # type: string
     # @schema
     # -- Duration to look back at the analyses of related configs.
-    relatedAnalysis: 7d
+    relatedAnalysis: 1d
 
   # @schema
   # type: string
@@ -124,14 +124,14 @@ diagnose:
       # required: false
       # @schema
       # -- repeat Interval for the notification
-      repeatInterval: ""
+      repeatInterval: "1d"
 
       # @schema
       # type: string
       # required: false
       # @schema
       # -- waitFor duration for the notification
-      waitFor: ""
+      waitFor: "5m"
 
       # @schema
       # type: string
