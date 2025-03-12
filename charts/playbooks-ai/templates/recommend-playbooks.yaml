@@ -5,10 +5,8 @@ metadata:
   name: recommend-playbook
 spec:
   title: Recommend Playbooks
-  description: |
-    Use AI to find the best playbook to run on the config and send the
-    recommendatation to Slack
-  icon: cpu
+  description: Diagnoses the health of a resource using AI, and then recommends playbooks to fix the issue, sending the results to Slack
+  icon: bot
   category: AI
   configs:
     {{- with .Values.diagnose.selector }}

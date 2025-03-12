@@ -1,14 +1,14 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
-{{- if and .Values.diagnose.enabled .Values.diagnose.notification.enabled }}
+{{- if .Values.diagnose.enabled }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
-  name: send-diagnostics-to-slack
+  name: ai-diagnose
 spec:
-  description: Use AI to configs and send the report to slack
-  title: Diagnose and report to Slack
-  icon: cpu
+  description: Diagnoses the health of a resource using AI{{- if .Values.slack.connection}}, optionally sending the result to Slack{{- end}}
+  title: Diagnose
+  icon: bot
   category: AI
   configs:
     {{- with .Values.diagnose.selector }}
@@ -20,14 +20,23 @@ spec:
       default: 'Find out why $(.config.name) is unhealthy'
       properties:
         multiline: 'true'
+    {{- if .Values.slack.connection}}
+    - name: slack
+      type: checkbox
+      label: Send result to Slack
+    {{- end }}
+
   actions:
-    - name: query
+    - name: diagnose with AI
+      timeout: 10m
       ai:
         connection: '{{.Values.global.llm_connection}}'
         systemPrompt: '{{.Values.diagnose.notification.systemPrompt}}'
         prompt: '$(.params.prompt)'
+        {{- if .Values.slack.connection}}
         formats:
           - slack
+        {{- end }}
         changes:
           since: {{.Values.diagnose.timeframe.changes}}
         analysis:
@@ -39,9 +48,28 @@ spec:
               since: {{.Values.diagnose.timeframe.relatedChanges}}
             analysis:
               since: {{.Values.diagnose.timeframe.relatedAnalysis}}
-    - name: send notification
+  {{- if .Values.slack.connection}}
+    - name: send result
+      if: success() && bool(params.slack)
       notification:
         connection: {{.Values.slack.connection}}
         message: "$(getLastAction.result.slack)"
         title: Diagnosis report
+    {{/*
+      - name: send failure message
+      if: failure() && bool(params.slack)
+      notification:
+        connection: {{.Values.slack.connection}}
+        message: |
+          {
+            "blocks": [
+              $(slackSectionTextMD (printf `%s AI analysis failed for $(.config.name)` (slackHealthEmoji "unhealthy")))
+              {"type": "divider"},
+              $(slackSectionTextPlain getLastAction.result.error),
+              $(slackSectionLabels .config.labels),
+              $(slackURLAction .config.name .permalink)
+            ]
+          }
+        title: Diagnosis report */}}
+  {{- end }}
 {{- end}}

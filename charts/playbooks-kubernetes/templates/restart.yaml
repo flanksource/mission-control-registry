@@ -10,6 +10,7 @@ spec:
   title: Restart
   icon: reload
   category: Kubernetes
+  description: Restart a resource using kubectl rollout restart
   configs:
     - agent: all
       types:
@@ -21,7 +22,7 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Restart
+    - name: kubectl rollout restart
       exec:
         {{- include "exec-action-connections" . | nindent 8}}
         script: |

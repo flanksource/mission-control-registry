@@ -9,7 +9,7 @@ spec:
   title: Create Deployment
   icon: k8s-deployment
   category: Flux
-  description: Create a new deployment
+  description: Creates a Deployment in a GitOps managed namespace by submitting a Git PR
   parameters:
     - name: name
       label: Name
@@ -44,7 +44,8 @@ spec:
         colSpan: 3
       type: bytes
   configs:
-    - labelSelector:  kustomize.toolkit.fluxcd.io/name
+    # deployments can only be created in namespaces managed by flux
+    - labelSelector: 'kustomize.toolkit.fluxcd.io/name'
       types:
         - Kubernetes::Namespace
   actions:

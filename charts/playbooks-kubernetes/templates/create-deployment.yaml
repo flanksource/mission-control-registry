@@ -10,7 +10,7 @@ spec:
   title: Create Deployment
   icon: k8s-deployment
   category: Kubernetes
-  description: Create a new deployment
+  description: Creates a new deployment with kubectl
   parameters:
     - name: name
       label: Name
@@ -25,7 +25,7 @@ spec:
   runsOn:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
   actions:
-    - name: Create Deployment
+    - name: kubectl create deployment
       exec:
         {{- include "exec-action-connections" . | nindent 8}}
         script: |

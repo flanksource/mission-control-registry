@@ -10,7 +10,7 @@ spec:
   title: Cleanup Failed Pods
   icon: remove-trash
   category: Kubernetes
-  description: Deletes all failed kubernetes pod
+  description: Deletes all failed  / completed / evicted pods
   runsOn:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
   configs:

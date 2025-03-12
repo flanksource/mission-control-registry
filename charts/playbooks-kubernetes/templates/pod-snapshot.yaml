@@ -9,7 +9,7 @@ metadata:
 spec:
   title: Pod Snapshot
   category: Kubernetes
-  description: Takes a snapshot of a pod (logs, manifest and events)
+  description: Takes a snapshot of a pod using kubectl (logs, manifest and events)
   icon: add-snapshot
   configs:
     - agent: all
@@ -19,7 +19,7 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Take snapshot
+    - name: kubectl
       exec:
         {{- include "exec-action-connections" . | nindent 8}}
         script: |

@@ -4,12 +4,15 @@ kind: Playbook
 metadata:
   name: kustomize-scale
 spec:
-  title: 'Update Image'
+  title: 'Scale'
   icon: flux
+  category: Flux
+  description: Scales GitOps managed objects by submitting a git PR
   parameters:
     - default: 'chore: scale $(.config.type)/$(.config.name) to <replicas>'
       label: Commit Message
       name: commit_message
+
     - name: replicas
       label: "Replicas"
       default: '$(.config.config.spec.template.spec.replicas)'

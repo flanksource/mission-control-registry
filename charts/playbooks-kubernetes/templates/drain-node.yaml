@@ -48,10 +48,9 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Drain node
+    - name: kubectl drain
       exec:
-        connections:
-          fromConfigItem: '$(.config.id)'
+        {{- include "exec-action-connections" . | nindent 8}}
         script: |
           kubectl drain $(.config.name) --delete-emptydir-data=$(.params.delete_emptydir_data) --force=$(.params.force) --grace-period=$(.params.grace_period) --timeout=$(.params.timeout)  --dry-run=$(.params.dry_run | quote)
 {{- end}}

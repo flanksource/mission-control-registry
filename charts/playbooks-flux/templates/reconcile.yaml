@@ -7,14 +7,22 @@ spec:
   title: Reconcile
   icon: flux
   category: Flux
+  description: Triggers a reconciliation of the selected Flux object
   configs:
     - types:
         - Kubernetes::HelmRelease
         - Kubernetes::Kustomization
+        - Kubernetes::HelmRepository
+        - Kubernetes::HelmChart
+
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Reconcile resource
+    - name: Reconcile
       exec:
+        connections:
+          fromConfigItem: '$(.config.id)'
         script: |
           flux reconcile -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower) $(.config.name)
 {{- end}}

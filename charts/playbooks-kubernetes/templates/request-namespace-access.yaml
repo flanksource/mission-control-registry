@@ -10,7 +10,7 @@ spec:
   title: Request Namespace Access
   icon: k8s-namespace
   category: Kubernetes
-  description: Adds a Rolebinding to the given role
+  description: Grants a user access to a namespace using kubectl, optionally removing it after a period of time
   parameters:
     - name: user
       label: User
@@ -48,7 +48,7 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Create RoleBinding
+    - name: kubectl create rolebinding
       exec:
         {{- include "exec-action-connections" . | nindent 8}}
         script: >-
@@ -56,7 +56,7 @@ spec:
           --namespace=$(.config.name)
           --user=$(.params.user)
           --role=$(.params.role.name)
-    - name: Clear Rolebinding
+    - name: kubectl delete rolebinding
       if: 'success() && params.expiry != "0"'
       delay: "params.expiry"
       exec:

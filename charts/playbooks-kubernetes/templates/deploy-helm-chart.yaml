@@ -10,7 +10,7 @@ spec:
   title: Deploy Helm Chart
   icon: helm
   category: Kubernetes
-  description: Deploy Helm Chart
+  description: Deploys a Helm Chart using the Helm CLI
   parameters:
     - label: Helm Repository
       name: repo
@@ -32,7 +32,7 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Create Deployment
+    - name: helm install
       exec:
         {{- include "exec-action-connections" . | nindent 8}}
         script: |

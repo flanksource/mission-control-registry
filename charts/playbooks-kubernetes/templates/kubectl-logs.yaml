@@ -8,7 +8,8 @@ spec:
   runsOn:
     -  {{` "{{- if .agent }}{{.agent.id}}{{else}}local{{end}}" `}}
   actions:
-  - name: Kubectl Logs
+  - name: stern
+    description: Get logs using stern
     exec:
       {{- include "exec-action-connections" . | nindent 6}}
       script: |
