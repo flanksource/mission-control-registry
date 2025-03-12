@@ -71,15 +71,36 @@
                   "title": "filter",
                   "type": "string"
                 },
+                "groupBy": {
+                  "description": "group notifications in waiting status together\nhttps://flanksource.com/docs/guide/notifications/concepts/wait-for#grouping-notifications",
+                  "items": {
+                    "required": [],
+                    "type": "string"
+                  },
+                  "required": [],
+                  "title": "groupBy",
+                  "type": "array"
+                },
+                "inhibitions": {
+                  "description": "inhibitions controls notification suppression for related resources.",
+                  "items": {
+                    "additionalProperties": true,
+                    "required": [],
+                    "type": "object"
+                  },
+                  "required": [],
+                  "title": "inhibitions",
+                  "type": "array"
+                },
                 "repeatInterval": {
-                  "default": "",
+                  "default": "1d",
                   "description": "repeat Interval for the notification",
                   "required": [],
                   "title": "repeatInterval",
                   "type": "string"
                 },
                 "waitFor": {
-                  "default": "",
+                  "default": "5m",
                   "description": "waitFor duration for the notification",
                   "required": [],
                   "title": "waitFor",
@@ -144,7 +165,7 @@
           "additionalProperties": false,
           "properties": {
             "analysis": {
-              "default": "7d",
+              "default": "1d",
               "description": "Duration to look back at config's analyses.",
               "required": [],
               "title": "analysis",
@@ -158,7 +179,7 @@
               "type": "string"
             },
             "relatedAnalysis": {
-              "default": "7d",
+              "default": "1d",
               "description": "Duration to look back at the analyses of related configs.",
               "required": [],
               "title": "relatedAnalysis",
@@ -214,9 +235,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "connection"
-      ],
+      "required": [],
       "title": "slack",
       "type": "object"
     }

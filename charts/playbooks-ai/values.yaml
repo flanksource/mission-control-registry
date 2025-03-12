@@ -134,6 +134,28 @@ diagnose:
       waitFor: "5m"
 
       # @schema
+      # required: false
+      # type: array
+      # items:
+      #  type: string
+      # @schema
+      # -- group notifications in waiting status together
+      # -- https://flanksource.com/docs/guide/notifications/concepts/wait-for#grouping-notifications
+      groupBy:
+        - type
+        - status_reason
+
+      # @schema
+      # required: false
+      # type: array
+      # items:
+      #   type: object
+      #   additionalProperties: true
+      # @schema
+      # -- inhibitions controls notification suppression for related resources.
+      inhibitions: []
+
+      # @schema
       # type: string
       # required: false
       # @schema
