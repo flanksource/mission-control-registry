@@ -17,6 +17,14 @@ spec:
   {{- if .Values.diagnose.playbooksRecommender.notification.repeatInterval}}
   repeatInterval: {{.Values.diagnose.playbooksRecommender.notification.repeatInterval}}
   {{- end}}
+  {{- with .Values.diagnose.playbooksRecommender.notification.inhibitions}}
+  inhibitions:
+    {{- toYaml . | nindent 4 }}
+  {{- end}}
+  {{- with .Values.diagnose.playbooksRecommender.notification.groupBy}}
+  groupBy: 
+    {{- toYaml . | nindent 4 }}
+  {{- end}}
   {{- if .Values.diagnose.playbooksRecommender.notification.filter}}
   filter: {{.Values.diagnose.playbooksRecommender.notification.filter}}
   {{- end}}
