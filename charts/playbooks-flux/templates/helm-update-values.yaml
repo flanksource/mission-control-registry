@@ -7,15 +7,19 @@ spec:
   title: Update helm values
   icon: helm
   category: Flux
+  description: Update the values of a GitOps managed HelmRelease by submitting a Git PR
   configs:
+    # limited to namespaces created by flux
     - types:
         - Kubernetes::HelmRelease
+      labelSelector: 'kustomize.toolkit.fluxcd.io/name'
 
   parameters:
     - default: 'chore: update $(.config.type)/$(.config.name)'
       label: Commit Message
       name: commit_message
 
+    # retreive the existing values from the helm release and format as YAML
     - default: $(.config.config.spec.values | toJSON | json | toYAML)
       label: ""
       name: yamlInput
@@ -28,7 +32,7 @@ spec:
       gitops:
         repo:
           {{ include "git-origin" . | nindent 10}}
-          branch: edit-manifest-$(random.Alpha 8)
+          branch: update-helm-values-$(random.Alpha 8)
         commit:
           author: '$(.user.name)'
           email: '$(.user.email)'

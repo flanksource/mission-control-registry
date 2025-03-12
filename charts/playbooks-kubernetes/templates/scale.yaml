@@ -10,6 +10,7 @@ spec:
   title: Scale
   icon: scale-out
   category: Kubernetes
+  description: Scales a resource using kubectl
   configs:
     - agent: all
       types:
@@ -24,7 +25,7 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Scale resource
+    - name: kubectl scale
       exec:
         {{- include "exec-action-connections" . | nindent 8}}
         script: |

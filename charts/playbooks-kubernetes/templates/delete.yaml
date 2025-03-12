@@ -10,7 +10,7 @@ spec:
   title: Delete
   icon: trash
   category: Kubernetes
-  description: Deletes the resource
+  description: Deletes a resource using kubectl
   runsOn:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
@@ -21,7 +21,7 @@ spec:
       - {{$k}}
       {{- end }}
   actions:
-    - name: Delete pod
+    - name: kubectl delete
       exec:
         {{- include "exec-action-connections" . | nindent 8}}
         script: |

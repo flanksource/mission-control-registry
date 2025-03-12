@@ -7,13 +7,22 @@ spec:
   title: Resume
   icon: flux
   category: Flux
+  description: Resumes the reconciliation of the selected Flux resources
   configs:
     - types:
         - Kubernetes::HelmRelease
         - Kubernetes::Kustomization
+        - Kubernetes::HelmRepository
+        - Kubernetes::HelmChart
+
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
+
   actions:
     - name: Resume
       exec:
+        connections:
+          fromConfigItem: '$(.config.id)'
         script: |
           flux resume -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower) $(.config.name)
 {{- end}}

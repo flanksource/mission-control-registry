@@ -5,13 +5,14 @@ metadata:
   name: flux-request-namespace-access
 spec:
   configs:
+    # limited to namespaces created by flux
     - types:
         - Kubernetes::Namespace
-      labelSelector: 'kustomize.toolkit.fluxcd.io/name' # limits to namespaces created by flux
+      labelSelector: 'kustomize.toolkit.fluxcd.io/name'
   title: Request Namespace Access
   category: Flux
   icon: k8s-namespace
-  description: Adds a Rolebinding to the given role in the selected Namespace
+  description: Grants a user access to a GitOps managed namespace by creating a RoleBinding and pushing it to Git, optionally removing it after a period of time
   parameters:
     - name: user
       label: Role Subject User
@@ -73,18 +74,18 @@ spec:
                   kind: User
                   name: $(.params.user)
     - name: Clear Rolebinding
-      if: 'success() && .params.delay != "0"'
-      delay: '.params.delay'
+      if: 'success() && params.delay != "0"'
+      delay: 'params.delay'
       gitops:
         repo:
           {{ include "git-origin" . | nindent 10}}
-          branch: 'revoke-namespace-access-$(.run.id)'
+          branch: 'expire-namespace-access-$(.run.id)'
         commit:
           email: '$(.user.email)'
           author: '$(.user.name)'
-          message: 'chore(rbac): revoke $(.params.user) $(.params.role.name) on $(.config.name)'
+          message: 'chore(rbac): expire $(.params.user) $(.params.role.name) on $(.config.name)'
 
-        {{ include "git-pr" (list . "Revoke $(.params.user) $(.params.role.name) on $(.config.name)" ) | nindent 8}}
+        {{ include "git-pr" (list . "expire $(.params.user) $(.params.role.name) on $(.config.name)" ) | nindent 8}}
         patches:
           - path: $(.git.kustomize.file)
             yq: .resources -= "del(.resources[] | select(. == "rolebinding-$(.config.name).yaml"))'"

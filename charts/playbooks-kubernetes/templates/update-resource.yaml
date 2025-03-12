@@ -9,6 +9,7 @@ spec:
   title: Update Resources
   icon: scale-up
   category: Kubernetes
+  descriptions: Updates resource requests/limits using kubectl set resources
   configs:
     - agent: all
       types:
@@ -46,7 +47,7 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Update Resource Requests and Limits
+    - name: kubectl set resources
       exec:
         {{- include "exec-action-connections" . | nindent 8}}
         script: |

@@ -5,7 +5,7 @@ metadata:
   name: kustomize-create-kustomization
 spec:
   category: Flux
-  description: Create a new kustomization object in namespace
+  description: Creates a new kustomization in a GitOps managed namespace by submitting a Git PR
   icon: kustomize
   title: Create Kustomization
 

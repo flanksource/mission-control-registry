@@ -6,15 +6,23 @@ metadata:
 spec:
   title: Suspend
   icon: flux
+  description: Suspends the reconciliation of the selected Flux resources
   category: Flux
   configs:
     - types:
         - Kubernetes::HelmRelease
         - Kubernetes::Kustomization
+        - Kubernetes::HelmRepository
+        - Kubernetes::HelmChart
+
+  runsOn:
+    -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Suspend resource
+    - name: flux suspend
       exec:
+        connections:
+          fromConfigItem: '$(.config.id)'
         script: |
           flux suspend -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower) $(.config.name)
 {{- end}}

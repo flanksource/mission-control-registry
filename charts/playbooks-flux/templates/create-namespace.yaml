@@ -5,7 +5,7 @@ metadata:
   name: kustomize-create-namespace
 spec:
   category: Flux
-  description: Create a new namespace
+  description: Create a new namespace in a GitOps managed Kustomization by submitting a Git PR
   icon: namespace
   title: Create Namespace
 

@@ -7,6 +7,7 @@ spec:
   title: 'Update CPU/Mem'
   icon: flux
   category: Flux
+  description: Updates resource requests/limits for a GitOps managed object by submitting a git PR
   parameters:
   - default: 'chore: update resources for $(.config.type)/$(.config.name)'
     label: Commit Message

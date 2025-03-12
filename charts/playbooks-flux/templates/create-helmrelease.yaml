@@ -10,7 +10,7 @@ spec:
   title: Create Helm Release
   icon: helm
   category: Flux
-  description: Create a new Helm Release
+  description: Creates a new Helm Release in a GitOps managed namespace by submitting a Git PR
   parameters:
     - name: name
       label: Name

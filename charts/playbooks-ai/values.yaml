@@ -11,7 +11,7 @@ global:
 slack:
   # @schema
   # type: string
-  # required: true
+  # required: false
   # @schema
   # -- connection string for slack
   connection: ""

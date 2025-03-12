@@ -10,6 +10,7 @@ spec:
   title: Cordon Node
   icon: k8s-node
   category: Kubernetes
+  description: Cordons a node using kubectl
   configs:
     - agent: all
       types:
@@ -19,10 +20,8 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Cordon node
+    - name: kubectl cordon
       exec:
-        connections:
-          fromConfigItem: '$(.config.id)'
-        script: |
-          kubectl cordon $(.config.name)
+        {{- include "exec-action-connections" . | nindent 8}}
+        script: kubectl cordon $(.config.name)
 {{- end}}

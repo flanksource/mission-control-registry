@@ -10,6 +10,7 @@ spec:
   title: Update Image
   icon: docker
   category: Kubernetes
+  description: Updates the image using kubectl set image
   configs:
     - agent: all
       types:
@@ -29,7 +30,7 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: Update image
+    - name: kubectl set image
       exec:
         {{- include "exec-action-connections" . | nindent 8}}
         script: |

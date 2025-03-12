@@ -6,25 +6,35 @@ metadata:
 spec:
   title: 'Edit'
   category: Flux
+  description: Updates the source of a GitOps managed object by submitting a Git PR
   icon: flux
   parameters:
     - default: 'chore: update $(.config.type)/$(.config.name)'
       label: Commit Message
       name: commit_message
+
+    # Retrieves the JSON configuration for the selected config item, passing it through the `neat` function
+    # to strip out runtime information like managedFields and status, and then converts back to YAML
+    # for easy editing
     - default: $(.config.config | toJSON | neat | json | toYAML)
-      label: ""
+      label: "YAML"
       name: yamlInput
       properties:
         size: large
       type: code
+
+    # Lookup the Git repository from Flux source of the Kustomzation that created the select config item
     - default: '$(.git.git.url)'
       label: Git Repo
       name: url
+
+    # Lookup the path of the config item in the Git repository using origin annotations
     - default: '$(.git.git.file)'
       label: File
       name: file
 
   configs:
+    # This playbook can only be run against Kubernetes objects created from a FluxCD Kustomization CRD
     - labelSelector: 'kustomize.toolkit.fluxcd.io/name'
 
   actions:
@@ -34,12 +44,14 @@ spec:
           {{ include "git-origin" . | nindent 10}}
           branch: edit-manifest-$(random.Alpha 8)
         commit:
+          # Use the user submitting the playbook as the author of the git commits
           author: '$(.user.name)'
           email: '$(.user.email)'
           message: $(.params.commit_message)
         {{ include "git-pr" (list . "$(.params.commit_message)" ) | nindent 8}}
         patches:
           - path: '$(.params.file)'
+            # patch the file using YQ, finding the document in a multi-doc yaml file using Kind and Name
             yq: |
               select(
                 .kind=="$(.config.config | jq `.kind`)" and

@@ -7,9 +7,12 @@ spec:
   title: Update helm chart version
   icon: helm
   category: Flux
+  description: Update the version of a GitOps managed Helm chart by submitting a Git PR
   configs:
+    # limited to HelmReleases created by a Kustomization
     - types:
         - Kubernetes::HelmRelease
+      labelSelector: 'kustomize.toolkit.fluxcd.io/name'
 
   parameters:
     - default: $(.config.config.spec.chart.spec.version)
