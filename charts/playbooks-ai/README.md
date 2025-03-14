@@ -14,7 +14,7 @@ Flanksource Mission Control Playbooks that uses AI action
 | diagnose.playbooksRecommender.notification.events | list | `["config.unhealthy","config.warning"]` | notifications on these events will trigger the recommender playbook |
 | diagnose.playbooksRecommender.notification.filter | string | `""` | notification filter |
 | diagnose.playbooksRecommender.notification.groupBy | list | `["type","status_reason"]` | https://flanksource.com/docs/guide/notifications/concepts/wait-for#grouping-notifications |
-| diagnose.playbooksRecommender.notification.inhibitions | list | `[]` | inhibitions controls notification suppression for related resources. |
+| diagnose.playbooksRecommender.notification.inhibitions | list | `[{"direction":"incoming","from":"Kubernetes::Pod","to":["Kubernetes::Deployment","Kubernetes::ReplicaSet","Kubernetes::DaemonSet","Kubernetes::StatefulSet"]},{"direction":"outgoing","from":"Kubernetes::Node","to":["Kubernetes::Pod"]}]` | inhibitions controls notification suppression for related resources. |
 | diagnose.playbooksRecommender.notification.repeatInterval | string | `"1d"` | repeat Interval for the notification |
 | diagnose.playbooksRecommender.notification.waitFor | string | `"5m"` | waitFor duration for the notification |
 | diagnose.playbooksRecommender.notification.waitForEvalPeriod | string | `""` | waitFor eval period duration for the notification |
