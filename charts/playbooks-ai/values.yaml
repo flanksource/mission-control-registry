@@ -153,7 +153,18 @@ diagnose:
       #   additionalProperties: true
       # @schema
       # -- inhibitions controls notification suppression for related resources.
-      inhibitions: []
+      inhibitions:
+        - from: Kubernetes::Pod
+          to:
+            - Kubernetes::Deployment
+            - Kubernetes::ReplicaSet
+            - Kubernetes::DaemonSet
+            - Kubernetes::StatefulSet
+          direction: incoming
+        - from: Kubernetes::Node
+          to:
+            - Kubernetes::Pod
+          direction: outgoing
 
       # @schema
       # type: string
