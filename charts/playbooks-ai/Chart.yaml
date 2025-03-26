@@ -3,7 +3,7 @@ name: mission-control-playbooks-ai
 description: Flanksource Mission Control Playbooks that uses AI action
 icon: https://github.com/flanksource/docs/blob/main/docs/images/flanksource-icon.png?raw=true
 type: application
-version: 0.0.4-beta.9
+version: 0.0.4-beta.10
 appVersion: "1.0.0"
 maintainers:
   - name: Flanksource
