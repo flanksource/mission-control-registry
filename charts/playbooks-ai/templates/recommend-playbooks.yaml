@@ -31,7 +31,7 @@ spec:
         systemPrompt: '{{.Values.diagnose.systemPrompt}}'
         playbooks:
           {{- with .Values.diagnose.playbooksRecommender.playbooks }}
-          {{- toYaml . | nindent 10 }}
+          {{- tpl (toYaml .) $ | nindent 10 }}
           {{- end }}
         prompt: '$(.params.prompt)'
         changes:

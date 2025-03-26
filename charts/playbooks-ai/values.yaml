@@ -124,8 +124,13 @@ diagnose:
     #       description: Parameters to pass to the playbook
     # @schema
     # -- List of playbooks that provide additional context to the LLM.
-    playbooks: []
-
+    playbooks:
+      - if: config.status == 'CrashLoopBackOff'
+        name: kubernetes-logs
+        namespace: "{{.Release.Namespace}}"
+        params:
+          since: 2h
+          lines: "500"
     notification:
       # @schema
       # type: boolean
