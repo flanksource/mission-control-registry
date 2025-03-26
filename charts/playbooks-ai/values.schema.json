@@ -118,6 +118,44 @@
               "title": "notification",
               "type": "object"
             },
+            "playbooks": {
+              "description": "List of playbooks that provide additional context to the LLM.",
+              "items": {
+                "properties": {
+                  "if": {
+                    "description": "CEL expression that decides if this playbook should be included in the context",
+                    "required": [],
+                    "type": "string"
+                  },
+                  "name": {
+                    "description": "Name of the playbook",
+                    "required": [],
+                    "type": "string"
+                  },
+                  "namespace": {
+                    "description": "Namespace of the playbook",
+                    "required": [],
+                    "type": "string"
+                  },
+                  "params": {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Parameters to pass to the playbook",
+                    "required": [],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "name",
+                  "namespace"
+                ],
+                "type": "object"
+              },
+              "required": [],
+              "title": "playbooks",
+              "type": "array"
+            },
             "selector": {
               "description": "selector selects the playbooks to recommend",
               "items": {

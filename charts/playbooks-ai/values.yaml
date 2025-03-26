@@ -99,6 +99,33 @@ diagnose:
     # -- create a playbook that diagnoses cataloges and send the diagnosis report to slack.
     enabled: true
 
+    # @schema
+    # required: false
+    # type: array
+    # items:
+    #   type: object
+    #   required:
+    #     - name
+    #     - namespace
+    #   properties:
+    #     if:
+    #       type: string
+    #       description: CEL expression that decides if this playbook should be included in the context
+    #     name:
+    #       type: string
+    #       description: Name of the playbook
+    #     namespace:
+    #       type: string
+    #       description: Namespace of the playbook
+    #     params:
+    #       type: object
+    #       additionalProperties:
+    #         type: string
+    #       description: Parameters to pass to the playbook
+    # @schema
+    # -- List of playbooks that provide additional context to the LLM.
+    playbooks: []
+
     notification:
       # @schema
       # type: boolean
@@ -144,7 +171,6 @@ diagnose:
       groupBy:
         - type
         - status_reason
-
       # @schema
       # required: false
       # type: array
