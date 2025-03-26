@@ -29,6 +29,10 @@ spec:
           {{- end }}
         connection: '{{.Values.global.llm_connection}}'
         systemPrompt: '{{.Values.diagnose.systemPrompt}}'
+        playbooks:
+          {{- with .Values.diagnose.playbooksRecommender.playbooks }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
         prompt: '$(.params.prompt)'
         changes:
           since: {{.Values.diagnose.timeframe.changes}}
