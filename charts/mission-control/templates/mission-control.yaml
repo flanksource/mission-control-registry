@@ -679,6 +679,44 @@ spec:
                 ],
               }).toJSON()
 
+  - name: Playbooks
+    icon: mission_control-playbook
+    components:
+    - name: PlaybookGroup
+      lookup:
+        postgres:
+        - query: |
+            SELECT
+              p.name AS playbook_name,
+              COUNT(pr.id) AS run_count, COUNT(pr.error) AS error_count, COUNT(CASE WHEN pr.status = 'pending' THEN 1 END) AS pending_count,
+              ROUND(AVG(
+                CASE
+                    WHEN pr.status != 'pending' AND pr.start_time IS NOT NULL AND pr.end_time IS NOT NULL
+                    THEN EXTRACT(EPOCH FROM (pr.end_time - pr.start_time))
+                END
+              ), 2)::TEXT AS avg_duration_seconds
+            FROM playbooks p
+            LEFT JOIN playbook_runs pr ON p.id = pr.playbook_id
+            GROUP BY p.name
+            ORDER BY run_count DESC;
+
+          connection: "connection://{{ .Values.connectionName }}"
+          display:
+            expr: |
+              results.rows.map(r, {
+                'name': r.playbook_name,
+                'icon': 'mission_control-playbook',
+                'type': 'Playbook',
+                'health': r.error_count == 0 ? 'healthy' : (r.run_count == r.error_count ? 'unhealthy' : 'warning'),
+                'properties':[
+                  {'name': 'Runs', 'value': r.run_count, 'headline': true},
+                  {'name': 'Errors', 'value': r.error_count, 'headline': true},
+                  {'name': 'Pending', 'value': r.pending_count, 'headline': true},
+                  {'name': 'Avg Duration (s)', 'text': r.avg_duration_seconds, 'headline': true},
+                ],
+              }).toJSON()
+
+
   {{- if .Values.isAgent }}
   - name: Upstream Sync
     icon: helm
