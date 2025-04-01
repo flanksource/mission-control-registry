@@ -50,46 +50,24 @@ spec:
     playbooks:
       - name: recommend-playbook
         namespace: {{.Release.Namespace}}
----
-apiVersion: mission-control.flanksource.com/v1
-kind: Permission
-metadata:
-  name: allow-notify-recommender-connection-read
-spec:
-  description: allow notification "notify-recommender-playbook" to read notification connection
-  subject:
-    notification: "{{.Release.Namespace}}/notify-recommender-playbook"
-  actions:
-    - read
-  object:
-    connections:
-      - name: "{{.Values.slack.connection}}"
----
-apiVersion: mission-control.flanksource.com/v1
-kind: Permission
-metadata:
-  name: allow-notify-recommender-config-read
-spec:
-  description: allow notification "notify-recommender-playbook" to read configs
-  subject:
-    notification: "{{.Release.Namespace}}/notify-recommender-playbook"
-  actions:
-    - read
-  object:
     configs:
       - name: "*"
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Permission
 metadata:
-  name: allow-notify-recommender-component-read
+  name: allow-notify-recommender-connection-read
 spec:
-  description: allow notification "notify-recommender-playbook" to read components
+  description: allow notification "notify-recommender-playbook" to read slack connection
   subject:
     notification: "{{.Release.Namespace}}/notify-recommender-playbook"
   actions:
     - read
   object:
-    components:
-      - name: "*"    
+    connections:
+      {{- with include "parse-connection" .Values.slack.connection }}
+      {{- $connection := . | fromYaml }}
+      - name: {{ $connection.name | quote }}
+        namespace: {{ $connection.namespace | quote }}
+      {{- end }}
 {{- end }}

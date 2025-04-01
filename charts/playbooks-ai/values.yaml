@@ -8,6 +8,13 @@ global:
   # -- LLM connection: one of ollama, openai or anthropic
   llm_connection: ""
 
+  # @schema
+  # type: string
+  # required: false
+  # @schema
+  # -- Artifact connection to setup the permission
+  artifact_connection: ""
+
 slack:
   # @schema
   # type: string

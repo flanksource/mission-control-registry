@@ -248,6 +248,13 @@
       "additionalProperties": false,
       "description": "yaml-language-server: $schema=values.schema.json",
       "properties": {
+        "artifact_connection": {
+          "default": "",
+          "description": "Artifact connection to setup the permission",
+          "required": [],
+          "title": "artifact_connection",
+          "type": "string"
+        },
         "llm_connection": {
           "default": "",
           "description": "LLM connection: one of ollama, openai or anthropic",
