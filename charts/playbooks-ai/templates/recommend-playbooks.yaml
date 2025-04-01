@@ -56,4 +56,49 @@ spec:
         connection: '{{.Values.slack.connection}}'
         title: Recommended playbooks
         message: '$(getLastAction.result.recommendedPlaybooks)'
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Permission
+metadata:
+  name: allow-recommender-playbook-connection-read
+spec:
+  description: allow playbook "recommend-playbook" to read slack & llm connection
+  subject:
+    playbook: "{{.Release.Namespace}}/recommend-playbook"
+  actions:
+    - read
+  object:
+    connections:
+      {{- with include "parse-connection" .Values.slack.connection }}
+      {{- $connection := . | fromYaml }}
+      - name: {{ $connection.name | quote }}
+        namespace: {{ $connection.namespace | quote }}
+      {{- end }}
+      {{- with include "parse-connection" .Values.global.llm_connection }}
+      {{- $connection := . | fromYaml }}
+      - name: {{ $connection.name | quote }}
+        namespace: {{ $connection.namespace | quote }}
+      {{- end }}
+      {{- with include "parse-connection" .Values.global.artifact_connection }}
+      {{- $connection := . | fromYaml }}
+      - name: {{ $connection.name | quote }}
+        namespace: {{ $connection.namespace | quote }}
+      {{- end }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Permission
+metadata:
+  name: allow-recommender-playbook-kubernetes-logs-playbook
+spec:
+  description: allow playbook "recommend-playbook" to run the kubernetes logs playbook
+  subject:
+    playbook: "{{.Release.Namespace}}/recommend-playbook"
+  actions:
+    - playbook:*
+  object:
+    playbooks:
+      - name: kubernetes-logs
+        namespace: {{.Release.Namespace}}
+    configs:
+      - name: "*"
 {{- end }}
