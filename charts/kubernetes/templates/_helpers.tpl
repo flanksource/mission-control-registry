@@ -65,6 +65,18 @@ Create the name of the service account to use
 {{- end }}
 
 {{/*
+Kubernetes Connection
+*/}}
+{{- define "kubernetes.connection" }}
+{{- if .Values.kubeconfig -}}
+kubeconfig:
+  {{ .Values.kubeconfig | toYaml }}
+{{- else -}}
+{{ .Values.kubernetesConnection | toYaml }}
+{{- end }}
+{{- end }}
+
+{{/*
 Metrics
 */}}
 {{- define "kubernetes.topology.metricProperties.prometheus.cluster" -}}
@@ -192,9 +204,7 @@ Metrics
   lookup:
     kubernetes:
     - kind: PodMetrics
-      {{- with .Values.kubeconfig }}
-      kubeconfig: {{ toYaml . | nindent 8}}
-      {{- end}}
+      {{- include "kubernetes.connection" . | nindent 6 }}
       display:
         expr: |
           [
@@ -202,9 +212,7 @@ Metrics
             {'name': 'memory', 'headline': true, 'unit': 'bytes', 'value': math.Add(dyn(results).map(r, r.Object).map(r, math.Add(r.containers.map(c, k8s.memoryAsBytes(c.usage.memory)))))},
           ].toJSON()
     - kind: Pod
-      {{- with .Values.kubeconfig }}
-      kubeconfig: {{ toYaml . | nindent 8}}
-      {{- end}}
+      {{- include "kubernetes.connection" . | nindent 6 }}
       display:
         expr: |
           [
@@ -218,9 +226,7 @@ Metrics
   lookup:
     kubernetes:
       - kind: NodeMetrics
-        {{- with .Values.kubeconfig }}
-        kubeconfig: {{ toYaml . | nindent 10}}
-        {{- end}}
+        {{- include "kubernetes.connection" . | nindent 8 }}
         display:
           expr: |
             dyn(results).map(r, r.Object).map(r, {
@@ -236,9 +242,7 @@ Metrics
   lookup:
     kubernetes:
       - kind: PodMetrics
-        {{- with .Values.kubeconfig }}
-        kubeconfig: {{ toYaml . | nindent 10}}
-        {{- end}}
+        {{- include "kubernetes.connection" . | nindent 8 }}
         display:
           expr: |
             dyn(results).map(r, r.Object).map(r, {
@@ -256,9 +260,7 @@ forEach:
       lookup:
         kubernetes:
           - kind: PodMetrics
-            {{- with .Values.kubeconfig }}
-            kubeconfig: {{ toYaml . | nindent 14}}
-            {{- end}}
+            {{- include "kubernetes.connection" . | nindent 12 }}
             namespaceSelector:
               name: '$(.component.name)'
             test:

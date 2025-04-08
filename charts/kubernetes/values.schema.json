@@ -22,7 +22,217 @@
     },
     "kubeconfig": {
       "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+      "deprecated": true,
       "required": []
+    },
+    "kubernetesConnection": {
+      "additionalProperties": true,
+      "properties": {
+        "cnrm": {
+          "additionalProperties": false,
+          "properties": {
+            "clusterResource": {
+              "default": "",
+              "required": [],
+              "title": "clusterResource",
+              "type": "string"
+            },
+            "clusterResourceNamespace": {
+              "default": "",
+              "required": [],
+              "title": "clusterResourceNamespace",
+              "type": "string"
+            },
+            "gke": {
+              "additionalProperties": false,
+              "properties": {
+                "cluster": {
+                  "default": "",
+                  "required": [],
+                  "title": "cluster",
+                  "type": "string"
+                },
+                "connection": {
+                  "default": "",
+                  "description": "GCP Connection Name",
+                  "required": [],
+                  "title": "connection"
+                },
+                "credentials": {
+                  "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+                  "required": []
+                },
+                "endpoint": {
+                  "default": "",
+                  "required": [],
+                  "title": "endpoint",
+                  "type": "string"
+                },
+                "projectID": {
+                  "default": "",
+                  "required": [],
+                  "title": "projectID",
+                  "type": "string"
+                },
+                "skipTLSVerify": {
+                  "default": false,
+                  "required": [],
+                  "title": "skipTLSVerify",
+                  "type": "boolean"
+                },
+                "zone": {
+                  "default": "",
+                  "required": [],
+                  "title": "zone",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "projectID",
+                "zone",
+                "cluster",
+                "connection",
+                "endpoint",
+                "skipTLSVerify"
+              ],
+              "title": "gke",
+              "type": "object"
+            }
+          },
+          "required": [
+            "clusterResource",
+            "clusterResourceNamespace",
+            "gke"
+          ],
+          "title": "cnrm"
+        },
+        "connection": {
+          "default": "",
+          "required": [],
+          "title": "connection"
+        },
+        "eks": {
+          "additionalProperties": false,
+          "properties": {
+            "accessKey": {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+              "required": []
+            },
+            "assumeRole": {
+              "default": "",
+              "required": [],
+              "title": "assumeRole",
+              "type": "string"
+            },
+            "cluster": {
+              "default": "",
+              "required": [],
+              "title": "cluster"
+            },
+            "connection": {
+              "default": "",
+              "description": "AWS Connection Name",
+              "required": [],
+              "title": "connection"
+            },
+            "endpoint": {
+              "default": "",
+              "required": [],
+              "title": "endpoint",
+              "type": "string"
+            },
+            "region": {
+              "default": "",
+              "required": [],
+              "title": "region",
+              "type": "string"
+            },
+            "secretKey": {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+              "required": []
+            },
+            "sessionToken": {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+              "required": []
+            },
+            "skipTLSVerify": {
+              "default": false,
+              "required": [],
+              "title": "skipTLSVerify",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "cluster",
+            "assumeRole",
+            "region",
+            "endpoint",
+            "skipTLSVerify"
+          ],
+          "title": "eks"
+        },
+        "gke": {
+          "additionalProperties": false,
+          "properties": {
+            "cluster": {
+              "default": "",
+              "required": [],
+              "title": "cluster",
+              "type": "string"
+            },
+            "connection": {
+              "default": "",
+              "description": "GCP Connection Name",
+              "required": [],
+              "title": "connection"
+            },
+            "credentials": {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+              "required": []
+            },
+            "endpoint": {
+              "default": "",
+              "required": [],
+              "title": "endpoint",
+              "type": "string"
+            },
+            "projectID": {
+              "default": "",
+              "required": [],
+              "title": "projectID",
+              "type": "string"
+            },
+            "skipTLSVerify": {
+              "default": false,
+              "required": [],
+              "title": "skipTLSVerify",
+              "type": "boolean"
+            },
+            "zone": {
+              "default": "",
+              "required": [],
+              "title": "zone",
+              "type": "string"
+            }
+          },
+          "required": [
+            "projectID",
+            "zone",
+            "cluster",
+            "connection",
+            "endpoint",
+            "skipTLSVerify"
+          ],
+          "title": "gke"
+        },
+        "kubeconfig": {
+          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "required": []
+        }
+      },
+      "required": [],
+      "title": "kubernetesConnection",
+      "type": "object"
     },
     "labels": {
       "additionalProperties": true,
@@ -145,7 +355,7 @@
                   "type": "string"
                 },
                 "cluster_max_cpu": {
-                  "default": "1000 * sum(kube_pod_container_resource_limits{resource=\"cpu\"{{.Values.prometheus.labels}}}))",
+                  "default": "1000 * sum(kube_pod_container_resource_limits{resource=\"cpu\"{{.Values.prometheus.labels}}})",
                   "required": [],
                   "title": "cluster_max_cpu",
                   "type": "string"

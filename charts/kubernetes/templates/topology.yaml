@@ -67,7 +67,7 @@ spec:
 
         properties:
           {{- include "kubernetes.topology.metricProperties.node" . | nindent 8 }}
-    
+
     - name: DeploymentGroups
       icon: deployment
       lookup:
@@ -112,7 +112,7 @@ spec:
                   'external_id': r.tags['namespace'] + '/' + r.name,
                   'parentLookup': {
                     'name': r.config.metadata.ownerReferences[0].name.split("-").slice(0, r.config.metadata.ownerReferences[0].name.split("-").size() - 1).join("-"),
-                    'namespace': r.tags['namespace'], 
+                    'namespace': r.tags['namespace'],
                     'type': 'Kubernetes::Deployment'
                   },
                   'labels': r.labels,
@@ -174,7 +174,7 @@ spec:
         properties:
           {{- include "kubernetes.topology.metricProperties.namespace" . | nindent 8 }}
 
-    
+
     - name: PodNamespaceGroup
       icon: pods
       lookup:
