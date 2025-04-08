@@ -48,7 +48,11 @@ kubernetesConnection:
     # required: true
     # @schema
     cluster: ''
-    connection: '' # AWS Connection Name
+
+    # @schema
+    # description: AWS Connection Name
+    # @schema
+    connection: ''
 
     # @schema
     # required: false
@@ -80,7 +84,13 @@ kubernetesConnection:
     projectID: ''
     zone: ''
     cluster: ''
-    connection: '' # GCP Connection Name
+
+    # @schema
+    # required: true
+    # description: GCP Connection Name
+    # @schema
+    connection: ''
+
     endpoint: ''
 
     # @schema
@@ -100,7 +110,13 @@ kubernetesConnection:
       projectID: ''
       zone: ''
       cluster: ''
-      connection: '' # GCP Connection Name
+
+      # @schema
+      # required: true
+      # description: GCP Connection Name
+      # @schema
+      connection: ''
+
       endpoint: ''
 
       # @schema

@@ -54,9 +54,9 @@
                 },
                 "connection": {
                   "default": "",
+                  "description": "GCP Connection Name",
                   "required": [],
-                  "title": "connection",
-                  "type": "string"
+                  "title": "connection"
                 },
                 "credentials": {
                   "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
@@ -131,9 +131,9 @@
             },
             "connection": {
               "default": "",
+              "description": "AWS Connection Name",
               "required": [],
-              "title": "connection",
-              "type": "string"
+              "title": "connection"
             },
             "endpoint": {
               "default": "",
@@ -164,7 +164,6 @@
           },
           "required": [
             "cluster",
-            "connection",
             "assumeRole",
             "region",
             "endpoint",
@@ -183,9 +182,9 @@
             },
             "connection": {
               "default": "",
+              "description": "GCP Connection Name",
               "required": [],
-              "title": "connection",
-              "type": "string"
+              "title": "connection"
             },
             "credentials": {
               "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
