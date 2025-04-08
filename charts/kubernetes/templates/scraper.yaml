@@ -8,12 +8,10 @@ spec:
   schedule: {{ .Values.scraper.schedule | quote }}
   kubernetes:
     - clusterName: {{ .Values.clusterName }}
-      {{- with .Values.kubeconfig }}
-      kubeconfig: {{ toYaml . | nindent 8}}
-      {{- end}}
+      {{- include "kubernetes.connection" . | nindent 6 }}
       {{- with  concat .Values.scraper.defaultWatch .Values.scraper.watch }}
       watch:
-        {{ . | toYaml | nindent 10}}
+        {{- . | toYaml | nindent 10}}
       {{- end}}
       exclusions:
         name:  {{ concat .Values.scraper.defaultExclusions.name .Values.scraper.exclusions.name | default  (list) |toYaml | nindent 10 }}

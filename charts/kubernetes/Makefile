@@ -16,7 +16,6 @@ chart: values.schema.deref.json  README.md
 README.md: .bin/helm-docs
 	.bin/helm-docs   -t README.md.tpl
 
-
 .bin/helm-docs:
 	test -s $(LOCALBIN)/helm-docs  || \
 	GOBIN=$(LOCALBIN) go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
