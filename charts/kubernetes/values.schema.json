@@ -22,6 +22,7 @@
     },
     "kubeconfig": {
       "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+      "deprecated": true,
       "required": []
     },
     "kubernetesConnection": {
@@ -108,8 +109,7 @@
         "connection": {
           "default": "",
           "required": [],
-          "title": "connection",
-          "type": "string"
+          "title": "connection"
         },
         "eks": {
           "additionalProperties": false,
@@ -231,9 +231,7 @@
           "required": []
         }
       },
-      "required": [
-        "connection"
-      ],
+      "required": [],
       "title": "kubernetesConnection",
       "type": "object"
     },

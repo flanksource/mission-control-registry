@@ -18,6 +18,7 @@ labels: {}
 
 # @schema
 # required: false
+# deprecated: true
 # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
 # @schema
 kubeconfig: {}
@@ -28,7 +29,11 @@ kubeconfig: {}
 # additionalProperties: true
 # @schema
 kubernetesConnection:
+  # @schema
+  # required: false
+  # @schema
   connection: ''
+
   # @schema
   # required: false
   # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
