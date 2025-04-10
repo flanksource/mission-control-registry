@@ -3,109 +3,18 @@
   "additionalProperties": false,
   "properties": {
     "accessKey": {
-      "additionalProperties": false,
-      "properties": {
-        "value": {
-          "default": "",
-          "required": [],
-          "title": "value",
-          "type": "string"
+      "anyOf": [
+        {
+          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "required": []
         },
-        "valueFrom": {
-          "additionalProperties": false,
-          "properties": {
-            "configMapKeyRef": {
-              "additionalProperties": false,
-              "properties": {
-                "key": {
-                  "default": "",
-                  "required": [],
-                  "title": "key",
-                  "type": "string"
-                },
-                "name": {
-                  "default": "",
-                  "required": [],
-                  "title": "name",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ],
-              "title": "configMapKeyRef",
-              "type": "object"
-            },
-            "helmRef": {
-              "additionalProperties": false,
-              "properties": {
-                "key": {
-                  "default": "",
-                  "required": [],
-                  "title": "key",
-                  "type": "string"
-                },
-                "name": {
-                  "default": "",
-                  "required": [],
-                  "title": "name",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ],
-              "title": "helmRef",
-              "type": "object"
-            },
-            "secretKeyRef": {
-              "additionalProperties": false,
-              "properties": {
-                "key": {
-                  "default": "",
-                  "required": [],
-                  "title": "key",
-                  "type": "string"
-                },
-                "name": {
-                  "default": "",
-                  "required": [],
-                  "title": "name",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ],
-              "title": "secretKeyRef",
-              "type": "object"
-            },
-            "serviceAccount": {
-              "default": "",
-              "required": [],
-              "title": "serviceAccount",
-              "type": "string"
-            }
-          },
-          "required": [
-            "serviceAccount",
-            "helmRef",
-            "configMapKeyRef",
-            "secretKeyRef"
-          ],
-          "title": "valueFrom",
-          "type": "object"
+        {
+          "required": []
         }
-      },
-      "required": [
-        "value",
-        "valueFrom"
       ],
-      "title": "accessKey",
-      "type": "object"
+      "default": "null",
+      "required": [],
+      "title": "accessKey"
     },
     "assumeRole": {
       "default": "",
@@ -255,109 +164,18 @@
       "type": "object"
     },
     "secretKey": {
-      "additionalProperties": false,
-      "properties": {
-        "value": {
-          "default": "",
-          "required": [],
-          "title": "value",
-          "type": "string"
+      "anyOf": [
+        {
+          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "required": []
         },
-        "valueFrom": {
-          "additionalProperties": false,
-          "properties": {
-            "configMapKeyRef": {
-              "additionalProperties": false,
-              "properties": {
-                "key": {
-                  "default": "",
-                  "required": [],
-                  "title": "key",
-                  "type": "string"
-                },
-                "name": {
-                  "default": "",
-                  "required": [],
-                  "title": "name",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ],
-              "title": "configMapKeyRef",
-              "type": "object"
-            },
-            "helmRef": {
-              "additionalProperties": false,
-              "properties": {
-                "key": {
-                  "default": "",
-                  "required": [],
-                  "title": "key",
-                  "type": "string"
-                },
-                "name": {
-                  "default": "",
-                  "required": [],
-                  "title": "name",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ],
-              "title": "helmRef",
-              "type": "object"
-            },
-            "secretKeyRef": {
-              "additionalProperties": false,
-              "properties": {
-                "key": {
-                  "default": "",
-                  "required": [],
-                  "title": "key",
-                  "type": "string"
-                },
-                "name": {
-                  "default": "",
-                  "required": [],
-                  "title": "name",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "key",
-                "name"
-              ],
-              "title": "secretKeyRef",
-              "type": "object"
-            },
-            "serviceAccount": {
-              "default": "",
-              "required": [],
-              "title": "serviceAccount",
-              "type": "string"
-            }
-          },
-          "required": [
-            "serviceAccount",
-            "helmRef",
-            "configMapKeyRef",
-            "secretKeyRef"
-          ],
-          "title": "valueFrom",
-          "type": "object"
+        {
+          "required": []
         }
-      },
-      "required": [
-        "value",
-        "valueFrom"
       ],
-      "title": "secretKey",
-      "type": "object"
+      "default": "null",
+      "required": [],
+      "title": "secretKey"
     },
     "skipTLSVerify": {
       "default": "false",
@@ -601,8 +419,6 @@
     "topology",
     "scraper",
     "connection",
-    "accessKey",
-    "secretKey",
     "includeResources",
     "excludeResources",
     "transform"
