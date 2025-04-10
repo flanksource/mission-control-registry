@@ -29,12 +29,18 @@
       "additionalProperties": true,
       "properties": {
         "cnrm": {
-          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/CNRMConnection",
+          "anyOf": [
+            {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/CNRMConnection",
+              "required": []
+            },
+            {
+              "required": []
+            }
+          ],
+          "default": "null",
           "required": [],
-          "type": [
-            "object",
-            "null"
-          ]
+          "title": "cnrm"
         },
         "connection": {
           "default": "",
@@ -42,28 +48,46 @@
           "title": "connection"
         },
         "eks": {
-          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EKSConnection",
+          "anyOf": [
+            {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EKSConnection",
+              "required": []
+            },
+            {
+              "required": []
+            }
+          ],
+          "default": "null",
           "required": [],
-          "type": [
-            "object",
-            "null"
-          ]
+          "title": "eks"
         },
         "gke": {
-          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/GKEConnection",
+          "anyOf": [
+            {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/GKEConnection",
+              "required": []
+            },
+            {
+              "required": []
+            }
+          ],
+          "default": "null",
           "required": [],
-          "type": [
-            "object",
-            "null"
-          ]
+          "title": "gke"
         },
         "kubeconfig": {
-          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "anyOf": [
+            {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+              "required": []
+            },
+            {
+              "required": []
+            }
+          ],
+          "default": "null",
           "required": [],
-          "type": [
-            "object",
-            "null"
-          ]
+          "title": "kubeconfig"
         }
       },
       "required": [],

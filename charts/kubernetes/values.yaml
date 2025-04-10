@@ -36,29 +36,33 @@ kubernetesConnection:
 
   # @schema
   # required: false
-  # type: [object, null]
-  # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
+  # anyOf:
+  # - $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
+  # - type: null
   # @schema
   kubeconfig: null
 
   # @schema
   # required: false
-  # type: [object, null]
-  # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EKSConnection
+  # anyOf:
+  # - $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EKSConnection
+  # - type: null
   # @schema
   eks: null
 
   # @schema
   # required: false
-  # type: [object, null]
-  # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/GKEConnection
+  # anyOf:
+  # - $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/GKEConnection
+  # - type: null
   # @schema
   gke: null
 
   # @schema
   # required: false
-  # type: [object, null]
-  # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/CNRMConnection
+  # anyOf:
+  # - $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/CNRMConnection
+  # - type: null
   # @schema
   cnrm: null
 
