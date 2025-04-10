@@ -30,7 +30,11 @@
       "properties": {
         "cnrm": {
           "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/CNRMConnection",
-          "required": []
+          "required": [],
+          "type": [
+            "object",
+            "null"
+          ]
         },
         "connection": {
           "default": "",
@@ -39,15 +43,27 @@
         },
         "eks": {
           "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EKSConnection",
-          "required": []
+          "required": [],
+          "type": [
+            "object",
+            "null"
+          ]
         },
         "gke": {
           "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/GKEConnection",
-          "required": []
+          "required": [],
+          "type": [
+            "object",
+            "null"
+          ]
         },
         "kubeconfig": {
           "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
-          "required": []
+          "required": [],
+          "type": [
+            "object",
+            "null"
+          ]
         }
       },
       "required": [],

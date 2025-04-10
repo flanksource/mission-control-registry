@@ -36,24 +36,28 @@ kubernetesConnection:
 
   # @schema
   # required: false
+  # type: [object, null]
   # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
   # @schema
-  kubeconfig: {}
+  kubeconfig: null
 
   # @schema
   # required: false
+  # type: [object, null]
   # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EKSConnection
   # @schema
   eks: null
 
   # @schema
   # required: false
+  # type: [object, null]
   # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/GKEConnection
   # @schema
   gke: null
 
   # @schema
   # required: false
+  # type: [object, null]
   # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/CNRMConnection
   # @schema
   cnrm: null
