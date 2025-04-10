@@ -36,95 +36,35 @@ kubernetesConnection:
 
   # @schema
   # required: false
-  # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
+  # anyOf:
+  # - $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
+  # - type: null
   # @schema
-  kubeconfig: {}
-
-  # @schema
-  # required: false
-  # @schema
-  eks:
-    # @schema
-    # required: true
-    # @schema
-    cluster: ''
-
-    # @schema
-    # description: AWS Connection Name
-    # @schema
-    connection: ''
-
-    # @schema
-    # required: false
-    # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
-    # @schema
-    accessKey: {}
-
-    # @schema
-    # required: false
-    # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
-    # @schema
-    secretKey: {}
-
-    # @schema
-    # required: false
-    # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
-    # @schema
-    sessionToken: {}
-
-    assumeRole: ''
-    region: ''
-    endpoint: ''
-    skipTLSVerify: false
+  kubeconfig: null
 
   # @schema
   # required: false
+  # anyOf:
+  # - $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EKSConnection
+  # - type: null
   # @schema
-  gke:
-    projectID: ''
-    zone: ''
-    cluster: ''
-
-    # @schema
-    # required: true
-    # description: GCP Connection Name
-    # @schema
-    connection: ''
-
-    endpoint: ''
-
-    # @schema
-    # required: false
-    # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
-    # @schema
-    credentials: {}
-    skipTLSVerify: false
+  eks: null
 
   # @schema
   # required: false
+  # anyOf:
+  # - $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/GKEConnection
+  # - type: null
   # @schema
-  cnrm:
-    clusterResource: ''
-    clusterResourceNamespace: ''
-    gke:
-      projectID: ''
-      zone: ''
-      cluster: ''
+  gke: null
 
-      # @schema
-      # required: true
-      # description: GCP Connection Name
-      # @schema
-      connection: ''
-
-      endpoint: ''
-
-      # @schema
-      # required: false
-      # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
-      # @schema
-      credentials: {}
-      skipTLSVerify: false
+  # @schema
+  # required: false
+  # anyOf:
+  # - $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/CNRMConnection
+  # - type: null
+  # @schema
+  cnrm: null
 
 # @schema
 # required: true

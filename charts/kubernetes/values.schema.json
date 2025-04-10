@@ -29,81 +29,17 @@
       "additionalProperties": true,
       "properties": {
         "cnrm": {
-          "additionalProperties": false,
-          "properties": {
-            "clusterResource": {
-              "default": "",
-              "required": [],
-              "title": "clusterResource",
-              "type": "string"
+          "anyOf": [
+            {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/CNRMConnection",
+              "required": []
             },
-            "clusterResourceNamespace": {
-              "default": "",
-              "required": [],
-              "title": "clusterResourceNamespace",
-              "type": "string"
-            },
-            "gke": {
-              "additionalProperties": false,
-              "properties": {
-                "cluster": {
-                  "default": "",
-                  "required": [],
-                  "title": "cluster",
-                  "type": "string"
-                },
-                "connection": {
-                  "default": "",
-                  "description": "GCP Connection Name",
-                  "required": [],
-                  "title": "connection"
-                },
-                "credentials": {
-                  "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
-                  "required": []
-                },
-                "endpoint": {
-                  "default": "",
-                  "required": [],
-                  "title": "endpoint",
-                  "type": "string"
-                },
-                "projectID": {
-                  "default": "",
-                  "required": [],
-                  "title": "projectID",
-                  "type": "string"
-                },
-                "skipTLSVerify": {
-                  "default": false,
-                  "required": [],
-                  "title": "skipTLSVerify",
-                  "type": "boolean"
-                },
-                "zone": {
-                  "default": "",
-                  "required": [],
-                  "title": "zone",
-                  "type": "string"
-                }
-              },
-              "required": [
-                "projectID",
-                "zone",
-                "cluster",
-                "connection",
-                "endpoint",
-                "skipTLSVerify"
-              ],
-              "title": "gke",
-              "type": "object"
+            {
+              "required": []
             }
-          },
-          "required": [
-            "clusterResource",
-            "clusterResourceNamespace",
-            "gke"
           ],
+          "default": "null",
+          "required": [],
           "title": "cnrm"
         },
         "connection": {
@@ -112,122 +48,46 @@
           "title": "connection"
         },
         "eks": {
-          "additionalProperties": false,
-          "properties": {
-            "accessKey": {
-              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "anyOf": [
+            {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EKSConnection",
               "required": []
             },
-            "assumeRole": {
-              "default": "",
-              "required": [],
-              "title": "assumeRole",
-              "type": "string"
-            },
-            "cluster": {
-              "default": "",
-              "required": [],
-              "title": "cluster"
-            },
-            "connection": {
-              "default": "",
-              "description": "AWS Connection Name",
-              "required": [],
-              "title": "connection"
-            },
-            "endpoint": {
-              "default": "",
-              "required": [],
-              "title": "endpoint",
-              "type": "string"
-            },
-            "region": {
-              "default": "",
-              "required": [],
-              "title": "region",
-              "type": "string"
-            },
-            "secretKey": {
-              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+            {
               "required": []
-            },
-            "sessionToken": {
-              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
-              "required": []
-            },
-            "skipTLSVerify": {
-              "default": false,
-              "required": [],
-              "title": "skipTLSVerify",
-              "type": "boolean"
             }
-          },
-          "required": [
-            "cluster",
-            "assumeRole",
-            "region",
-            "endpoint",
-            "skipTLSVerify"
           ],
+          "default": "null",
+          "required": [],
           "title": "eks"
         },
         "gke": {
-          "additionalProperties": false,
-          "properties": {
-            "cluster": {
-              "default": "",
-              "required": [],
-              "title": "cluster",
-              "type": "string"
-            },
-            "connection": {
-              "default": "",
-              "description": "GCP Connection Name",
-              "required": [],
-              "title": "connection"
-            },
-            "credentials": {
-              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "anyOf": [
+            {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/GKEConnection",
               "required": []
             },
-            "endpoint": {
-              "default": "",
-              "required": [],
-              "title": "endpoint",
-              "type": "string"
-            },
-            "projectID": {
-              "default": "",
-              "required": [],
-              "title": "projectID",
-              "type": "string"
-            },
-            "skipTLSVerify": {
-              "default": false,
-              "required": [],
-              "title": "skipTLSVerify",
-              "type": "boolean"
-            },
-            "zone": {
-              "default": "",
-              "required": [],
-              "title": "zone",
-              "type": "string"
+            {
+              "required": []
             }
-          },
-          "required": [
-            "projectID",
-            "zone",
-            "cluster",
-            "connection",
-            "endpoint",
-            "skipTLSVerify"
           ],
+          "default": "null",
+          "required": [],
           "title": "gke"
         },
         "kubeconfig": {
-          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
-          "required": []
+          "anyOf": [
+            {
+              "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+              "required": []
+            },
+            {
+              "required": []
+            }
+          ],
+          "default": "null",
+          "required": [],
+          "title": "kubeconfig"
         }
       },
       "required": [],
