@@ -8,32 +8,32 @@ scraper:
 
 connection: ""
 accessKey:
-   value: ""
-   valueFrom:
-     serviceAccount: ""
-     helmRef:
-       key: ""
-       name: ""
-     configMapKeyRef:
-       key: ""
-       name: ""
-     secretKeyRef:
-       key: ""
-       name: ""
+  value: ""
+  valueFrom:
+    serviceAccount: ""
+    helmRef:
+      key: ""
+      name: ""
+    configMapKeyRef:
+      key: ""
+      name: ""
+    secretKeyRef:
+      key: ""
+      name: ""
 
 secretKey:
-   value: ""
-   valueFrom:
-     serviceAccount: ""
-     helmRef:
-       key: ""
-       name: ""
-     configMapKeyRef:
-       key: ""
-       name: ""
-     secretKeyRef:
-       key: ""
-       name: ""
+  value: ""
+  valueFrom:
+    serviceAccount: ""
+    helmRef:
+      key: ""
+      name: ""
+    configMapKeyRef:
+      key: ""
+      name: ""
+    secretKeyRef:
+      key: ""
+      name: ""
 
 # @schema
 # description: AWS regions to pull from
