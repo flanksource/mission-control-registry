@@ -33,7 +33,7 @@ spec:
     secretKey: {{.Values.secretKey | default dict | toYaml | nindent 6}}
     {{- end }}
 
-    region: {{.Values.region}}
+    region: {{ toYaml .Values.region | nindent 6 }}
     skipTLSVerify: {{.Values.skipTLSVerify}}
 
     {{- if .Values.endpoint }}
