@@ -62,8 +62,7 @@ spec:
         connections:
           fromConfigItem: $(.config.id)
         script: |
-          kubectl exec -i deploy/canary-checker -- sh -c '/app/canary-checker run - $(.params.logLevel)' <<EOF
+          kubectl exec -i deploy/canary-checker -- sh -c '/app/canary-checker run - --namespace $(.config.tags.namespace) $(.params.logLevel)' <<"END"
           $(.config.config | toYAML)
-          EOF
-
+          END
 {{- end }}
