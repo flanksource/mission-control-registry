@@ -56,6 +56,20 @@ spec:
 apiVersion: mission-control.flanksource.com/v1
 kind: Permission
 metadata:
+  name: allow-notify-recommender-config-read
+spec:
+  description: allow notification "notify-recommender-playbook" to read the config
+  subject:
+    notification: "{{.Release.Namespace}}/notify-recommender-playbook"
+  actions:
+    - read
+  object:
+    configs:
+      - name: "*"
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Permission
+metadata:
   name: allow-notify-recommender-connection-read
 spec:
   description: allow notification "notify-recommender-playbook" to read slack connection
