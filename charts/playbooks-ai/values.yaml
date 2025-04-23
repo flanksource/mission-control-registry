@@ -183,6 +183,14 @@ diagnose:
       groupBy:
         - type
         - status_reason
+
+      # @schema
+      # required: false
+      # type: string
+      # @schema
+      # -- lifetime of a notification group
+      groupByInterval: "7d"
+
       # @schema
       # required: false
       # type: array

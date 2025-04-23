@@ -81,6 +81,13 @@
                   "title": "groupBy",
                   "type": "array"
                 },
+                "groupByInterval": {
+                  "default": "7d",
+                  "description": "lifetime of a notification group",
+                  "required": [],
+                  "title": "groupByInterval",
+                  "type": "string"
+                },
                 "inhibitions": {
                   "description": "inhibitions controls notification suppression for related resources.",
                   "items": {
