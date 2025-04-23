@@ -25,6 +25,7 @@ spec:
   groupBy: 
     {{- toYaml . | nindent 4 }}
   {{- end}}
+  groupByInterval: {{.Values.diagnose.playbooksRecommender.notification.groupByInterval}}
   {{- if .Values.diagnose.playbooksRecommender.notification.filter}}
   filter: {{.Values.diagnose.playbooksRecommender.notification.filter}}
   {{- end}}
