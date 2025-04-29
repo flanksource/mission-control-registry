@@ -380,6 +380,18 @@ spec:
                   'pass': r.status == 'SUCCESS' ,
                 }).toJSON()
 
+        kubernetes:
+          - name: Config Scraper CRD
+            kind: ScrapeConfig
+            display:
+              expr: |
+                dyn(results).
+                map(r, r.Object).
+                filter(r, !k8s.isHealthy(r)).
+                map(r, "%s/%s -> %s".format([r.metadata.namespace, r.metadata.name, k8s.getHealth(r).message])).join('\n')
+            test:
+              expr: dyn(results).all(r, k8s.isHealthy(r))
+
     components:
     - icon: k8s-customresourcedefinition
       lookup:
