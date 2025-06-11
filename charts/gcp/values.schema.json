@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "connection": {
+      "default": "",
+      "required": [],
+      "title": "connection"
+    },
+    "credentials": {
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "default": "",
+          "required": [],
+          "title": "value",
+          "type": "string"
+        },
+        "valueFrom": {
+          "additionalProperties": false,
+          "properties": {
+            "configMapKeyRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "configMapKeyRef",
+              "type": "object"
+            },
+            "helmRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "helmRef",
+              "type": "object"
+            },
+            "secretKeyRef": {
+              "additionalProperties": false,
+              "properties": {
+                "key": {
+                  "default": "",
+                  "required": [],
+                  "title": "key",
+                  "type": "string"
+                },
+                "name": {
+                  "default": "",
+                  "required": [],
+                  "title": "name",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "key",
+                "name"
+              ],
+              "title": "secretKeyRef",
+              "type": "object"
+            },
+            "serviceAccount": {
+              "default": "",
+              "required": [],
+              "title": "serviceAccount",
+              "type": "string"
+            }
+          },
+          "required": [
+            "serviceAccount",
+            "helmRef",
+            "configMapKeyRef",
+            "secretKeyRef"
+          ],
+          "title": "valueFrom",
+          "type": "object"
+        }
+      },
+      "required": [
+        "value",
+        "valueFrom"
+      ],
+      "title": "credentials",
+      "type": "object"
+    },
+    "endpoint": {
+      "default": "",
+      "required": [],
+      "title": "endpoint",
+      "type": "string"
+    },
+    "exclude": {
+      "description": "list of googleapis to exclude from scraping\nexamples:\n- compute.googleapis.com/InstanceSettings\n- serviceusage.googleapis.com/Service\n",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "exclude",
+      "type": "array"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "include": {
+      "description": "list of googleapis to include in scraping\nexamples:\n- compute.googleapis.com/Instance\n- compute.googleapis.com/Network\n",
+      "items": {
+        "required": []
+      },
+      "required": [],
+      "title": "include",
+      "type": "array"
+    },
+    "labels": {
+      "additionalProperties": true,
+      "description": "list of labels to add the Scrape config",
+      "required": [],
+      "title": "labels"
+    },
+    "project": {
+      "default": "",
+      "required": [],
+      "title": "project"
+    },
+    "scraper": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "default": "gcp",
+          "required": [],
+          "title": "name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "scraper",
+      "type": "object"
+    },
+    "skipTLSVerify": {
+      "default": false,
+      "required": [],
+      "title": "skipTLSVerify",
+      "type": "boolean"
+    },
+    "transform": {
+      "additionalProperties": false,
+      "required": [],
+      "title": "transform",
+      "type": "object"
+    }
+  },
+  "required": [
+    "scraper",
+    "project",
+    "connection",
+    "endpoint",
+    "credentials",
+    "skipTLSVerify",
+    "transform"
+  ],
+  "type": "object"
+}

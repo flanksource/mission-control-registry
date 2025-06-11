@@ -1,0 +1,28 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: {{ .Values.scraper.name }}
+  labels:
+    {{- include "gcp.labels" . | nindent 4 }}
+spec:
+  gcp:
+  - project: {{ .Values.project | quote }}
+
+    include: {{ .Values.include | toYaml | nindent 8 }}
+    exclude: {{ .Values.exclude | toYaml | nindent 8 }}
+    transform: {{ .Values.transform | toYaml | nindent 8 }}
+
+    {{- if .Values.connection }}
+    connection: {{.Values.connection | default ""}}
+    {{- end }}
+
+    {{- if .Values.endpoint }}
+    endpoint: {{.Values.endpoint | default ""}}
+    {{- end }}
+
+    skipTLSVerify: {{.Values.skipTLSVerify}}
+
+    {{- if .Values.credentials }}
+    credentials: {{.Values.credentials | default dict | toYaml | nindent 6}}
+    {{- end }}
