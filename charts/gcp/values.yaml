@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=values.schema.json
+
+# @schema
+# additionalProperties: true
+# description: list of labels to add the Scrape config
+# @schema
+labels: {}
+
+scraper:
+  name: gcp
+
+# @schema
+# required: true
+# @schema
+project: ''
+
+# @schema
+# required: true
+# @schema
+connection: ''
+
+endpoint: ''
+
+credentials:
+  value: ''
+  valueFrom:
+    serviceAccount: ''
+    helmRef:
+      key: ''
+      name: ''
+    configMapKeyRef:
+      key: ''
+      name: ''
+    secretKeyRef:
+      key: ''
+      name: ''
+
+skipTLSVerify: false
+
+transform: {}
+
+# @schema
+# description: |
+#   list of googleapis to include in scraping
+#   examples:
+#   - compute.googleapis.com/Instance
+#   - compute.googleapis.com/Network
+# type: array
+# @schema
+include: []
+
+# @schema
+# description: |
+#   list of googleapis to exclude from scraping
+#   examples:
+#   - compute.googleapis.com/InstanceSettings
+#   - serviceusage.googleapis.com/Service
+# type: array
+# @schema
+exclude: []
