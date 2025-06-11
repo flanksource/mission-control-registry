@@ -1,1 +1,1 @@
-AWS Scraper added
+Azure Scraper added
