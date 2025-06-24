@@ -37,7 +37,22 @@ jobs:
       - name: Package Helm chart
         run: |
           cd charts/${{ inputs.chart }}
-          NEW_CHART_VERSION=$(cat Chart.yaml | yq '.version' | awk -F. -v OFS=. '{print $1, $2, $3+1}')
+          CURRENT_VERSION=$(cat Chart.yaml | yq '.version')
+
+          # Check if current version has beta suffix
+          if [[ $CURRENT_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-beta\.([0-9]+)$ ]]; then
+            # Beta version - remove beta suffix to create stable release
+            MAJOR="${BASH_REMATCH[1]}"
+            MINOR="${BASH_REMATCH[2]}"
+            PATCH="${BASH_REMATCH[3]}"
+            NEW_CHART_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          elif [[ $CURRENT_VERSION =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            # Stable version - increment patch version
+            NEW_CHART_VERSION=$(echo $CURRENT_VERSION | awk -F. -v OFS=. '{print $1, $2, $3+1}')
+          else
+            echo "Invalid version format: $CURRENT_VERSION"
+            exit 1
+          fi
 
           echo NEW_CHART_VERSION=$NEW_CHART_VERSION >> $GITHUB_ENV
 
