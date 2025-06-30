@@ -610,7 +610,7 @@ spec:
                 FROM job_history
                 WHERE status NOT IN ('RUNNING', 'SKIPPED', 'STALE')
               )
-              SELECT * from ordered_history where rn = 1 and resource_id = '';
+              SELECT * FROM ordered_history WHERE rn = 1 AND resource_id = '' AND created_at >= NOW() - INTERVAL '7 days'
             display:
               expr: |
                 results.rows.map(r, {
