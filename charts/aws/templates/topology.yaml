@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/topology.schema.json
 apiVersion: canaries.flanksource.com/v1
 kind: Topology
 metadata:
@@ -79,7 +80,7 @@ spec:
                     'config_id': c.id,
                     'status': c.status,
                     'status_reason': c.description,
-                    'selectors': [{'types': ['AWS::EC2::Instance'], 'labelSelector': 'alpha.eksctl.io/cluster-name='+c.labels['alpha.eksctl.io/cluster-name']}]
+                    'selectors': [{'types': ['AWS::EC2::Instance'], 'labelSelector': 'kubernetes.io/cluster/' + c.name + '=owned'}]
                   }).toJSON()
 
     - name: ELB
