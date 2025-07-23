@@ -2,7 +2,7 @@
 apiVersion: mission-control.flanksource.com/v1
 kind: View
 metadata:
-  name: deployments-{{ .Values.clusterName }}
+  name: deployments
   labels:
     {{- include "kubernetes-view.labels" . | nindent 4 }}
 spec:
