@@ -1,0 +1,19 @@
+Kubernetes Views have been deployed successfully!
+
+{{- if .Values.views.enabled }}
+The following views have been created for cluster "{{ .Values.clusterName }}":
+
+{{- if .Values.views.deployments.enabled }}
+- Deployments: Helm releases with health and status charts
+{{- end }}
+{{- if .Values.views.pods.enabled }}
+- Pods: Pod status with memory usage metrics
+{{- end }}
+{{- if .Values.views.clusterOverview.enabled }}
+- Cluster Overview: Comprehensive cluster metrics and resource counts
+{{- end }}
+
+These views will be available in the Mission Control dashboard.
+{{- else }}
+Views are currently disabled. To enable them, set views.enabled=true
+{{- end }}

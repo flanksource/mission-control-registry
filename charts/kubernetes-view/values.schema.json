@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "clusterName": {
+      "default": "",
+      "minLength": 1,
+      "required": [],
+      "title": "clusterName",
+      "type": "string"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride"
+    },
+    "global": {
+      "additionalProperties": false,
+      "properties": {
+        "prometheus": {
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "default": "",
+              "required": [],
+              "title": "connection"
+            }
+          },
+          "required": [],
+          "title": "prometheus"
+        }
+      },
+      "required": [],
+      "title": "global"
+    },
+    "labels": {
+      "additionalProperties": true,
+      "required": [],
+      "title": "labels"
+    },
+    "nameOverride": {
+      "default": "",
+      "required": [],
+      "title": "nameOverride"
+    },
+    "views": {
+      "additionalProperties": false,
+      "properties": {
+        "clusterOverview": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled"
+            },
+            "sidebar": {
+              "default": true,
+              "required": [],
+              "title": "sidebar"
+            }
+          },
+          "required": [],
+          "title": "clusterOverview"
+        },
+        "deployments": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled"
+            },
+            "sidebar": {
+              "default": true,
+              "required": [],
+              "title": "sidebar"
+            }
+          },
+          "required": [],
+          "title": "deployments"
+        },
+        "enabled": {
+          "default": true,
+          "description": "If this is set to false, no views will be created",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "pods": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled"
+            },
+            "sidebar": {
+              "default": true,
+              "required": [],
+              "title": "sidebar"
+            }
+          },
+          "required": [],
+          "title": "pods"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "views"
+    }
+  },
+  "required": [
+    "clusterName"
+  ],
+  "type": "object"
+}

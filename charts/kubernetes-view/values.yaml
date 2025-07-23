@@ -1,0 +1,90 @@
+# yaml-language-server: $schema=values.schema.json
+
+# @schema
+# required: false
+# @schema
+# @ignored
+nameOverride: ""
+# @schema
+# required: false
+# @schema
+# @ignored
+fullnameOverride: ""
+# @schema
+# required: false
+# additionalProperties: true
+# @schema
+labels: {}
+
+# @schema
+# required: false
+# @schema
+global:
+  # @schema
+  # required: false
+  # @schema
+  prometheus:
+    # @schema
+    # required: false
+    # default: ""
+    # @schema
+    connection: ""
+
+# @schema
+# required: true
+# type: string
+# minLength: 1
+# @schema
+clusterName: ""
+
+# @schema
+# required: false
+# @schema
+views:
+  # If this is set to false, no views will be created
+  enabled: true
+
+  # @schema
+  # required: false
+  # @schema
+  deployments:
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    enabled: true
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    sidebar: true
+
+  # @schema
+  # required: false
+  # @schema
+  pods:
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    enabled: true
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    sidebar: true
+
+  # @schema
+  # required: false
+  # @schema
+  clusterOverview:
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    enabled: true
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    sidebar: true
