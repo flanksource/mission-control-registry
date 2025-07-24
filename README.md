@@ -23,11 +23,11 @@ A collection of Helm charts for Flanksource Mission Control integrations, playbo
 
 ### Step 1: Create Chart Structure
 
-Create the basic chart directory structure:
+Create the basic chart directory structure.
+Example: To create a new chart `my-chart`
 
 ```bash
 mkdir -p charts/my-chart/templates
-cd charts/my-chart
 ```
 
 ### Step 2: Create Chart.yaml
@@ -45,54 +45,49 @@ maintainers:
   - name: Flanksource
 ```
 
-### Step 3: Define Values Structure
-
-Create `values.yaml` with schema annotations:
-
-### Step 4:
+### Step 3:
 
 - [ ] Create Template Helpers
 - [ ] Create Resource Templates
 - [ ] Add Installation Notes
 
-### Step 5: Create Values Schema
-
-Copy the Makefile from an existing chart and generate the values schema:
+### Step 4: Copy boilerplate files
 
 ```bash
-# Copy Makefile from an existing chart
-cp ../kubernetes-view/Makefile .
+cd charts/my-chart/templates
 
-# Generate values.schema.json from values.yaml
+cp ../kubernetes-view/Makefile .
+cp ../kubernetes-view/.helmignore .
+```
+
+### Step 5: Define Values Structure
+
+Create `values.yaml` with proper schema annotations.
+
+Generate the values schema from the `values.yaml` file.
+
+```bash
+# This will create a `values.schema.json` file based on the `@schema` annotations in your `values.yaml`.
 make values.schema.json
 ```
 
-This will create a `values.schema.json` file based on the `@schema` annotations in your `values.yaml`.
-
 ### Step 6: Generate README.md
 
-Generate the README.md from the chart metadata:
+Generate the README.md from the chart metadata.
 
 ```bash
-# Generate README.md from Chart.yaml and values.yaml
 make README.md
 ```
 
 ### Step 7: Lint
 
-Create CI test values for linting:
+Create CI test values for linting.
 
 ```bash
-# Create ci directory and test values
-mkdir -p ci
+mkdir -p charts/my-chart/ci
 ```
 
-Copy the .helmignore file from an existing chart:
-
-```bash
-# Copy .helmignore from an existing chart
-cp ../kubernetes-view/.helmignore .
-```
+This file should contain the minimum values to test the chart.
 
 ```bash
 make lint
@@ -106,7 +101,6 @@ helm template my-release ./charts/my-chart \
  --set clusterName="test-cluster"
 
 # Install for testing
-
 helm install my-release ./charts/my-chart \
  --set clusterName="test-cluster"
 ```
