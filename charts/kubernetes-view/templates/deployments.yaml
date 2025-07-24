@@ -21,6 +21,8 @@ spec:
         colors:
           healthy: "#28C19B"
           unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
       query: SELECT COUNT(*) AS count, health FROM helm_releases GROUP BY health
     - name: Status
       description: Helm Releases grouped by status
@@ -31,6 +33,7 @@ spec:
           RollbackSucceeded: "#F4B23C"
           UpgradeFailed: "#F04E6E"
           UpgradeSucceeded: "#5965F2"
+          Reconciling: "#666666"
       query: SELECT COUNT(*) AS count, status FROM helm_releases GROUP BY status
   columns:
     - name: id
