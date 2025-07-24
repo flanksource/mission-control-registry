@@ -11,6 +11,7 @@ on:
           - aws
           - azure
           - kubernetes
+          - kubernetes-view
           - mission-control
           - flux
           - mongo-atlas

@@ -23,6 +23,7 @@ jobs:
             aws: charts/aws/**
             azure: charts/azure/**
             kubernetes: charts/kubernetes/**
+            kubernetes-view: charts/kubernetes-view/**
             mission-control: charts/mission-control/**
             flux: charts/flux/**
             mongo-atlas: charts/mongo-atlas/**
