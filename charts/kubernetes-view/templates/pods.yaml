@@ -59,6 +59,10 @@ spec:
       AND json_extract(pod.tags, '$.namespace') = cpu.namespace
   queries:
     memory:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -69,6 +73,10 @@ spec:
             }
           )
     cpu:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
