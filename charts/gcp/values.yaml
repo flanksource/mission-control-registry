@@ -37,7 +37,10 @@ credentials:
 
 skipTLSVerify: false
 
-transform: {}
+transform:
+  changes:
+    exclude:
+      - change_type == 'diff' &&  summary in ['updateTime', 'settings.settingsVersion']
 
 # @schema
 # description: |
