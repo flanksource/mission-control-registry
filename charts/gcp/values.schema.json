@@ -112,6 +112,40 @@
       "title": "credentials",
       "type": "object"
     },
+    "defaultTransform": {
+      "additionalProperties": true,
+      "properties": {
+        "changes": {
+          "additionalProperties": false,
+          "properties": {
+            "exclude": {
+              "items": {
+                "anyOf": [
+                  {
+                    "required": [],
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "required": [],
+              "title": "exclude",
+              "type": "array"
+            }
+          },
+          "required": [
+            "exclude"
+          ],
+          "title": "changes",
+          "type": "object"
+        }
+      },
+      "required": [
+        "changes"
+      ],
+      "title": "defaultTransform",
+      "type": "object"
+    },
     "endpoint": {
       "default": "",
       "required": [],
@@ -176,7 +210,7 @@
       "type": "boolean"
     },
     "transform": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [],
       "title": "transform",
       "type": "object"
@@ -188,8 +222,7 @@
     "connection",
     "endpoint",
     "credentials",
-    "skipTLSVerify",
-    "transform"
+    "skipTLSVerify"
   ],
   "type": "object"
 }

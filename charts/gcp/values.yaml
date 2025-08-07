@@ -37,10 +37,20 @@ credentials:
 
 skipTLSVerify: false
 
-transform:
+# @schema
+# type: object
+# additionalProperties: true
+# @schema
+defaultTransform:
   changes:
     exclude:
       - change_type == 'diff' &&  summary in ['updateTime', 'settings.settingsVersion']
+
+# @schema
+# type: object
+# additionalProperties: true
+# @schema
+transform: {}
 
 # @schema
 # description: |
