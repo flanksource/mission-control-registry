@@ -60,3 +60,26 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Recursively merge two dictionaries, concatenating arrays instead of overwriting
+*/}}
+{{- define "helpers.deepMerge" -}}
+{{- $dst := mustDeepCopy (index . 0) -}}
+{{- $src := index . 1 -}}
+{{- range $key, $srcValue := $src }}
+  {{- if hasKey $dst $key }}
+    {{- $dstValue := index $dst $key }}
+    {{- if and (kindIs "slice" $srcValue) (kindIs "slice" $dstValue) }}
+      {{- $_ := set $dst $key (concat $dstValue $srcValue) }}
+    {{- else if and (kindIs "map" $srcValue) (kindIs "map" $dstValue) }}
+      {{- $_ := set $dst $key (include "helpers.deepMerge" (list $dstValue $srcValue) | fromYaml) }}
+    {{- else }}
+      {{- $_ := set $dst $key $srcValue }}
+    {{- end }}
+  {{- else }}
+    {{- $_ := set $dst $key $srcValue }}
+  {{- end }}
+{{- end }}
+{{- $dst | toYaml }}
+{{- end }}
