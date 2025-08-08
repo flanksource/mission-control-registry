@@ -7,52 +7,20 @@ metadata:
     {{- include "kubernetes-view.labels" . | nindent 4 }}
 spec:
   display:
-    title: Cluster Overview
+    title: Cluster
     icon: overview
     {{- if .Values.views.clusterOverview.sidebar }}
     sidebar: true
     {{- end }}
+    plugins:
+      - configTab:
+          types:
+            - Kubernetes::Cluster
   panels:
-    - name: Total Nodes
-      description: Total number of Kubernetes nodes
-      type: number
-      query: SELECT value FROM node_count
-    - name: Total Namespaces
-      description: Total number of Kubernetes namespaces
-      type: number
-      query: SELECT value FROM namespace_count
-    - name: Running Pods
-      description: Total number of running pods
-      type: number
-      query: SELECT value FROM running_pods_count
-    - name: Total Deployments
-      description: Total number of deployments
-      type: number
-      query: SELECT value FROM deployment_count
-    - name: Total StatefulSets
-      description: Total number of StatefulSets
-      type: number
-      query: SELECT value FROM statefulset_count
-    - name: Total DaemonSets
-      description: Total number of DaemonSets
-      type: number
-      query: SELECT value FROM daemonset_count
-    - name: Total PVs
-      description: Total number of Persistent Volumes
-      type: number
-      query: SELECT value FROM pv_count
-    - name: Total PVCs
-      description: Total number of Persistent Volume Claims
-      type: number
-      query: SELECT value FROM pvc_count
-    - name: Total Ingresses
-      description: Total number of Ingresses
-      type: number
-      query: SELECT value FROM ingress_count
-    - name: Total CronJobs
-      description: Total number of CronJobs
-      type: number
-      query: SELECT value FROM cronjob_count
+    - name: Resources
+      description: Count of resources grouped by type
+      type: table
+      query: SELECT * FROM resource_count_by_type
     - name: Total CPU Cores
       description: Total CPU cores available
       type: number
@@ -71,56 +39,6 @@ spec:
         unit: GB
       query: SELECT value FROM memory_usage_count
   queries:
-    node_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_node_info)
-    namespace_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_namespace_status_phase{phase="Active"})
-    running_pods_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_pod_status_phase{phase="Running"})
-    deployment_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_deployment_status_replicas)
-    statefulset_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_statefulset_status_replicas)
-    daemonset_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_daemonset_status_number_ready)
-    pv_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_persistentvolume_info)
-    pvc_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_persistentvolumeclaim_info)
-    ingress_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_ingress_info)
-    cronjob_count:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_cronjob_info)
     cpu_cores_count:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
@@ -136,4 +54,18 @@ spec:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           sum(container_memory_working_set_bytes{container!="POD"}) / 1024 / 1024 / 1024
+    resource_count_by_type:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          (label_replace(count(kube_node_info), "resource_type", "Nodes", "", "")) or 
+          (label_replace(count(kube_namespace_status_phase{phase="Active"}), "resource_type", "Namespaces", "", "")) or 
+          (label_replace(count(kube_pod_status_phase{phase="Running"}), "resource_type", "Running Pods", "", "")) or 
+          (label_replace(count(kube_deployment_status_replicas), "resource_type", "Deployments", "", "")) or 
+          (label_replace(count(kube_statefulset_status_replicas), "resource_type", "StatefulSets", "", "")) or 
+          (label_replace(count(kube_daemonset_status_number_ready), "resource_type", "DaemonSets", "", "")) or 
+          (label_replace(count(kube_persistentvolume_info), "resource_type", "Persistent Volumes", "", "")) or 
+          (label_replace(count(kube_persistentvolumeclaim_info), "resource_type", "Persistent Volume Claims", "", "")) or 
+          (label_replace(count(kube_ingress_info), "resource_type", "Ingresses", "", "")) or 
+          (label_replace(count(kube_cronjob_info), "resource_type", "CronJobs", "", ""))
 {{- end }}
