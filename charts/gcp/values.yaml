@@ -8,6 +8,7 @@ labels: {}
 
 scraper:
   name: gcp
+  pluginName: gcp
 
 # @schema
 # required: true

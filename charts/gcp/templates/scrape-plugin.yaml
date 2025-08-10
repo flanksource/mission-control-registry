@@ -1,0 +1,23 @@
+{{- $existing := lookup "configs.flanksource.com/v1" "ScrapePlugin" .Release.Namespace .Values.scraper.pluginName }}
+{{- $skipCreation := false }}
+{{- if $existing }}
+  {{- $existingChart := index $existing.metadata.annotations "meta.helm.sh/release-name" }}
+  {{- if and $existingChart (ne $existingChart .Release.Name) }}
+    {{- $skipCreation = true }}
+  {{- end }}
+{{- end }}
+
+{{- if not $skipCreation }}
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_plugin.schema.json
+apiVersion: configs.flanksource.com/v1
+kind: ScrapePlugin
+metadata:
+  name: {{ .Values.scraper.pluginName }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "gcp.labels" . | nindent 4 }}
+spec:
+  changes:
+    exclude:
+      - change_type == 'diff' &&  summary in ['updateTime', 'settings.settingsVersion']
+{{- end }}

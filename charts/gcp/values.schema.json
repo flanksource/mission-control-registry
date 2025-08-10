@@ -195,10 +195,17 @@
           "required": [],
           "title": "name",
           "type": "string"
+        },
+        "pluginName": {
+          "default": "gcp",
+          "required": [],
+          "title": "pluginName",
+          "type": "string"
         }
       },
       "required": [
-        "name"
+        "name",
+        "pluginName"
       ],
       "title": "scraper",
       "type": "object"
