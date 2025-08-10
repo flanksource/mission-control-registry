@@ -1,0 +1,5 @@
+nameOverride: ""
+fullnameOverride: ""
+connectionName: mssql-db
+secretName: mssql-database-credentials
+hostName: 192.168.68.107:1433

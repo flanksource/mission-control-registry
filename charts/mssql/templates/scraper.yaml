@@ -1,0 +1,193 @@
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: mssql-scraper
+spec:
+  schedule: '@every 10s'  
+  sql:
+  - connection: "connection://{{ .Release.Namespace }}/{{ .Values.connectionName }}"
+    type: MSSQL::Server
+    id: $.id
+    name: $.id
+    transform:
+      expr: |+
+        dyn(config).map(e,e).toJSON()
+    query: |
+      DECLARE @serverContainmentTable table
+      (
+        name nvarchar(35),
+        minimum int,
+        maximum int,
+        config_value int,
+        run_value int
+      )
+      INSERT INTO @serverContainmentTable (name,minimum,maximum,config_value,run_value)
+      exec sp_configure 'contained database authentication'
+      DECLARE @serverContainment int 
+      select top 1 @serverContainment = config_value from @serverContainmentTable
+
+      SELECT CASE WHEN InstanceName IS NULL THEN ServerName ELSE convert(nvarchar(100),ServerName)
+      END  [id],* from
+      (
+      SELECT 'BuildClrVersion' AS Property, SERVERPROPERTY('BuildClrVersion') AS Value UNION ALL
+      SELECT 'Collation', SERVERPROPERTY('Collation') UNION ALL
+      SELECT 'CollationID', SERVERPROPERTY('CollationID') UNION ALL
+      SELECT 'ComparisonStyle', SERVERPROPERTY('ComparisonStyle') UNION ALL
+      SELECT 'ComputerNamePhysicalNetBIOS', SERVERPROPERTY('ComputerNamePhysicalNetBIOS') UNION ALL
+      SELECT 'ContainedUsers', @serverContainment UNION ALL
+      SELECT 'Edition', SERVERPROPERTY('Edition') UNION ALL
+      SELECT 'EditionID', SERVERPROPERTY('EditionID') UNION ALL
+      SELECT 'EngineEdition', SERVERPROPERTY('EngineEdition') UNION ALL
+      SELECT 'HadrManagerStatus', SERVERPROPERTY('HadrManagerStatus') UNION ALL
+      SELECT 'InstanceDefaultDataPath', SERVERPROPERTY('InstanceDefaultDataPath') UNION ALL
+      SELECT 'InstanceDefaultLogPath', SERVERPROPERTY('InstanceDefaultLogPath') UNION ALL
+      SELECT 'InstanceName', SERVERPROPERTY('InstanceName') UNION ALL
+      SELECT 'IsAdvancedAnalyticsInstalled', SERVERPROPERTY('IsAdvancedAnalyticsInstalled') UNION ALL
+      SELECT 'IsClustered', SERVERPROPERTY('IsClustered') UNION ALL
+      SELECT 'IsFullTextInstalled', SERVERPROPERTY('IsFullTextInstalled') UNION ALL
+      SELECT 'IsHadrEnabled', SERVERPROPERTY('IsHadrEnabled') UNION ALL
+      SELECT 'IsIntegratedSecurityOnly', SERVERPROPERTY('IsIntegratedSecurityOnly') UNION ALL
+      SELECT 'IsLocalDB', SERVERPROPERTY('IsLocalDB') UNION ALL
+      SELECT 'IsPolyBaseInstalled', SERVERPROPERTY('IsPolyBaseInstalled') UNION ALL
+      SELECT 'IsSingleUser', SERVERPROPERTY('IsSingleUser')UNION ALL
+      SELECT 'IsXTPSupported', SERVERPROPERTY('IsXTPSupported')UNION ALL
+      SELECT 'LCID', SERVERPROPERTY('LCID')UNION ALL
+      SELECT 'LicenseType', SERVERPROPERTY('LicenseType')UNION ALL
+      SELECT 'MachineName', SERVERPROPERTY('MachineName')UNION ALL
+      SELECT 'NumLicenses', SERVERPROPERTY('NumLicenses')UNION ALL
+      SELECT 'ProcessID', SERVERPROPERTY('ProcessID')UNION ALL
+      SELECT 'ProductBuild', SERVERPROPERTY('ProductBuild')UNION ALL
+      SELECT 'ProductBuildType', SERVERPROPERTY('ProductBuildType')UNION ALL
+      SELECT 'ProductLevel', SERVERPROPERTY('ProductLevel')UNION ALL
+      SELECT 'ProductMajorVersion', SERVERPROPERTY('ProductMajorVersion')UNION ALL
+      SELECT 'ProductMinorVersion', SERVERPROPERTY('ProductMinorVersion')UNION ALL
+      SELECT 'ProductUpdateLevel', SERVERPROPERTY('ProductUpdateLevel')UNION ALL
+      SELECT 'ProductUpdateReference', SERVERPROPERTY('ProductUpdateReference')UNION ALL
+      SELECT 'ProductVersion', SERVERPROPERTY('ProductVersion')UNION ALL
+      SELECT 'ResourceLastUpdateDateTime', SERVERPROPERTY('ResourceLastUpdateDateTime')UNION ALL
+      SELECT 'ResourceVersion', SERVERPROPERTY('ResourceVersion')UNION ALL
+      SELECT 'ServerName', SERVERPROPERTY('ServerName')UNION ALL
+      SELECT 'SqlCharSet', SERVERPROPERTY('SqlCharSet')UNION ALL
+      SELECT 'SqlCharSetName', SERVERPROPERTY('SqlCharSetName')UNION ALL
+      SELECT 'SqlSortOrder', SERVERPROPERTY('SqlSortOrder')UNION ALL
+      SELECT 'SqlSortOrderName', SERVERPROPERTY('SqlSortOrderName')UNION ALL
+      SELECT 'FilestreamShareName', SERVERPROPERTY('FilestreamShareName')UNION ALL
+      SELECT 'FilestreamConfiguredLevel', SERVERPROPERTY('FilestreamConfiguredLevel')UNION ALL
+      SELECT 'FilestreamEffectiveLevel', SERVERPROPERTY('FilestreamEffectiveLevel')
+      ) t 
+      PIVOT(
+          max(Value) 
+          FOR Property IN (
+          [BuildClrVersion],[Collation],[CollationID],[ComparisonStyle],[ComputerNamePhysicalNetBIOS],
+          [ContainedUsers],[Edition],[EditionID],[EngineEdition],[HadrManagerStatus],
+          [InstanceDefaultDataPath], [InstanceDefaultLogPath],[InstanceName],
+          [IsAdvancedAnalyticsInstalled],[IsClustered],[IsFullTextInstalled],[IsHadrEnabled],
+          [IsIntegratedSecurityOnly],[IsLocalDB],[IsPolyBaseInstalled],[IsSingleUser],[IsXTPSupported],
+          [LCID],[LicenseType],[MachineName],[NumLicenses],[ProcessID],[ProductBuild],
+          [ProductBuildType],[ProductLevel],[ProductMajorVersion],[ProductMinorVersion],
+          [ProductUpdateLevel],[ProductUpdateReference],[ProductVersion],[ResourceLastUpdateDateTime],
+          [ResourceVersion],[ServerName],[SqlCharSet],[SqlCharSetName],[SqlSortOrder],[SqlSortOrderName],
+          [FilestreamShareName],[FilestreamConfiguredLevel],[FilestreamEffectiveLevel]
+      )) AS pivot_table for json auto
+  - connection: "connection://{{ .Release.Namespace }}/{{ .Values.connectionName }}"
+    type: MSSQL::Database
+    id: $.id
+    name: $.id
+    transform:
+      relationship:
+        - filter: config_type == 'MSSQL::Database' # this might not be necessary
+          parent: true
+          type:
+            value: 'MSSQL::Server'
+          name:
+            expr: config.serverid
+      expr: |+
+        dyn(config).map(e,e).toJSON()
+    query: |
+      DECLARE @mytable TABLE (
+          [DB] [nvarchar](128) NULL,
+        [containment] INT NULL,
+          [usertype] [nvarchar](255) NOT NULL,
+          [databaseuser] [nvarchar](255) NOT NULL,
+          [login] [nvarchar] (255) NOT NULL,
+          [user] [nvarchar] (255) NOT NULL,
+        [id] INT NOT NULL
+      )
+
+      DECLARE @command VARCHAR(2000)
+      SELECT @command = 'USE ?; SELECT D.name [db],D.containment,''CONTAINED '' + p.type_desc [usertype],
+      CAST(D.name COLLATE Latin1_General_CI_AS + '' '' + 
+      p.name COLLATE Latin1_General_CI_AS +
+      + CASE WHEN p.type in (''U'',''G'') THEN '' '' + SUSER_SNAME(p.sid) ELSE '''' END AS varchar(100))
+      [databaseuser], '''' [login],p.name [user] , p.principal_id
+      FROM	SYS.DATABASES D JOIN  
+          (SELECT DB_NAME() [DB]) C ON D.NAME = C.DB LEFT JOIN
+          (	SELECT DB_NAME() DB,l.sid [lsid],p.*  
+            from sys.database_Principals p left join sys.syslogins l on p.sid = l.sid and 
+              l.hasaccess = 1 and p.type in (''U'',''S'',''G'') and p.name not like ''##%''
+          ) p on  D.NAME = p.DB COLLATE SQL_Latin1_General_CP1_CI_AS
+      where D.containment = 1 and lsid is null and authentication_type in (2,3) 
+      union
+      SELECT D.name [db],D.containment,p.type_desc [usertype],
+      CAST(D.name COLLATE Latin1_General_CI_AS + '' '' + p.name COLLATE Latin1_General_CI_AS  + '' '' + 
+      p.login COLLATE Latin1_General_CI_AS AS varchar(100)) [databaseuser] ,p.loginname [login],p.name [user], p.principal_id
+      FROM	SYS.DATABASES D JOIN  
+          (SELECT DB_NAME() [DB]) C ON D.NAME = C.DB LEFT JOIN
+          (	SELECT DB_NAME() DB,l.sid [lsid],CASE WHEN l.name = p.name 
+            COLLATE Latin1_General_CI_AS THEN '''' ELSE l.name END [login],l.name [loginname],p.*  
+            from sys.database_Principals p left join sys.syslogins l 
+            on p.sid = l.sid and l.hasaccess = 1 and p.type in (''U'',''S'',''G'') 
+            and p.name not like ''##%''
+          ) p on  D.NAME = p.DB COLLATE SQL_Latin1_General_CP1_CI_AS
+      where lsid is not null  and authentication_type in (1,3)'
+      INSERT INTO @mytable EXEC sp_MSforeachdb @command
+
+      declare @roles table (
+        [id] INT NULL,
+        [role] [nvarchar](255) NOT NULL
+      )
+      DECLARE @roles_command varchar(2000)
+
+      SELECT @roles_command = 'USE ?; WITH RoleMembers (member_principal_id, role_principal_id) 
+      AS 
+      (
+        SELECT 
+        rm1.member_principal_id, 
+        rm1.role_principal_id
+        FROM sys.database_role_members rm1 (NOLOCK)
+        UNION ALL
+        SELECT 
+        d.member_principal_id, 
+        rm.role_principal_id
+        FROM sys.database_role_members rm (NOLOCK)
+        INNER JOIN RoleMembers AS d 
+        ON rm.member_principal_id = d.role_principal_id
+      )
+      select distinct  mp.principal_id , roles.name as [role]
+      from RoleMembers drm
+        join sys.database_principals mp on (drm.member_principal_id = mp.principal_id)
+        join sys.database_principals roles on (drm.role_principal_id = roles.principal_id)
+        left join sys.syslogins sl on mp.sid = sl.sid
+      where mp.type in (''U'',''S'',''G'')'
+      insert into @roles EXEC sp_MSforeachdb @roles_command
+        
+      DECLARE @serverid nvarchar(200) 
+      select @serverid = CASE WHEN SERVERPROPERTY('InstanceName') 
+        IS NULL THEN convert(nvarchar(200),SERVERPROPERTY('ServerName')) 
+        ELSE convert(nvarchar(200),SERVERPROPERTY('ServerName') ) END
+
+      SELECT DISTINCT  @serverid [serverid],
+        @serverid + '\' + [databases].DB [id],[databases].DB, 
+        [users].databaseuser , [users].usertype , [users].[user],[users].[login],
+      [roles].role , [databases].containment [iscontained]
+      FROM (select 1 [did],* FROM @mytable) [databases]
+      left join @mytable [users] ON [databases].databaseuser = [users].databaseuser 
+      left join @roles [roles] ON [users].id = [roles].id 
+      ORDER BY [databases].DB ,[users].databaseuser FOR JSON AUTO
+  retention:
+    types:
+      - name: MSSQL::Server
+        deletedAge: 1m
+    types:
+      - name: MSSQL::Database
+        deletedAge: 1m
