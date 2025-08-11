@@ -42,15 +42,6 @@ skipTLSVerify: false
 # type: object
 # additionalProperties: true
 # @schema
-defaultTransform:
-  changes:
-    exclude:
-      - change_type == 'diff' &&  summary in ['updateTime', 'settings.settingsVersion']
-
-# @schema
-# type: object
-# additionalProperties: true
-# @schema
 transform: {}
 
 # @schema
