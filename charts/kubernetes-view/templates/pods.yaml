@@ -13,16 +13,22 @@ spec:
     sidebar: true
     {{- end }}
   columns:
-    - name: name
+    - name: namespace
       type: string
       primaryKey: true
-    - name: namespace
+      filter:
+        type: multiselect
+    - name: name
       type: string
       primaryKey: true
     - name: status
       type: status
+      filter:
+        type: multiselect
     - name: health
       type: health
+      filter:
+        type: multiselect
     - name: memory
       type: bytes
     - name: memory_limit
