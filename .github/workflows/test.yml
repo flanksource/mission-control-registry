@@ -20,10 +20,11 @@ jobs:
             argocd: charts/argocd/**
             aws: charts/aws/**
             azure: charts/azure/**
+            flux: charts/flux/**
+            gcp: charts/gcp/**
             kubernetes: charts/kubernetes/**
             kubernetes-view: charts/kubernetes-view/**
             mission-control: charts/mission-control/**
-            flux: charts/flux/**
             mongo-atlas: charts/mongo-atlas/**
             postgres: charts/postgres/**
             prometheus: charts/prometheus/**

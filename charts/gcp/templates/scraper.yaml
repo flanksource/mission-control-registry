@@ -11,7 +11,8 @@ spec:
 
     include: {{ .Values.include | toYaml | nindent 8 }}
     exclude: {{ .Values.exclude | toYaml | nindent 8 }}
-    transform: {{ .Values.transform | toYaml | nindent 8 }}
+
+    transform: {{ .Values.transform | toYaml | nindent 6 }}
 
     {{- if .Values.connection }}
     connection: {{.Values.connection | default ""}}

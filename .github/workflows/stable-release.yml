@@ -10,10 +10,11 @@ on:
           - argocd
           - aws
           - azure
+          - flux
+          - gcp
           - kubernetes
           - kubernetes-view
           - mission-control
-          - flux
           - mongo-atlas
           - postgres
           - prometheus
