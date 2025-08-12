@@ -56,7 +56,7 @@ spec:
             color: '#FF8C42'
           - percent: 80
             color: '#E8589C'
-    - name: created
+    - name: updated_at
       type: datetime
   merge: |
     SELECT
@@ -65,7 +65,7 @@ spec:
       json_extract(pod.tags, '$.namespace') AS namespace,
       pod.status,
       pod.health,
-      pod.created_at,
+      pod.updated_at,
       CAST(memory.value AS TEXT) as memory,
       to_bytes(COALESCE(
         json_extract(pod.config, '$.spec.containers[0].resources.limits.memory'), 
@@ -83,6 +83,7 @@ spec:
     LEFT JOIN cpu
       ON pod.name = cpu.pod 
       AND json_extract(pod.tags, '$.namespace') = cpu.namespace
+    ORDER BY namespace, name
   queries:
     memory:
       columns:
