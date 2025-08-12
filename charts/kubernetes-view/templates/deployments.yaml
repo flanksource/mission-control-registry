@@ -41,15 +41,20 @@ spec:
       description: The id of the deployment.
       primaryKey: true
       hidden: true
-    - name: url
-      type: url
-      for: application
     - name: application
       type: string
       description: The application name.
+      url:
+        config: row.id
     - name: namespace
       type: string
       description: The namespace name.
+      url:
+        view:
+          name: row.tags.namespace
+          namespace: row.tags.namespace
+          filter:
+            namespace: row.tags.namespace
     - name: chart
       type: string
       description: The chart name.
@@ -77,6 +82,4 @@ spec:
     chart: row.config.status.history[0].chartName
     version: row.config.status.history[0].chartVersion
     lastUpdated: row.updated_at
-    url: >
-      "/catalog/" + row.id
 {{- end }}
