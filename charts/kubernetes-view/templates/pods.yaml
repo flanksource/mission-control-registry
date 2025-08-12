@@ -14,13 +14,15 @@ spec:
     {{- end }}
   columns:
     - name: namespace
-      type: string
+      type: badge
       primaryKey: true
       filter:
         type: multiselect
     - name: name
       type: string
       primaryKey: true
+      url:
+        config: row.id
     - name: status
       type: status
       filter:
@@ -30,32 +32,50 @@ spec:
       filter:
         type: multiselect
     - name: memory
-      type: bytes
-    - name: memory_limit
-      type: bytes
+      type: gauge
+      unit: bytes
+      description: Memory usage
+      gauge:
+        max: row.memory_limit
+        thresholds:
+          - percent: 0
+            color: green
+          - percent: 50
+            color: orange
+          - percent: 80
+            color: red
     - name: cpu
-      type: millicore
-    - name: cpu_limit
-      type: millicore
+      type: gauge
+      unit: millicore
+      gauge:
+        max: row.cpu_limit
+        thresholds:
+          - percent: 0
+            color: '#8BC34A'
+          - percent: 50
+            color: '#FF8C42'
+          - percent: 80
+            color: '#E8589C'
     - name: created
       type: datetime
   merge: |
-    SELECT 
+    SELECT
+      pod.id,
       pod.name,
       json_extract(pod.tags, '$.namespace') AS namespace,
       pod.status,
       pod.health,
       pod.created_at,
       CAST(memory.value AS TEXT) as memory,
-      COALESCE(
+      to_bytes(COALESCE(
         json_extract(pod.config, '$.spec.containers[0].resources.limits.memory'), 
         ''
-      ) AS memory_limit,
+      )) AS memory_limit,
       COALESCE(CAST(cpu.value AS TEXT), '0') as cpu,
-      COALESCE(
+      to_millicores(COALESCE(
         json_extract(pod.config, '$.spec.containers[0].resources.limits.cpu'), 
         ''
-      ) AS cpu_limit
+      )) AS cpu_limit
     FROM pod
     LEFT JOIN memory
       ON pod.name = memory.pod 
