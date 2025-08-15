@@ -25,10 +25,12 @@ spec:
         config: row.id
     - name: status
       type: status
+      icon: row.health
       filter:
         type: multiselect
     - name: health
       type: health
+      hidden: true
       filter:
         type: multiselect
     - name: memory
