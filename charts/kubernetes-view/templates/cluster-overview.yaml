@@ -38,7 +38,18 @@ spec:
       number:
         unit: GB
       query: SELECT value FROM memory_usage_count
+    - name: Pods Node Distribution
+      description: Distribution of pods across nodes
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT value as "count", node FROM pods_node_distribution 
   queries:
+    pods_node_distribution:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          count(kube_pod_info) by (node)
     cpu_cores_count:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
