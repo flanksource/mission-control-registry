@@ -528,6 +528,93 @@
       },
       "required": [],
       "title": "topology"
+    },
+    "views": {
+      "additionalProperties": true,
+      "properties": {
+        "cluster": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": true,
+              "required": [],
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled",
+            "sidebar"
+          ],
+          "title": "cluster",
+          "type": "object"
+        },
+        "enabled": {
+          "default": true,
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "helm_releases": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": true,
+              "required": [],
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled",
+            "sidebar"
+          ],
+          "title": "helm_releases",
+          "type": "object"
+        },
+        "pods": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": true,
+              "required": [],
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled",
+            "sidebar"
+          ],
+          "title": "pods",
+          "type": "object"
+        }
+      },
+      "required": [
+        "enabled",
+        "pods",
+        "helm_releases",
+        "cluster"
+      ],
+      "title": "views"
     }
   },
   "required": [

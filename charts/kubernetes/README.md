@@ -8,33 +8,11 @@ A Helm chart for the Kubernetes bundle of Flanksource Mission Control
 |-----|------|---------|-------------|
 | clusterName | string | `""` |  |
 | kubeconfig | object | `{}` |  |
-| kubernetesConnection.cnrm.clusterResource | string | `""` |  |
-| kubernetesConnection.cnrm.clusterResourceNamespace | string | `""` |  |
-| kubernetesConnection.cnrm.gke.cluster | string | `""` |  |
-| kubernetesConnection.cnrm.gke.connection | string | `""` |  |
-| kubernetesConnection.cnrm.gke.credentials | object | `{}` |  |
-| kubernetesConnection.cnrm.gke.endpoint | string | `""` |  |
-| kubernetesConnection.cnrm.gke.projectID | string | `""` |  |
-| kubernetesConnection.cnrm.gke.skipTLSVerify | bool | `false` |  |
-| kubernetesConnection.cnrm.gke.zone | string | `""` |  |
+| kubernetesConnection.cnrm | string | `nil` |  |
 | kubernetesConnection.connection | string | `""` |  |
-| kubernetesConnection.eks.accessKey | object | `{}` |  |
-| kubernetesConnection.eks.assumeRole | string | `""` |  |
-| kubernetesConnection.eks.cluster | string | `""` |  |
-| kubernetesConnection.eks.connection | string | `""` |  |
-| kubernetesConnection.eks.endpoint | string | `""` |  |
-| kubernetesConnection.eks.region | string | `""` |  |
-| kubernetesConnection.eks.secretKey | object | `{}` |  |
-| kubernetesConnection.eks.sessionToken | object | `{}` |  |
-| kubernetesConnection.eks.skipTLSVerify | bool | `false` |  |
-| kubernetesConnection.gke.cluster | string | `""` |  |
-| kubernetesConnection.gke.connection | string | `""` |  |
-| kubernetesConnection.gke.credentials | object | `{}` |  |
-| kubernetesConnection.gke.endpoint | string | `""` |  |
-| kubernetesConnection.gke.projectID | string | `""` |  |
-| kubernetesConnection.gke.skipTLSVerify | bool | `false` |  |
-| kubernetesConnection.gke.zone | string | `""` |  |
-| kubernetesConnection.kubeconfig | object | `{}` |  |
+| kubernetesConnection.eks | string | `nil` |  |
+| kubernetesConnection.gke | string | `nil` |  |
+| kubernetesConnection.kubeconfig | string | `nil` |  |
 | labels | object | `{}` |  |
 | metrics.enabled | bool | `true` |  |
 | metrics.queries | object | `{"gke":{"cluster_cpu":"1000 * sum(rate(kubernetes_io:container_cpu_core_usage_time{container_name!=\"\",cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}[5m]))","cluster_max_cpu":"1000 * sum(kubernetes_io:container_cpu_limit_cores{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}})","cluster_max_memory":"sum(kubernetes_io:container_memory_limit_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}})","cluster_memory":"sum(kubernetes_io:container_memory_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}})","cluster_name":"","namespace_cpu":"sum(rate(label_replace(kubernetes_io:container_cpu_core_usage_time{container_name!=\"\",cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"namespace\",\"$1\",\"namespace_name\", \"(.+)\")[5m])) by (namespace)","namespace_memory":"sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"namespace\",\"$1\",\"namespace_name\", \"(.+)\")) by (namespace)","node_cpu":"sum(rate(label_replace(kubernetes_io:node_cpu_core_usage_time{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"node\",\"$1\",\"node_name\", \"(.+)\")[5m:])) by (node)","node_memory":"sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"node\",\"$1\",\"node_name\", \"(.+)\")) by (node)","node_storage":"sum(label_replace(kubernetes_io:node_ephemeral_storage_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}},  \"node\",\"$1\",\"node_name\", \"(.+)\")) by (node)","pod_cpu":"sum(rate(label_replace(kubernetes_io:container_cpu_core_usage_time{container_name!=\"\",cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"pod\",\"$1\",\"pod_name\", \"(.+)\")[5m:])) by (pod)","pod_memory":"sum(label_replace(kubernetes_io:container_memory_used_bytes{cluster_name=\"{{.Values.metrics.queries.gke.cluster_name}}\"{{.Values.prometheus.labels}}}, \"pod\",\"$1\",\"pod_name\", \"(.+)\")) by (pod)"},"prometheus":{"cluster_cpu":"1000 * sum(rate(container_cpu_usage_seconds_total{container!=\"\"{{.Values.prometheus.labels}}}[5m]))","cluster_max_cpu":"1000 * sum(kube_pod_container_resource_limits{resource=\"cpu\"{{.Values.prometheus.labels}}})","cluster_max_memory":"sum(kube_pod_container_resource_limits{resource=\"memory\"{{.Values.prometheus.labels}}})","cluster_memory":"sum(container_memory_working_set_bytes{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}})","namespace_cpu":"1000 * sum(rate(container_cpu_usage_seconds_total{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (namespace)","namespace_memory":"sum(container_memory_working_set_bytes{container!=\"\",pod!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase=\"Running\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} > 0) by (namespace)","node_cpu":"1000 * sum(rate(container_cpu_usage_seconds_total{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (node)","node_memory":"sum(container_memory_working_set_bytes{container!=\"\",pod!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} * on(pod, namespace) group_left kube_pod_status_phase{phase=\"Running\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}} > 0) by (node)","node_storage":"max by (instance) (avg_over_time(node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"rootfs\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m]))","pod_cpu":"1000 * sum(rate(container_cpu_usage_seconds_total{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}[5m])) by (pod)","pod_memory":"sum(container_memory_working_set_bytes{container!=\"\"{{.Values.prometheus.labels | default .Values.prometheusLabels}}}) by (pod)"}}` | queries to retrieve cpu/memory metrics for cluster/node/pod |
@@ -174,6 +152,13 @@ A Helm chart for the Kubernetes bundle of Flanksource Mission Control
 | topology.ingress.nameExpr | string | `"r.config.spec.rules.size() > 0 ? r.config.spec.rules[0].host : r.name"` |  |
 | topology.name | string | `"{{ .Values.clusterName }}"` |  |
 | topology.schedule | string | `"@every 5m"` |  |
+| views.cluster.enabled | bool | `true` |  |
+| views.cluster.sidebar | bool | `true` |  |
+| views.enabled | bool | `true` |  |
+| views.helm_releases.enabled | bool | `true` |  |
+| views.helm_releases.sidebar | bool | `true` |  |
+| views.pods.enabled | bool | `true` | if true, the view will be enabled A prometheus connection is required. |
+| views.pods.sidebar | bool | `true` |  |
 
 ## Maintainers
 

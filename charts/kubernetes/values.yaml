@@ -32,7 +32,7 @@ kubernetesConnection:
   # @schema
   # required: false
   # @schema
-  connection: ''
+  connection: ""
 
   # @schema
   # required: false
@@ -71,7 +71,7 @@ kubernetesConnection:
 # type: string
 # minLength: 1
 # @schema
-clusterName: ''
+clusterName: ""
 
 # @schema
 # required: false
@@ -191,7 +191,7 @@ topology:
     # @schema
     # required: false
     # @schema
-    nameExpr: 'r.config.spec.rules.size() > 0 ? r.config.spec.rules[0].host : r.name'
+    nameExpr: "r.config.spec.rules.size() > 0 ? r.config.spec.rules[0].host : r.name"
 
     # @schema
     # required: false
@@ -275,7 +275,6 @@ scraper:
     # allowProperties: true
     # @schema
     labels: {}
-
 
   # @schema
   # $ref: https://github.com/flanksource/duty/raw/main/schema/openapi/config_kubernetes.schema.json#/$defs/KubernetesExclusionConfig
@@ -393,7 +392,7 @@ scraper:
     mask:
       - selector: config_class == 'Connection'
         jsonpath: "$..['password','bearer','clientSecret','personalAccessToken','certificate','secretKey','token'].value"
-        value: '******'
+        value: "******"
     changes:
       exclude:
         - 'details.source.component == "canary-checker" && (change_type == "Failed" || change_type == "Pass")'
@@ -498,3 +497,19 @@ scraper:
 # deprecated: true
 # @schema
 playbooks: {}
+
+# @schema
+# required: false
+# additionalProperties: true
+# @schema
+views:
+  enabled: true
+  pods:
+    enabled: true
+    sidebar: true
+  helm_releases:
+    enabled: true
+    sidebar: true
+  cluster:
+    enabled: true
+    sidebar: true

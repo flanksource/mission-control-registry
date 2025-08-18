@@ -33,3 +33,8 @@ values.schema.deref.json: values.schema.json
 .PHONY: lint
 lint: chart
 	ct lint --charts .
+
+
+.PHONY: install
+install:
+	helm install kubernetes . --values values.test.yaml
