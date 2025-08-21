@@ -118,6 +118,7 @@ spec:
     pod:
       configs:
         tagSelector: "cluster={{ .Values.clusterName }}"
+        agent: "all"
         types:
           - Kubernetes::Pod
   mapping:

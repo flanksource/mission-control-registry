@@ -76,6 +76,7 @@ spec:
     helm_releases:
       configs:
         tagSelector: "cluster={{ .Values.clusterName }}"
+        agent: "all"
         types:
           - Kubernetes::HelmRelease
   mapping:
