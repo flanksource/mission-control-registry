@@ -68,12 +68,12 @@ spec:
       pod.status,
       pod.health,
       pod.updated_at,
-      CAST(memory.value AS TEXT) as memory,
+      memory.value as memory,
       to_bytes(COALESCE(
         json_extract(pod.config, '$.spec.containers[0].resources.limits.memory'), 
         ''
       )) AS memory_limit,
-      COALESCE(CAST(cpu.value AS TEXT), '0') as cpu,
+      cpu.value as cpu,
       to_millicores(COALESCE(
         json_extract(pod.config, '$.spec.containers[0].resources.limits.cpu'), 
         ''
