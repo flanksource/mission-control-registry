@@ -42,9 +42,9 @@ spec:
         thresholds:
           - percent: 0
             color: green
-          - percent: 50
+          - percent: 75
             color: orange
-          - percent: 80
+          - percent: 90
             color: red
     - name: cpu
       type: gauge
@@ -54,9 +54,9 @@ spec:
         thresholds:
           - percent: 0
             color: '#8BC34A'
-          - percent: 50
+          - percent: 70
             color: '#FF8C42'
-          - percent: 80
+          - percent: 85
             color: '#E8589C'
     - name: updated_at
       type: datetime
