@@ -1,0 +1,95 @@
+{{- if and .Values.views.enabled .Values.views.awsOverview.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: aws-overview-{{ .Values.scraper.name }}
+  labels:
+    {{- include "aws.labels" . | nindent 4 }}
+spec:
+  display:
+    title: {{ .Values.views.awsOverview.title }}
+    icon: aws
+    {{- if .Values.views.awsOverview.sidebar }}
+    sidebar: true
+    {{- end }}
+  panels:
+    - name: Resources by Type
+      description: Count of AWS resources grouped by type
+      type: table
+      query: SELECT type as "Resource Type", COUNT(*) as value FROM aws_resources GROUP BY type
+    - name: Resources by Region
+      description: Count of AWS resources grouped by region
+      type: piechart
+      piechart:
+        showLabels: true
+      query: >
+        SELECT labels->>'region' as region, COUNT(*) as count FROM aws_resources 
+        WHERE labels->>'region' IS NOT NULL OR labels->>'region' != ''
+        GROUP BY region
+    - name: S3 Buckets
+      description: Total S3 buckets
+      type: number
+      query: SELECT COUNT(*) as value FROM aws_resources WHERE type = 'AWS::S3::Bucket'
+  columns:
+    - name: id
+      type: string
+      primaryKey: true
+      hidden: true
+    - name: name
+      type: string
+      url:
+        config: row.id
+    - name: arn
+      type: string
+      description: Amazon Resource Name
+    - name: path
+      type: string
+      description: IAM paths
+    - name: password_last_used
+      type: datetime
+      description: Last password usage (users only)
+    - name: created_date
+      type: datetime
+    - name: updated_at
+      type: datetime
+  merge: |
+    SELECT
+      c.id,
+      c.name,
+      json_extract(c.config, '$.Arn') as arn,
+      COALESCE(
+        json_extract(c.config, '$.Path'),
+        '/'
+      ) as path,
+      json_extract(c.config, '$.PasswordLastUsed') as password_last_used,
+      COALESCE(
+        json_extract(c.config, '$.CreateDate'),
+        c.created_at
+      ) as created_date,
+      c.updated_at
+    FROM aws_resources c
+    WHERE type = 'AWS::IAM::User'
+    ORDER BY type, name
+  queries:
+    aws_resources:
+      configs:
+        agent: "all"
+        {{- if .Values.views.account }}
+        tagSelector: account={{ .Values.views.account }}
+        {{- end }}
+        types: # FIXME: Prefix search on type isn't working (AWS::*)
+          - AWS::::Account
+          - AWS::AvailabilityZone
+          - AWS::AvailabilityZoneID 
+          - AWS::EC2::DHCPOptions
+          - AWS::EC2::DHCPOptions   
+          - AWS::EC2::Instance
+          - AWS::EC2::RouteTable
+          - AWS::EC2::SecurityGroup
+          - AWS::EC2::Subnet
+          - AWS::EC2::VPC
+          - AWS::IAM::Role
+          - AWS::IAM::User
+          - AWS::Lambda::Function   
+          - AWS::S3::Bucket         
+{{- end }}

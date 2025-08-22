@@ -1,4 +1,4 @@
 .vscode
 .bin
 stdout.log
-values.test.yaml
+*values.test.yaml
