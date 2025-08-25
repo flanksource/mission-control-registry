@@ -55,9 +55,9 @@ spec:
           - percent: 0
             color: '#8BC34A'
           - percent: 70
-            color: '#FF8C42'
+            color: '#F4B23C'
           - percent: 85
-            color: '#E8589C'
+            color: '#F25C54'
     - name: updated_at
       type: datetime
   merge: |

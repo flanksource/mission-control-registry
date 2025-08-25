@@ -34,10 +34,17 @@ spec:
       query: SELECT value FROM memory_available_count
     - name: Current Memory Usage
       description: Current memory usage (GB)
-      type: number
-      number:
-        unit: GB
+      type: gauge
       query: SELECT value FROM memory_usage_count
+      gauge:
+        max: "30"
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
     - name: Pods Node Distribution
       description: Distribution of pods across nodes
       type: piechart
