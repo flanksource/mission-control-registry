@@ -21,23 +21,24 @@ spec:
       description: Count of resources grouped by type
       type: table
       query: SELECT * FROM resource_count_by_type
-    - name: Total CPU Cores
-      description: Total CPU cores available
-      type: number
-      query: SELECT value FROM cpu_cores_count
-    - name: Total Memory Available
-      description: Total memory available (GB)
-      type: number
-      number:
-        unit: GB
-        precision: 2
-      query: SELECT value FROM memory_available_count
-    - name: Current Memory Usage
-      description: Current memory usage (GB)
+    - name: CPU Usage
       type: gauge
-      query: SELECT value FROM memory_usage_count
+      query: SELECT value FROM cpu_usage
       gauge:
-        max: "30"
+        max: ".dataset.total_cpu[0].value"
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: Memory Usage
+      type: gauge
+      query: SELECT value FROM memory_usage
+      gauge:
+        max: ".dataset.total_memory[0].value"
+        unit: GB
         thresholds:
           - percent: 0
             color: '#28C19B'
@@ -57,21 +58,26 @@ spec:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           count(kube_pod_info) by (node)
-    cpu_cores_count:
+    total_cpu:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_node_status_allocatable{resource="cpu"})
-    memory_available_count:
+          sum(machine_cpu_cores{})
+    cpu_usage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m]))
+    total_memory:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           sum(kube_node_status_allocatable{resource="memory"}) / 1024 / 1024 / 1024
-    memory_usage_count:
+    memory_usage:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(container_memory_working_set_bytes{container!="POD"}) / 1024 / 1024 / 1024
+          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"}) / 1024 / 1024 / 1024
     resource_count_by_type:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
