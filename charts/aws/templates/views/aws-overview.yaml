@@ -7,11 +7,19 @@ metadata:
     {{- include "aws.labels" . | nindent 4 }}
 spec:
   display:
-    title: {{ .Values.views.awsOverview.title }}
+    title: AWS Overview
     icon: aws
     {{- if .Values.views.awsOverview.sidebar }}
     sidebar: true
     {{- end }}
+  templating:
+    - key: account
+      label: Account
+      default: all
+      valueFrom:
+        config:
+          types:
+            - AWS::::Account
   panels:
     - name: Resources by Type
       description: Count of AWS resources grouped by type
@@ -74,15 +82,12 @@ spec:
     aws_resources:
       configs:
         agent: "all"
-        {{- if .Values.views.account }}
-        tagSelector: account={{ .Values.views.account }}
-        {{- end }}
+        tagSelector: account=$(.var.account)
         types: # FIXME: Prefix search on type isn't working (AWS::*)
           - AWS::::Account
           - AWS::AvailabilityZone
-          - AWS::AvailabilityZoneID 
-          - AWS::EC2::DHCPOptions
-          - AWS::EC2::DHCPOptions   
+          - AWS::AvailabilityZoneID
+          - AWS::EC2::DHCPOptions 
           - AWS::EC2::Instance
           - AWS::EC2::RouteTable
           - AWS::EC2::SecurityGroup
@@ -90,6 +95,6 @@ spec:
           - AWS::EC2::VPC
           - AWS::IAM::Role
           - AWS::IAM::User
-          - AWS::Lambda::Function   
-          - AWS::S3::Bucket         
+          - AWS::Lambda::Function 
+          - AWS::S3::Bucket   
 {{- end }}
