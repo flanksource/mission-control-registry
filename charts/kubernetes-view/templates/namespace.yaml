@@ -15,14 +15,12 @@ spec:
   templating:
     - key: namespace
       label: Namespace
-      default: default
       valueFrom:
         config:
           types:
             - Kubernetes::Namespace
     - key: cluster
       label: Cluster
-      default: homelab
       valueFrom:
         config:
           types:
@@ -141,7 +139,7 @@ spec:
           ) * 1000
     pod:
       configs:
-        tagSelector: "cluster={{ .Values.clusterName }},namespace=$(.var.namespace)"
+        tagSelector: "cluster=$(.var.cluster),namespace=$(.var.namespace)"
         agent: "all"
         types:
           - Kubernetes::Pod
