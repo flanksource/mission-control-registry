@@ -15,7 +15,6 @@ spec:
   templating:
     - key: account
       label: Account
-      default: all
       valueFrom:
         config:
           types:
