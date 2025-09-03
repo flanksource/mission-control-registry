@@ -7,6 +7,8 @@ isAgent: false
 playbooks: true
 pushLocation:
   url: ''
+view:
+  enabled: false
 # username:
 #   valueFrom:
 #     secretKeyRef:
