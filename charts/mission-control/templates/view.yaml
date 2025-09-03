@@ -1,0 +1,129 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/view.schema.json
+{{ if .Values.view.enabled -}}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: mission-control-pods
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Mission Control Pods
+    icon: pod
+  panels:
+    - name: Job History
+      type: table
+      query: SELECT name, status FROM unhealthy_job_history
+    - name: CRDs
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT COUNT(*) AS count, config_class AS kind FROM mc_crds GROUP BY config_class
+    - name: Agents
+      type: table
+      query: SELECT name, status FROM mc_agents WHERE name != local
+  columns:
+    - name: namespace
+      type: string
+      primaryKey: true
+      filter:
+        type: multiselect
+    - name: name
+      type: string
+      primaryKey: true
+    - name: status
+      type: status
+      filter:
+        type: multiselect
+    - name: health
+      type: health
+      filter:
+        type: multiselect
+    - name: version
+      type: string
+    - name: memory
+      type: bytes
+    - name: memory_limit
+      type: bytes
+    - name: cpu
+      type: millicore
+    - name: cpu_limit
+      type: millicore
+    - name: created
+      type: datetime
+  merge: |
+    SELECT
+      pod.name,
+      json_extract(pod.tags, '$.namespace') AS namespace,
+      pod.status,
+      pod.health,
+      pod.created_at,
+      SPLIT_PART(JSON_EXTRACT(pod.config, '$.spec.containers[0].image'), ':', 2) AS version,
+      CAST(memory.value AS TEXT) as memory,
+      COALESCE(
+        json_extract(pod.config, '$.spec.containers[0].resources.limits.memory'),
+        ''
+      ) AS memory_limit,
+      COALESCE(CAST(cpu.value AS TEXT), '0') as cpu,
+      COALESCE(
+        json_extract(pod.config, '$.spec.containers[0].resources.limits.cpu'),
+        ''
+      ) AS cpu_limit
+    FROM pod
+    LEFT JOIN memory
+      ON pod.name = memory.pod
+      AND json_extract(pod.tags, '$.namespace') = memory.namespace
+    LEFT JOIN cpu
+      ON pod.name = cpu.pod
+      AND json_extract(pod.tags, '$.namespace') = cpu.namespace
+  queries:
+    memory:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, pod) (
+            container_memory_working_set_bytes{
+              container!="POD", # Skip The pause/infra container
+              image!="" # Skip dead containers
+            }
+          )
+    cpu:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, pod) (
+            irate(container_cpu_usage_seconds_total{
+              container!="POD", # Skip The pause/infra container
+              image!="" # Skip dead containers
+            }[30s])
+          ) * 1000
+    pod:
+      configs:
+        tagSelector: "cluster={{ .Values.clusterName }},namespace={{.Release.Namespace}}"
+        types:
+          - Kubernetes::Pod
+
+    unhealthy_job_history:
+      configs:
+        query: 'type=MissionControl::Job health!=healthy'
+
+    mc_crds:
+      configs:
+        query: 'type=MissionControl::* type!=MissionControl::Job type!=MissionControl::Agent'
+
+    mc_agents:
+      configs:
+        query: 'type=MissionControl::Agent'
+
+  mapping:
+    created: row.created_at
+
+{{- end -}}
