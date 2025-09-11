@@ -1,5 +1,6 @@
 {{- if .Values.playbooks}}
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
@@ -32,6 +33,7 @@ spec:
           WHERE attempts > 0 AND
           last_attempt < NOW() - INTERVAL '$(.params.last_max_attempt) day'
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
@@ -40,6 +42,7 @@ spec:
   icon: Canary
   title: Run Canary
   description: Runs the canary on a canary-checker pod with configurable log level
+  category: Mission Control
   configs:
     - types:
         - MissionControl::Canary
@@ -65,4 +68,34 @@ spec:
           kubectl exec -i deploy/canary-checker -- sh -c '/app/canary-checker run - --namespace $(.config.tags.namespace) $(.params.logLevel)' <<"END"
           $(.config.config | toYAML)
           END
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: vacuum-mission-control-tables
+spec:
+  icon: database
+  title: Vacuum tables
+  description: Vacuum mission control database tables to improve performance
+  category: Mission Control
+  parameters:
+    - name: table
+      label: Table
+      type: list
+      required: true
+      properties:
+        options:
+          - value: checks
+          - value: check_statuses
+          - value: config_items
+          - value: config_changes
+          - value: config_relationships
+  actions:
+    - name: Vacuum
+      sql:
+        connection: "connection://{{ .Values.connectionName }}"
+        driver: postgres
+        query: 'VACUUM (FULL, ANALYZE) $(.table)'
+
 {{- end }}
