@@ -201,6 +201,7 @@
     },
     "transform": {
       "additionalProperties": false,
+      "description": "Transform configuration",
       "properties": {
         "changes": {
           "additionalProperties": false,
@@ -412,6 +413,61 @@
       ],
       "title": "transform",
       "type": "object"
+    },
+    "views": {
+      "additionalProperties": false,
+      "description": "Views configuration",
+      "properties": {
+        "account": {
+          "default": "",
+          "description": "Account Number",
+          "required": [],
+          "title": "account"
+        },
+        "awsOverview": {
+          "additionalProperties": false,
+          "description": "AWS Overview view configuration",
+          "properties": {
+            "enabled": {
+              "default": "true",
+              "description": "Enable the AWS Overview view",
+              "required": [],
+              "title": "enabled"
+            },
+            "name": {
+              "default": "aws-overview",
+              "description": "Name of the AWS Overview view",
+              "required": [],
+              "title": "name"
+            },
+            "sidebar": {
+              "default": "true",
+              "description": "Enable the sidebar for the AWS Overview view",
+              "required": [],
+              "title": "sidebar"
+            },
+            "title": {
+              "default": "AWS Overview",
+              "description": "Title of the AWS Overview view",
+              "required": [],
+              "title": "title"
+            }
+          },
+          "required": [],
+          "title": "awsOverview"
+        },
+        "enabled": {
+          "default": true,
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "views",
+      "type": "object"
     }
   },
   "required": [
@@ -420,8 +476,7 @@
     "scraper",
     "connection",
     "includeResources",
-    "excludeResources",
-    "transform"
+    "excludeResources"
   ],
   "type": "object"
 }
