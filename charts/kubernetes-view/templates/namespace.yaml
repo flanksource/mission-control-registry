@@ -1,0 +1,148 @@
+{{- if and .Values.views.enabled .Values.views.pods.enabled .Values.global.prometheus.connection }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: namespace
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Namespace
+    icon: namespace
+    {{- if .Values.views.pods.sidebar }}
+    sidebar: true
+    {{- end }}
+  templating:
+    - key: namespace
+      label: Namespace
+      valueFrom:
+        config:
+          types:
+            - Kubernetes::Namespace
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          types:
+            - Kubernetes::Cluster
+  panels:
+    - name: Total Pods
+      description: Total Pods in the namespace
+      type: number
+      query: SELECT COUNT(*) AS value FROM pod
+  columns:
+    - name: name
+      type: string
+      primaryKey: true
+      url:
+        config: row.id
+    - name: status
+      type: status
+      icon: row.health
+      filter:
+        type: multiselect
+    - name: health
+      type: health
+      hidden: true
+      filter:
+        type: multiselect
+    - name: memory
+      type: gauge
+      unit: bytes
+      description: Memory usage
+      gauge:
+        max: row.memory_limit
+        thresholds:
+          - percent: 0
+            color: green
+          - percent: 75
+            color: orange
+          - percent: 90
+            color: red
+    - name: cpu
+      type: gauge
+      unit: millicore
+      gauge:
+        max: row.cpu_limit
+        thresholds:
+          - percent: 0
+            color: '#8BC34A'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: updated_at
+      type: datetime
+  merge: |
+    SELECT
+      pod.id,
+      pod.name,
+      json_extract(pod.tags, '$.namespace') AS namespace,
+      pod.status,
+      pod.health,
+      pod.updated_at,
+      memory.value as memory,
+      to_bytes(COALESCE(
+        json_extract(pod.config, '$.spec.containers[0].resources.limits.memory'), 
+        ''
+      )) AS memory_limit,
+      cpu.value as cpu,
+      to_millicores(COALESCE(
+        json_extract(pod.config, '$.spec.containers[0].resources.limits.cpu'), 
+        ''
+      )) AS cpu_limit
+    FROM pod
+    LEFT JOIN memory
+      ON pod.name = memory.pod 
+      AND json_extract(pod.tags, '$.namespace') = memory.namespace
+    LEFT JOIN cpu
+      ON pod.name = cpu.pod 
+      AND json_extract(pod.tags, '$.namespace') = cpu.namespace
+    ORDER BY namespace, name
+  queries:
+    memory_usage:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(rate(container_memory_working_set_bytes{namespace=~"$(.var.namespace)", image!=""}[5m])) / sum(machine_memory_bytes{})
+    memory:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, pod) (
+            container_memory_working_set_bytes{
+              container!="POD", # Skip The pause/infra container
+              image!="" # Skip dead containers
+            }
+          )
+    cpu:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, pod) (
+            irate(container_cpu_usage_seconds_total{
+              container!="POD", # Skip The pause/infra container
+              image!="" # Skip dead containers
+            }[30s])
+          ) * 1000
+    pod:
+      configs:
+        tagSelector: "cluster=$(.var.cluster),namespace=$(.var.namespace)"
+        agent: "all"
+        types:
+          - Kubernetes::Pod
+  mapping:
+    created: row.created_at
+{{- end }}
