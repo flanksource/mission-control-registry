@@ -77,6 +77,16 @@ views:
   # @schema
   # required: false
   # @schema
+  pod:
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    enabled: true
+
+  # @schema
+  # required: false
+  # @schema
   clusterOverview:
     # @schema
     # required: false

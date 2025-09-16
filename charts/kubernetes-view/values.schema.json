@@ -87,6 +87,18 @@
           "title": "enabled",
           "type": "boolean"
         },
+        "pod": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled"
+            }
+          },
+          "required": [],
+          "title": "pod"
+        },
         "pods": {
           "additionalProperties": false,
           "properties": {
