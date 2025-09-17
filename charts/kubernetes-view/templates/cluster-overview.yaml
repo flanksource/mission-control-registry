@@ -6,6 +6,13 @@ metadata:
   labels:
     {{- include "kubernetes-view.labels" . | nindent 4 }}
 spec:
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          types:
+            - Kubernetes::Cluster
   display:
     title: Cluster
     icon: overview
@@ -51,7 +58,28 @@ spec:
       type: piechart
       piechart:
         showLabels: true
-      query: SELECT value as "count", node FROM pods_node_distribution 
+      query: SELECT value as "count", node FROM pods_node_distribution
+  columns:
+    - name: name
+      type: string
+      primaryKey: true
+      url:
+        view:
+          filter:
+            viewvar__namespace: row.name
+            viewvar__cluster: row.cluster
+          name: >
+            'namespace'
+    - name: created_at
+      type: datetime
+  merge: |
+    SELECT
+      namespaces.id,
+      namespaces.name,
+      json_extract(namespaces.tags, '$.cluster') AS cluster,
+      namespaces.created_at
+    FROM namespaces
+    ORDER BY name
   queries:
     pods_node_distribution:
       columns:
@@ -103,7 +131,13 @@ spec:
           (label_replace(count(kube_statefulset_status_replicas), "resource_type", "StatefulSets", "", "")) or 
           (label_replace(count(kube_daemonset_status_number_ready), "resource_type", "DaemonSets", "", "")) or 
           (label_replace(count(kube_persistentvolume_info), "resource_type", "Persistent Volumes", "", "")) or 
-          (label_replace(count(kube_persistentvolumeclaim_info), "resource_type", "Persistent Volume Claims", "", "")) or 
-          (label_replace(count(kube_ingress_info), "resource_type", "Ingresses", "", "")) or 
+          (label_replace(count(kube_persistentvolumeclaim_info), "resource_type", "Persistent Volume Claims", "", "")) or
+          (label_replace(count(kube_ingress_info), "resource_type", "Ingresses", "", "")) or
           (label_replace(count(kube_cronjob_info), "resource_type", "CronJobs", "", ""))
+    namespaces:
+      configs:
+        tagSelector: "cluster=$(.var.cluster)"
+        agent: "all"
+        types:
+          - Kubernetes::Namespace
 {{- end }}
