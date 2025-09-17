@@ -61,11 +61,13 @@ spec:
       description: The version of the deployment.
     - name: status
       type: status
+      icon: row.health
       description: The status of the deployment.
       filter:
         type: multiselect
     - name: health
       type: health
+      hidden: true
       description: The health of the deployment.
       filter:
         type: multiselect
