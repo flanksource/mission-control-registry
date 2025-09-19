@@ -9,6 +9,10 @@ spec:
   display:
     title: Pod
     icon: pod
+    plugins:
+      - configTab:
+          types:
+            - Kubernetes::Pod
   templating:
     - key: cluster
       label: Cluster
@@ -24,22 +28,18 @@ spec:
             - Kubernetes::Pod
   panels:
     - name: Pod Status
-      description: Current status of the pod
       type: text
       query: SELECT status AS value FROM pod LIMIT 1
     - name: Containers
       type: table
       query: SELECT json_extract(value, '$.name') AS name, json_extract(value, '$.image') AS image FROM pod, json_each(json_extract(pod.config, '$.spec.containers')) WHERE json_extract(value, '$.image') IS NOT NULL
     - name: Node
-      description: Node where the pod is scheduled
       type: text
       query: SELECT COALESCE(json_extract(config, '$.spec.nodeName'), 'Not scheduled') AS value FROM pod LIMIT 1
     - name: Volumes Used
-      description: Volumes mounted in the pod
       type: table
       query: SELECT json_extract(value, '$.name') AS name FROM pod, json_each(json_extract(pod.config, '$.spec.volumes')) WHERE json_extract(value, '$.name') IS NOT NULL
     - name: Memory Usage
-      description: Current memory usage
       type: gauge
       query: >
         SELECT memory.value / 1024 / 1024 AS value,
@@ -58,7 +58,6 @@ spec:
           - percent: 90
             color: '#F25C54'
     - name: CPU Usage
-      description: Current CPU usage
       type: gauge
       query: >
         SELECT cpu_usage.value AS value, to_millicores(COALESCE(json_extract(pod.config, '$.spec.containers[0].resources.limits.cpu'), '')) AS max 
