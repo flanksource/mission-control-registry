@@ -1,0 +1,135 @@
+{{- if and .Values.views.enabled .Values.views.pod.enabled .Values.global.prometheus.connection }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: pod
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Pod
+    icon: pod
+    plugins:
+      - configTab:
+          types:
+            - Kubernetes::Pod
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          types:
+            - Kubernetes::Cluster
+    - key: pod_name
+      label: Pod
+      valueFrom:
+        config:
+          types:
+            - Kubernetes::Pod
+  panels:
+    - name: Pod Status
+      type: text
+      query: SELECT status AS value FROM pod LIMIT 1
+    - name: Containers
+      type: table
+      query: SELECT json_extract(value, '$.name') AS name, json_extract(value, '$.image') AS image FROM pod, json_each(json_extract(pod.config, '$.spec.containers')) WHERE json_extract(value, '$.image') IS NOT NULL
+    - name: Node
+      type: text
+      query: SELECT COALESCE(json_extract(config, '$.spec.nodeName'), 'Not scheduled') AS value FROM pod LIMIT 1
+    - name: Volumes Used
+      type: table
+      query: SELECT json_extract(value, '$.name') AS name FROM pod, json_each(json_extract(pod.config, '$.spec.volumes')) WHERE json_extract(value, '$.name') IS NOT NULL
+    - name: Memory Usage
+      type: gauge
+      query: >
+        SELECT memory.value / 1024 / 1024 AS value,
+        to_bytes(COALESCE(json_extract(pod.config, '$.spec.containers[0].resources.limits.memory'), '')) / 1024 / 1024 AS max 
+        FROM pod LEFT JOIN memory ON 
+          pod.name = memory.pod AND 
+          json_extract(pod.tags, '$.namespace') = memory.namespace 
+        LIMIT 1
+      gauge:
+        unit: MB
+        thresholds:
+          - percent: 0
+            color: '#8BC34A'
+          - percent: 75
+            color: '#F4B23C'
+          - percent: 90
+            color: '#F25C54'
+    - name: CPU Usage
+      type: gauge
+      query: >
+        SELECT cpu_usage.value AS value, to_millicores(COALESCE(json_extract(pod.config, '$.spec.containers[0].resources.limits.cpu'), '')) AS max 
+        FROM pod LEFT JOIN cpu_usage ON pod.name = cpu_usage.pod 
+        AND json_extract(pod.tags, '$.namespace') = cpu_usage.namespace 
+        LIMIT 1
+      gauge:
+        thresholds:
+          - percent: 0
+            color: '#8BC34A'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: string
+    - name: created_at
+      type: datetime
+  mapping:
+    created_at: row.created_at
+    name: row.change_type
+  merge:
+    SELECT
+      events.id,
+      events.change_type,
+      events.created_at
+    FROM events
+    ORDER BY created_at DESC
+  queries:
+    memory:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, pod) (
+            container_memory_working_set_bytes{
+              pod="$(.var.pod_name)",
+              container!="POD", # Skip The pause/infra container
+              image!="" # Skip dead containers
+            }
+          )
+    cpu_usage:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, pod) (
+            irate(container_cpu_usage_seconds_total{
+              pod="$(.var.pod_name)",
+              container!="POD",
+              image!=""
+            }[30s])
+          ) * 1000
+    pod:
+      configs:
+        tagSelector: "cluster=$(.var.cluster)"
+        name: $(.var.pod_name)
+        types:
+          - Kubernetes::Pod
+    events:
+      changes:
+        tagSelector: "cluster=$(.var.cluster)"
+        name: $(.var.pod_name)
+{{- end }}
