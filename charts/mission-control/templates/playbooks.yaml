@@ -85,59 +85,148 @@ spec:
         connection: "connection://{{ .Values.connectionName }}"
         driver: postgres
         query : |
-          SELECT DISTINCT(tablename) FROM (
-              SELECT
-                  schemaname,
-                  tablename,
-                  ROUND(CASE WHEN otta=0 THEN 0.0 ELSE sml.relpages/otta::numeric END,1) AS tbloat,
-                  CASE WHEN relpages < otta THEN 0 ELSE bs*(sml.relpages-otta)::bigint END AS wastedbytes,
-                  iname,
-                  ROUND(CASE WHEN iotta=0 OR ipages=0 THEN 0.0 ELSE ipages/iotta::numeric END,1) AS ibloat,
-                  CASE WHEN ipages < iotta THEN 0 ELSE bs*(ipages-iotta) END AS wastedibytes
-              FROM (
-                  SELECT
-                      schemaname, tablename, cc.reltuples, cc.relpages, bs,
-                      CEIL((cc.reltuples*((datahdr+ma-
-                          (CASE WHEN datahdr%ma=0 THEN ma ELSE datahdr%ma END))+nullhdr2+4))/(bs-20::float)) AS otta,
-                      COALESCE(c2.relname,'?') AS iname, COALESCE(c2.reltuples,0) AS ituples, COALESCE(c2.relpages,0) AS ipages,
-                      COALESCE(CEIL((c2.reltuples*(datahdr-12))/(bs-20::float)),0) AS iotta
-                  FROM (
-                      SELECT
-                          ma,bs,schemaname,tablename,
-                          (datawidth+(hdr+ma-(case when hdr%ma=0 THEN ma ELSE hdr%ma END)))::numeric AS datahdr,
-                          (maxfracsum*(nullhdr+ma-(case when nullhdr%ma=0 THEN ma ELSE nullhdr%ma END))) AS nullhdr2
-                      FROM (
-                          SELECT
-                              schemaname, tablename, hdr, ma, bs,
-                              SUM((1-null_frac)*avg_width) AS datawidth,
-                              MAX(null_frac) AS maxfracsum,
-                              hdr+(
-                                  SELECT 1+count(*)/8
-                                  FROM pg_stats s2
-                                  WHERE null_frac<>0 AND s2.schemaname = s.schemaname AND s2.tablename = s.tablename
-                              ) AS nullhdr
-                          FROM pg_stats s, (
-                              SELECT
-                                  (SELECT current_setting('block_size')::numeric) AS bs,
-                                  CASE WHEN substring(v,12,3) IN ('8.0','8.1','8.2') THEN 27 ELSE 23 END AS hdr,
-                                  CASE WHEN v ~ 'mingw32' THEN 8 ELSE 4 END AS ma
-                              FROM (SELECT version() AS v) AS foo
-                          ) AS constants
-                          WHERE schemaname = 'public'
-                          GROUP BY 1,2,3,4,5
-                      ) AS foo
-                  ) AS rs
-                  JOIN pg_class cc ON cc.relname = rs.tablename
-                  JOIN pg_namespace nn ON cc.relnamespace = nn.oid AND nn.nspname = rs.schemaname AND nn.nspname <> 'information_schema'
-                  LEFT JOIN pg_index i ON indrelid = cc.oid
-                  LEFT JOIN pg_class c2 ON c2.oid = i.indexrelid
-              ) AS sml
-          ) WHERE tbloat > 1.5;
+          WITH params AS (
+            SELECT
+              100::bigint            AS min_tuples_sum,
+              0.20::double precision AS high_dead_frac,
+              0.30::double precision AS very_high_dead_frac,
+              100000::bigint         AS many_dead_tuples,
+              1000::bigint           AS some_dead_tuples,
+              100 * 1024 * 1024::bigint AS large_table_bytes,
+              1 * 1024 * 1024 * 1024::bigint AS big_impact_bytes,
+              '7 days'::interval     AS recent_window,
+              14::int                AS days_for_overdue,
+              20::double precision   AS idx_bloat_free_pct_warn
+          ),
+          safe_stats AS (
+            SELECT
+              n.nspname                                AS schemaname,
+              c.relname                                AS tablename,
+              s.n_live_tup                             AS live_tuples,
+              s.n_dead_tup                             AS dead_tuples,
+              (s.n_live_tup + s.n_dead_tup)            AS tuples_sum,
+              s.last_vacuum,
+              s.last_autovacuum,
+              s.last_analyze,
+              s.last_autoanalyze,
+              pg_total_relation_size(c.oid)            AS size_bytes,
+              pg_size_pretty(pg_total_relation_size(c.oid)) AS table_size,
+              CASE WHEN (s.n_live_tup + s.n_dead_tup) > 0
+                   THEN (s.n_dead_tup::numeric * 100.0 / (s.n_live_tup + s.n_dead_tup)::numeric)
+                   ELSE 0 END                           AS dead_pct,
+              c.oid AS table_oid
+            FROM pg_stat_all_tables s
+            JOIN pg_class c      ON s.relid = c.oid
+            JOIN pg_namespace n  ON c.relnamespace = n.oid
+            WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')
+          ),
+          vacuum_needs AS (
+            SELECT
+              ss.*,
+              COALESCE(
+                date_part('day', now() - GREATEST(COALESCE(last_vacuum, 'epoch'::timestamp),
+                                                  COALESCE(last_autovacuum, 'epoch'::timestamp))),
+                9999
+              )::int AS days_since_vacuum,
+              COALESCE(
+                date_part('day', now() - GREATEST(COALESCE(last_analyze, 'epoch'::timestamp),
+                                                  COALESCE(last_autoanalyze, 'epoch'::timestamp))),
+                9999
+              )::int AS days_since_analyze
+            FROM safe_stats ss
+            JOIN params p ON true
+            WHERE ss.tuples_sum >= p.min_tuples_sum
+          ),
+          index_stats AS (
+            SELECT
+              i.indexrelid,
+              i.indrelid,
+              quote_ident(ns_idx.nspname) || '.' || quote_ident(ci.relname) AS index_fqn,
+              ci.relname AS index_name,
+              quote_ident(ns_tab.nspname) || '.' || quote_ident(t.relname) AS table_fqn,
+              ci.oid AS index_oid,
+              t.oid  AS table_oid,
+              pg_relation_size(i.indexrelid) AS index_size_bytes,
+              pg_size_pretty(pg_relation_size(i.indexrelid)) AS index_size,
+              coalesce(ai.idx_scan,0) AS idx_scan,
+              coalesce(ai.idx_tup_read,0) AS idx_tup_read,
+              coalesce(ai.idx_tup_fetch,0) AS idx_tup_fetch
+            FROM pg_index i
+            JOIN pg_class ci        ON ci.oid = i.indexrelid
+            JOIN pg_namespace ns_idx ON ns_idx.oid = ci.relnamespace
+            JOIN pg_class t         ON t.oid = i.indrelid
+            JOIN pg_namespace ns_tab ON ns_tab.oid = t.relnamespace
+            LEFT JOIN pg_stat_all_indexes ai ON ai.indexrelid = i.indexrelid
+            WHERE ci.relkind = 'i'
+          )
+          -- final output: only tables that need a vacuum action (conservative recommendations)
+          SELECT
+            vn.schemaname || '.' || vn.tablename AS table_name,
+            vn.table_size,
+            vn.size_bytes AS table_size_bytes,
+            vn.live_tuples,
+            vn.dead_tuples,
+            ROUND(vn.dead_pct, 1)::text || '%' AS dead_percentage,
+            vn.days_since_vacuum,
+            vn.days_since_analyze,
+            (LEAST(vn.dead_pct, 100)::double precision * 1.5
+             + LN(GREATEST(vn.size_bytes,1)) / LN(1024) * 2
+             + vn.days_since_vacuum * 0.5)::int AS urgency_score,
+            -- vacuum recommendation (conservative)
+            CASE
+              WHEN vn.dead_pct >= params.very_high_dead_frac * 100 AND vn.size_bytes >= params.large_table_bytes THEN
+                'REVIEW: Consider VACUUM FULL or RECLUSTER (HIGH dead%, large table)'
+              WHEN vn.dead_pct >= params.very_high_dead_frac * 100 THEN
+                'CONSIDER: VACUUM (ANALYZE) then assess for VACUUM FULL/REINDEX'
+              WHEN vn.dead_pct >= params.high_dead_frac * 100 AND vn.dead_tuples >= params.some_dead_tuples THEN
+                'VACUUM (VERBOSE, ANALYZE) recommended'
+              WHEN vn.dead_tuples >= params.many_dead_tuples AND vn.days_since_vacuum > params.days_for_overdue THEN
+                'VACUUM recommended (many dead tuples and overdue)'
+              ELSE 'NO VACUUM NEEDED (monitor)'
+            END AS vacuum_action,
+            -- index summary (no pgstattuple)
+            COUNT(ix.index_oid) FILTER (WHERE ix.index_oid IS NOT NULL) AS index_count,
+            COALESCE(SUM(ix.index_size_bytes) FILTER (WHERE ix.index_oid IS NOT NULL),0) AS total_index_bytes,
+            pg_size_pretty(COALESCE(SUM(ix.index_size_bytes) FILTER (WHERE ix.index_oid IS NOT NULL),0)) AS total_index_size,
+            -- note about per-index bloat: pgstattuple not used here
+            'NO pgstattuple: run pgstattuple manually on suspects for exact index bloat' AS index_health_note,
+            -- conservative command suggestion
+            CASE
+              WHEN (CASE
+                      WHEN vn.dead_pct >= params.very_high_dead_frac * 100 AND vn.size_bytes >= params.large_table_bytes THEN 1
+                      WHEN vn.dead_pct >= params.very_high_dead_frac * 100 THEN 1
+                      WHEN vn.dead_pct >= params.high_dead_frac * 100 AND vn.dead_tuples >= params.some_dead_tuples THEN 1
+                      WHEN vn.dead_tuples >= params.many_dead_tuples AND vn.days_since_vacuum > params.days_for_overdue THEN 1
+                      ELSE 0 END) = 1
+              THEN 'VACUUM (VERBOSE, ANALYZE) ' || quote_ident(vn.schemaname) || '.' || quote_ident(vn.tablename) || ';'
+              ELSE 'No immediate vacuum command'
+            END AS command_to_run
+          FROM vacuum_needs vn
+          JOIN params ON true
+          LEFT JOIN index_stats ix ON ix.table_oid = vn.table_oid
+          GROUP BY
+            vn.schemaname, vn.tablename, vn.table_size, vn.size_bytes, vn.live_tuples, vn.dead_tuples,
+            vn.dead_pct, vn.days_since_vacuum, vn.days_since_analyze, vn.table_oid, vn.last_vacuum,
+            vn.last_autovacuum, vn.last_analyze, vn.last_autoanalyze,
+            params.very_high_dead_frac, params.large_table_bytes, params.high_dead_frac, params.some_dead_tuples,
+            params.many_dead_tuples, params.days_for_overdue
+          -- filter: only tables where vacuum_action requires action
+          HAVING
+            MAX(
+              CASE
+                WHEN vn.dead_pct >= params.very_high_dead_frac * 100 AND vn.size_bytes >= params.large_table_bytes THEN 1
+                WHEN vn.dead_pct >= params.very_high_dead_frac * 100 THEN 1
+                WHEN vn.dead_pct >= params.high_dead_frac * 100 AND vn.dead_tuples >= params.some_dead_tuples THEN 1
+                WHEN vn.dead_tuples >= params.many_dead_tuples AND vn.days_since_vacuum > params.days_for_overdue THEN 1
+                ELSE 0
+              END
+            ) = 1
+          ORDER BY urgency_score DESC, total_index_bytes DESC, table_size_bytes DESC;
 
     - name: Vacuum
       sql:
         connection: "connection://{{ .Values.connectionName }}"
         driver: postgres
-        query : VACUUM (FULL, ANALYZE) $(getLastAction().rows | jq `map(.tablename) | join(", ")` )
+        query : VACUUM (FULL, ANALYZE) $(getLastAction().rows | jq `map(.table_name) | join(", ")` )
 
 {{- end }}
