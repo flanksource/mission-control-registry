@@ -80,7 +80,7 @@ spec:
   description: Vacuum mission control database tables to improve performance
   category: Mission Control
   actions:
-    - name: Vacuum
+    - name: Choose tables to vacuum
       sql:
         connection: "connection://{{ .Values.connectionName }}"
         driver: postgres
