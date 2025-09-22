@@ -227,6 +227,8 @@ spec:
       sql:
         connection: "connection://{{ .Values.connectionName }}"
         driver: postgres
-        query : VACUUM (FULL, ANALYZE) $(getLastAction().rows | jq `map(.table_name) | join(", ")` )
+        query : |
+          # gotemplate: left-delim=$[[ right-delim=]]
+          VACUUM (FULL, ANALYZE) $[[ getLastAction().rows | jq `map(.table_name) | join(", ")` ]]
 
 {{- end }}
