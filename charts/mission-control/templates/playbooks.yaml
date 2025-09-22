@@ -230,6 +230,6 @@ spec:
         driver: postgres
         query : |
           # gotemplate: left-delim=$[[ right-delim=]]
-          VACUUM (FULL, ANALYZE) $[[ getLastAction().result.rows | jq `map(.table_name) | join(", ")` ]]
+          VACUUM (FULL, ANALYZE) $[[ getLastAction.result.rows | jq `map(.table_name) | join(", ")` ]]
 
 {{- end }}
