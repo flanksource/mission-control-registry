@@ -9,7 +9,7 @@ spec:
   title: Update Resources
   icon: scale-up
   category: Kubernetes
-  descriptions: Updates resource requests/limits using kubectl set resources
+  description: Updates resource requests/limits using kubectl set resources
   configs:
     - agent: all
       types:
