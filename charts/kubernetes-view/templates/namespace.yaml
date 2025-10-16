@@ -13,18 +13,21 @@ spec:
     sidebar: true
     {{- end }}
   templating:
-    - key: namespace
-      label: Namespace
-      valueFrom:
-        config:
-          types:
-            - Kubernetes::Namespace
     - key: cluster
       label: Cluster
       valueFrom:
         config:
           types:
             - Kubernetes::Cluster
+    - key: namespace
+      label: Namespace
+      dependsOn:
+        - cluster
+      valueFrom:
+        config:
+          tagSelector: "cluster=$(.var.cluster)"
+          types:
+            - Kubernetes::Namespace
   panels:
     - name: Total Pods
       description: Total Pods in the namespace
