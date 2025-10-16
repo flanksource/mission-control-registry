@@ -2,3 +2,4 @@
 .bin
 stdout.log
 *values.test.yaml
+.envrc
