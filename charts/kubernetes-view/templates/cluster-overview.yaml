@@ -62,6 +62,7 @@ spec:
   columns:
     - name: name
       type: string
+      icon: "'namespace'"
       primaryKey: true
       url:
         view:
@@ -70,6 +71,22 @@ spec:
             viewvar__cluster: row.cluster
           name: >
             'namespace'
+    - name: cpu_usage
+      type: gauge
+      unit: millicore
+      description: CPU usage
+      gauge:
+        thresholds:
+          - percent: 0
+            color: '#939b89ff'
+    - name: memory_usage
+      type: gauge
+      unit: bytes
+      description: Memory usage
+      gauge:
+        thresholds:
+          - percent: 0
+            color: '#939b89ff'
     - name: created_at
       type: datetime
   merge: |
@@ -77,10 +94,42 @@ spec:
       namespaces.id,
       namespaces.name,
       json_extract(namespaces.tags, '$.cluster') AS cluster,
-      namespaces.created_at
+      namespaces.created_at,
+      cpu_usage_by_namespace.value AS cpu_usage,
+      memory_usage_by_namespace.value AS memory_usage
     FROM namespaces
+    LEFT JOIN cpu_usage_by_namespace
+      ON namespaces.name = cpu_usage_by_namespace.namespace
+    LEFT JOIN memory_usage_by_namespace
+      ON namespaces.name = memory_usage_by_namespace.namespace
     ORDER BY name
   queries:
+    cpu_usage_by_namespace:
+      columns:
+        namespace: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace) (
+            irate(container_cpu_usage_seconds_total{
+              container!="POD",
+              image!=""
+            }[5m])
+          ) * 1000
+    memory_usage_by_namespace:
+      columns:
+        namespace: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace) (
+            container_memory_working_set_bytes{
+              container!="POD",
+              image!=""
+            }
+          )
     pods_node_distribution:
       columns:
         node: string
