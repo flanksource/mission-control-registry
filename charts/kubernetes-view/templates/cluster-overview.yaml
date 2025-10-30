@@ -59,6 +59,22 @@ spec:
       piechart:
         showLabels: true
       query: SELECT value as "count", node FROM pods_node_distribution
+    - name: Global RAM Usage
+      type: table
+      query: |
+        SELECT 'Real' as name, ROUND(value, 1) || '%' as value FROM memory_real_percentage
+        UNION ALL
+        SELECT 'Requests' as name, ROUND(value, 1) || '%' as value FROM memory_request_percentage
+        UNION ALL
+        SELECT 'Limits' as name, ROUND(value, 1) || '%' as value FROM memory_limit_percentage
+    - name: Global CPU Usage
+      type: table
+      query: |
+        SELECT 'Real' as name, ROUND(value, 1) || '%' as value FROM cpu_real_percentage
+        UNION ALL
+        SELECT 'Requests' as name, ROUND(value, 1) || '%' as value FROM cpu_request_percentage
+        UNION ALL
+        SELECT 'Limits' as name, ROUND(value, 1) || '%' as value FROM cpu_limit_percentage
   columns:
     - name: name
       type: string
@@ -225,6 +241,48 @@ spec:
           (label_replace(count(kube_persistentvolumeclaim_info), "resource_type", "Persistent Volume Claims", "", "")) or
           (label_replace(count(kube_ingress_info), "resource_type", "Ingresses", "", "")) or
           (label_replace(count(kube_cronjob_info), "resource_type", "CronJobs", "", ""))
+    memory_real_percentage:
+      columns:
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"}) / sum(node_memory_MemTotal_bytes{job="node-exporter"}) * 100
+    memory_request_percentage:
+      columns:
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(kube_pod_container_resource_requests{resource="memory"}) / sum(machine_memory_bytes{}) * 100
+    memory_limit_percentage:
+      columns:
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(kube_pod_container_resource_limits{resource="memory"}) / sum(machine_memory_bytes{}) * 100
+    cpu_real_percentage:
+      columns:
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          avg(sum by (instance, cpu) (rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m]))) * 100
+    cpu_request_percentage:
+      columns:
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(kube_pod_container_resource_requests{resource="cpu"}) / sum(machine_cpu_cores{}) * 100
+    cpu_limit_percentage:
+      columns:
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(kube_pod_container_resource_limits{resource="cpu"}) / sum(machine_cpu_cores{}) * 100
     namespaces:
       configs:
         tagSelector: "cluster=$(.var.cluster)"
