@@ -76,17 +76,27 @@ spec:
       unit: millicore
       description: CPU usage
       gauge:
+        max: row.cpu_limit
         thresholds:
           - percent: 0
-            color: '#939b89ff'
+            color: '#8BC34A'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
     - name: memory_usage
       type: gauge
       unit: bytes
       description: Memory usage
       gauge:
+        max: row.memory_limit
         thresholds:
           - percent: 0
-            color: '#939b89ff'
+            color: '#8BC34A'
+          - percent: 75
+            color: '#F4B23C'
+          - percent: 90
+            color: '#F25C54'  
     - name: created_at
       type: datetime
   merge: |
@@ -96,12 +106,18 @@ spec:
       json_extract(namespaces.tags, '$.cluster') AS cluster,
       namespaces.created_at,
       cpu_usage_by_namespace.value AS cpu_usage,
-      memory_usage_by_namespace.value AS memory_usage
+      memory_usage_by_namespace.value AS memory_usage,
+      cpu_limit_by_namespace.value AS cpu_limit,
+      memory_limit_by_namespace.value AS memory_limit
     FROM namespaces
     LEFT JOIN cpu_usage_by_namespace
       ON namespaces.name = cpu_usage_by_namespace.namespace
     LEFT JOIN memory_usage_by_namespace
       ON namespaces.name = memory_usage_by_namespace.namespace
+    LEFT JOIN cpu_limit_by_namespace
+      ON namespaces.name = cpu_limit_by_namespace.namespace
+    LEFT JOIN memory_limit_by_namespace
+      ON namespaces.name = memory_limit_by_namespace.namespace
     ORDER BY name
   queries:
     cpu_usage_by_namespace:
@@ -129,6 +145,32 @@ spec:
               container!="POD",
               image!=""
             }
+          )
+    cpu_limit_by_namespace:
+      columns:
+        namespace: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace) (
+            (
+              kube_pod_container_resource_limits{resource="cpu", container!="POD", container!=""} > 0
+            ) or
+            kube_pod_container_resource_requests{resource="cpu", container!="POD", container!=""}
+          ) * 1000
+    memory_limit_by_namespace:
+      columns:
+        namespace: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace) (
+            (
+              kube_pod_container_resource_limits{resource="memory", container!="POD", container!=""} > 0
+            ) or
+            kube_pod_container_resource_requests{resource="memory", container!="POD", container!=""}
           )
     pods_node_distribution:
       columns:
