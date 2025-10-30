@@ -59,9 +59,26 @@ spec:
       piechart:
         showLabels: true
       query: SELECT value as "count", node FROM pods_node_distribution
+    - name: Global RAM Usage
+      type: table
+      query: |
+        SELECT 'Real' as name, ROUND(value, 1) || '%' as value FROM memory_real_percentage
+        UNION ALL
+        SELECT 'Requests' as name, ROUND(value, 1) || '%' as value FROM memory_request_percentage
+        UNION ALL
+        SELECT 'Limits' as name, ROUND(value, 1) || '%' as value FROM memory_limit_percentage
+    - name: Global CPU Usage
+      type: table
+      query: |
+        SELECT 'Real' as name, ROUND(value, 1) || '%' as value FROM cpu_real_percentage
+        UNION ALL
+        SELECT 'Requests' as name, ROUND(value, 1) || '%' as value FROM cpu_request_percentage
+        UNION ALL
+        SELECT 'Limits' as name, ROUND(value, 1) || '%' as value FROM cpu_limit_percentage
   columns:
     - name: name
       type: string
+      icon: "'namespace'"
       primaryKey: true
       url:
         view:
@@ -70,6 +87,32 @@ spec:
             viewvar__cluster: row.cluster
           name: >
             'namespace'
+    - name: cpu_usage
+      type: gauge
+      unit: millicore
+      description: CPU usage
+      gauge:
+        max: row.cpu_limit
+        thresholds:
+          - percent: 0
+            color: '#8BC34A'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: memory_usage
+      type: gauge
+      unit: bytes
+      description: Memory usage
+      gauge:
+        max: row.memory_limit
+        thresholds:
+          - percent: 0
+            color: '#8BC34A'
+          - percent: 75
+            color: '#F4B23C'
+          - percent: 90
+            color: '#F25C54'  
     - name: created_at
       type: datetime
   merge: |
@@ -77,42 +120,93 @@ spec:
       namespaces.id,
       namespaces.name,
       json_extract(namespaces.tags, '$.cluster') AS cluster,
-      namespaces.created_at
+      namespaces.created_at,
+      cpu_usage_by_namespace.value AS cpu_usage,
+      memory_usage_by_namespace.value AS memory_usage,
+      cpu_limit_by_namespace.value AS cpu_limit,
+      memory_limit_by_namespace.value AS memory_limit
     FROM namespaces
+    LEFT JOIN cpu_usage_by_namespace
+      ON namespaces.name = cpu_usage_by_namespace.namespace
+    LEFT JOIN memory_usage_by_namespace
+      ON namespaces.name = memory_usage_by_namespace.namespace
+    LEFT JOIN cpu_limit_by_namespace
+      ON namespaces.name = cpu_limit_by_namespace.namespace
+    LEFT JOIN memory_limit_by_namespace
+      ON namespaces.name = memory_limit_by_namespace.namespace
     ORDER BY name
   queries:
+    cpu_usage_by_namespace:
+      columns:
+        namespace: string
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace) (
+            irate(container_cpu_usage_seconds_total{
+              container!="POD",
+              image!=""
+            }[5m])
+          ) * 1000
+    memory_usage_by_namespace:
+      columns:
+        namespace: string
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace) (
+            container_memory_working_set_bytes{
+              container!="POD",
+              image!=""
+            }
+          )
+    cpu_limit_by_namespace:
+      columns:
+        namespace: string
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace) (
+            (
+              kube_pod_container_resource_limits{resource="cpu", container!="POD", container!=""} > 0
+            ) or
+            kube_pod_container_resource_requests{resource="cpu", container!="POD", container!=""}
+          ) * 1000
+    memory_limit_by_namespace:
+      columns:
+        namespace: string
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace) (
+            (
+              kube_pod_container_resource_limits{resource="memory", container!="POD", container!=""} > 0
+            ) or
+            kube_pod_container_resource_requests{resource="memory", container!="POD", container!=""}
+          )
     pods_node_distribution:
       columns:
         node: string
-        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           count(kube_pod_info) by (node)
     total_cpu:
-      columns:
-        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           sum(machine_cpu_cores{})
     cpu_usage:
-      columns:
-        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m]))
     total_memory:
-      columns:
-        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           sum(kube_node_status_allocatable{resource="memory"}) / 1024 / 1024 / 1024
     memory_usage:
-      columns:
-        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -120,7 +214,6 @@ spec:
     resource_count_by_type:
       columns:
         resource_type: string
-        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -134,6 +227,36 @@ spec:
           (label_replace(count(kube_persistentvolumeclaim_info), "resource_type", "Persistent Volume Claims", "", "")) or
           (label_replace(count(kube_ingress_info), "resource_type", "Ingresses", "", "")) or
           (label_replace(count(kube_cronjob_info), "resource_type", "CronJobs", "", ""))
+    memory_real_percentage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"}) / sum(node_memory_MemTotal_bytes{job="node-exporter"}) * 100
+    memory_request_percentage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(kube_pod_container_resource_requests{resource="memory"}) / sum(machine_memory_bytes{}) * 100
+    memory_limit_percentage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(kube_pod_container_resource_limits{resource="memory"}) / sum(machine_memory_bytes{}) * 100
+    cpu_real_percentage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          avg(sum by (instance, cpu) (rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m]))) * 100
+    cpu_request_percentage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(kube_pod_container_resource_requests{resource="cpu"}) / sum(machine_cpu_cores{}) * 100
+    cpu_limit_percentage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(kube_pod_container_resource_limits{resource="cpu"}) / sum(machine_cpu_cores{}) * 100
     namespaces:
       configs:
         tagSelector: "cluster=$(.var.cluster)"
