@@ -60,21 +60,39 @@ spec:
         showLabels: true
       query: SELECT value as "count", node FROM pods_node_distribution
     - name: Global RAM Usage
-      type: table
+      type: bargauge
       query: |
-        SELECT 'Real' as name, ROUND(value, 1) || '%' as value FROM memory_real_percentage
+        SELECT 'Real' as name, ROUND(value, 1) as value FROM memory_real_percentage
         UNION ALL
-        SELECT 'Requests' as name, ROUND(value, 1) || '%' as value FROM memory_request_percentage
+        SELECT 'Requests' as name, ROUND(value, 1) as value FROM memory_request_percentage
         UNION ALL
-        SELECT 'Limits' as name, ROUND(value, 1) || '%' as value FROM memory_limit_percentage
+        SELECT 'Limits' as name, ROUND(value, 1) as value FROM memory_limit_percentage
+      bargauge:
+        unit: " %"
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 75
+            color: '#F4B23C'
+          - percent: 90
+            color: '#F25C54'  
     - name: Global CPU Usage
-      type: table
+      type: bargauge
       query: |
-        SELECT 'Real' as name, ROUND(value, 1) || '%' as value FROM cpu_real_percentage
+        SELECT 'Real' as name, ROUND(value, 1) as value FROM cpu_real_percentage
         UNION ALL
-        SELECT 'Requests' as name, ROUND(value, 1) || '%' as value FROM cpu_request_percentage
+        SELECT 'Requests' as name, ROUND(value, 1) as value FROM cpu_request_percentage
         UNION ALL
-        SELECT 'Limits' as name, ROUND(value, 1) || '%' as value FROM cpu_limit_percentage
+        SELECT 'Limits' as name, ROUND(value, 1) as value FROM cpu_limit_percentage
+      bargauge:
+        unit: " %"
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 75
+            color: '#F4B23C'
+          - percent: 90
+            color: '#F25C54'  
   columns:
     - name: name
       type: config_item
@@ -97,7 +115,7 @@ spec:
         max: row.cpu_limit
         thresholds:
           - percent: 0
-            color: '#8BC34A'
+            color: '#28C19B'
           - percent: 70
             color: '#F4B23C'
           - percent: 85
@@ -111,7 +129,7 @@ spec:
         max: row.memory_limit
         thresholds:
           - percent: 0
-            color: '#8BC34A'
+            color: '#28C19B'
           - percent: 75
             color: '#F4B23C'
           - percent: 90
@@ -150,6 +168,7 @@ spec:
     cpu_usage_by_namespace:
       columns:
         namespace: string
+        value : decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -162,6 +181,7 @@ spec:
     memory_usage_by_namespace:
       columns:
         namespace: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -174,6 +194,7 @@ spec:
     cpu_limit_by_namespace:
       columns:
         namespace: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -186,6 +207,7 @@ spec:
     memory_limit_by_namespace:
       columns:
         namespace: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -205,6 +227,7 @@ spec:
     pods_node_distribution:
       columns:
         node: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -232,6 +255,7 @@ spec:
     resource_count_by_type:
       columns:
         resource_type: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
