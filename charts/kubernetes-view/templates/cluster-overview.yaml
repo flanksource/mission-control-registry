@@ -6,6 +6,8 @@ metadata:
   labels:
     {{- include "kubernetes-view.labels" . | nindent 4 }}
 spec:
+  cache:
+    refreshTimeout: 30s
   templating:
     - key: cluster
       label: Cluster
@@ -59,43 +61,105 @@ spec:
       piechart:
         showLabels: true
       query: SELECT value as "count", node FROM pods_node_distribution
-    - name: Global RAM Usage
+    - name: Memory Real Usage
       type: bargauge
       query: |
         SELECT 'Real' as name, ROUND(value, 1) as value FROM memory_real
-        UNION ALL
-        SELECT 'Requests' as name, ROUND(value, 1) as value FROM memory_request
-        UNION ALL
-        SELECT 'Limits' as name, ROUND(value, 1) as value FROM memory_limit
       bargauge:
+        group: "Memory"
         max: ".dataset.total_machine_memory[0].value"
         unit: " GB"
         thresholds:
           - percent: 0
-            color: '#F25C54'
-          - percent: 40
+            color: '#28C19B'
+          - percent: 70
             color: '#F4B23C'
-          - percent: 90
+          - percent: 80
+            color: '#F25C54'
+    - name: Memory Requests
+      type: bargauge
+      query: |
+        SELECT 'Requests' as name, ROUND(value, 1) as value FROM memory_request
+      bargauge:
+        group: "Memory"
+        max: ".dataset.total_machine_memory[0].value"
+        unit: " GB"
+        format: percentage
+        thresholds:
+          - percent: 0
+            color: '#F25C54'
+          - percent: 30
+            color: '#F4B23C'
+          - percent: 70
+            color: '#28C19B'
+          - percent: 100
+            color: '#F25C54'
+    - name: Memory Limits
+      type: bargauge
+      query: |
+        SELECT 'Limits' as name, ROUND(value, 1) as value FROM memory_limit
+      bargauge:
+        group: "Memory"
+        max: ".dataset.total_machine_memory[0].value"
+        unit: " GB"
+        format: multiplier
+        thresholds:
+          - percent: 0
+            color: '#F25C54'
+          - percent: 30
+            color: '#F4B23C'
+          - percent: 100
             color: '#28C19B'
           - percent: 400
             color: '#F25C54'  
-    - name: Global CPU Usage
+    - name: CPU Real Usage
       type: bargauge
       query: |
         SELECT 'Real' as name, ROUND(value, 1) as value FROM cpu_real
-        UNION ALL
-        SELECT 'Requests' as name, ROUND(value, 1) as value FROM cpu_request
-        UNION ALL
-        SELECT 'Limits' as name, ROUND(value, 1) as value FROM cpu_limit
       bargauge:
+        group: "CPU"
         max: ".dataset.total_cpu[0].value"
         unit: " cores"
         thresholds:
           - percent: 0
-            color: '#F25C54'
-          - percent: 40
+            color: '#28C19B'
+          - percent: 70
             color: '#F4B23C'
-          - percent: 90
+          - percent: 80
+            color: '#F25C54'
+    - name: CPU Requests
+      type: bargauge
+      query: |
+        SELECT 'Requests' as name, ROUND(value, 1) as value FROM cpu_request
+      bargauge:
+        group: "CPU"
+        max: ".dataset.total_cpu[0].value"
+        unit: " cores"
+        format: percentage
+        thresholds:
+          - percent: 0
+            color: '#F25C54'
+          - percent: 30
+            color: '#F4B23C'
+          - percent: 70
+            color: '#28C19B'
+          - percent: 100
+            color: '#F25C54'
+    - name: CPU Limits
+      type: bargauge
+      query: |
+        SELECT 'Limits' as name, ROUND(value, 1) as value FROM cpu_limit
+      bargauge:
+        group: "CPU"
+        max: ".dataset.total_cpu[0].value"
+        unit: " cores"
+        format: multiplier
+        thresholds:
+          - percent: 0
+            color: '#F25C54'
+          - percent: 30
+            color: '#F4B23C'
+          - percent: 100
             color: '#28C19B'
           - percent: 400
             color: '#F25C54'  
