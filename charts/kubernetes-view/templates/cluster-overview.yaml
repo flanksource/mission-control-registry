@@ -115,12 +115,14 @@ spec:
           - percent: 75
             color: '#F4B23C'
           - percent: 90
-            color: '#F25C54'  
-    - name: created_at
-      type: datetime
-    - name: total_pods
+            color: '#F25C54'
+    - name: pods
       type: number
       cardPosition: body
+      description: Total number of running pods
+    - name: created_at
+      type: datetime
+      cardPosition: footer
   merge: |
     SELECT
       namespaces.id,
@@ -130,7 +132,8 @@ spec:
       cpu_usage_by_namespace.value AS cpu_usage,
       memory_usage_by_namespace.value AS memory_usage,
       cpu_limit_by_namespace.value AS cpu_limit,
-      memory_limit_by_namespace.value AS memory_limit
+      memory_limit_by_namespace.value AS memory_limit,
+      pod_count_by_namespace.value AS pods
     FROM namespaces
     LEFT JOIN cpu_usage_by_namespace
       ON namespaces.name = cpu_usage_by_namespace.namespace
@@ -140,6 +143,8 @@ spec:
       ON namespaces.name = cpu_limit_by_namespace.namespace
     LEFT JOIN memory_limit_by_namespace
       ON namespaces.name = memory_limit_by_namespace.namespace
+    LEFT JOIN pod_count_by_namespace
+      ON namespaces.name = pod_count_by_namespace.namespace
     ORDER BY name
   queries:
     cpu_usage_by_namespace:
@@ -190,6 +195,13 @@ spec:
             ) or
             kube_pod_container_resource_requests{resource="memory", container!="POD", container!=""}
           )
+    pod_count_by_namespace:
+      columns:
+        namespace: string
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          count(kube_pod_status_phase{phase="Running"}) by (namespace)
     pods_node_distribution:
       columns:
         node: string

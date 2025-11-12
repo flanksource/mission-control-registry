@@ -16,8 +16,6 @@ spec:
     - name: namespace
       type: string
       cardPosition: subtitle
-        # position: title | subtitle | footer | property
-        # style: badge | or tailswind class
       primaryKey: true
       filter:
         type: multiselect
