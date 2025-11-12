@@ -15,6 +15,9 @@ spec:
   columns:
     - name: namespace
       type: string
+      cardPosition: subtitle
+        # position: title | subtitle | footer | property
+        # style: badge | or tailswind class
       primaryKey: true
       filter:
         type: multiselect
@@ -26,13 +29,15 @@ spec:
           name: >
             'namespace'
     - name: name
-      type: string
+      type: config_item
       primaryKey: true
+      cardPosition: title
       url:
         config: row.id
     - name: status
       type: status
       icon: row.health
+      cardPosition: deck
       filter:
         type: multiselect
     - name: health
@@ -43,6 +48,7 @@ spec:
     - name: memory
       type: gauge
       unit: bytes
+      cardPosition: deck
       description: Memory usage
       gauge:
         max: row.memory_limit
@@ -56,6 +62,7 @@ spec:
     - name: cpu
       type: gauge
       unit: millicore
+      cardPosition: deck
       gauge:
         max: row.cpu_limit
         thresholds:
@@ -65,8 +72,20 @@ spec:
             color: '#F4B23C'
           - percent: 85
             color: '#F25C54'
-    - name: updated_at
+    - name: created
       type: datetime
+      cardPosition: footer
+    - name: updated
+      type: datetime
+      cardPosition: footer
+    - name: image
+      type: string
+      hidden: true
+      cardPosition: body
+    - name: node
+      type: string
+      hidden: true
+      cardPosition: body
   merge: |
     SELECT
       pod.id,
@@ -75,6 +94,8 @@ spec:
       json_extract(pod.tags, '$.cluster') AS cluster,
       pod.status,
       pod.health,
+      pod.config,
+      pod.created_at,
       pod.updated_at,
       memory.value as memory,
       to_bytes(COALESCE(
@@ -131,4 +152,9 @@ spec:
           - Kubernetes::Pod
   mapping:
     created: row.created_at
+    updated: row.updated_at
+    image: >
+      has(row.config) ? row.config.JSON().spec.containers[0].image : "N/A"
+    node: >
+      has(row.config) ? (has(row.config.JSON().spec.nodeName) ? row.config.JSON().spec.nodeName : "N/A"): "N/A"
 {{- end }}

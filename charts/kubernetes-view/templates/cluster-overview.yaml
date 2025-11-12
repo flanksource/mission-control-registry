@@ -77,8 +77,9 @@ spec:
         SELECT 'Limits' as name, ROUND(value, 1) || '%' as value FROM cpu_limit_percentage
   columns:
     - name: name
-      type: string
+      type: config_item
       icon: "'namespace'"
+      cardPosition: title
       primaryKey: true
       url:
         view:
@@ -91,6 +92,7 @@ spec:
       type: gauge
       unit: millicore
       description: CPU usage
+      cardPosition: deck
       gauge:
         max: row.cpu_limit
         thresholds:
@@ -103,6 +105,7 @@ spec:
     - name: memory_usage
       type: gauge
       unit: bytes
+      cardPosition: deck
       description: Memory usage
       gauge:
         max: row.memory_limit
@@ -115,6 +118,9 @@ spec:
             color: '#F25C54'  
     - name: created_at
       type: datetime
+    - name: total_pods
+      type: number
+      cardPosition: body
   merge: |
     SELECT
       namespaces.id,
