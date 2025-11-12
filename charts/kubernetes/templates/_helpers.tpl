@@ -70,7 +70,7 @@ Kubernetes Connection
 {{- define "kubernetes.connection" }}
 {{- if .Values.kubeconfig -}}
 kubeconfig:
-  {{ .Values.kubeconfig | toYaml }}
+  {{- .Values.kubeconfig | toYaml | nindent  2}}
 {{- else -}}
 {{ .Values.kubernetesConnection | toYaml }}
 {{- end }}
