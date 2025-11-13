@@ -6,6 +6,8 @@ metadata:
   labels:
     {{- include "kubernetes-view.labels" . | nindent 4 }}
 spec:
+  cache:
+    refreshTimeout: 30s
   templating:
     - key: cluster
       label: Cluster
@@ -59,22 +61,108 @@ spec:
       piechart:
         showLabels: true
       query: SELECT value as "count", node FROM pods_node_distribution
-    - name: Global RAM Usage
-      type: table
+    - name: Memory Real Usage
+      type: bargauge
       query: |
-        SELECT 'Real' as name, ROUND(value, 1) || '%' as value FROM memory_real_percentage
-        UNION ALL
-        SELECT 'Requests' as name, ROUND(value, 1) || '%' as value FROM memory_request_percentage
-        UNION ALL
-        SELECT 'Limits' as name, ROUND(value, 1) || '%' as value FROM memory_limit_percentage
-    - name: Global CPU Usage
-      type: table
+        SELECT 'Real' as name, ROUND(value, 1) as value FROM memory_real
+      bargauge:
+        group: "Memory"
+        max: ".dataset.total_machine_memory[0].value"
+        unit: " GB"
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 80
+            color: '#F25C54'
+    - name: Memory Requests
+      type: bargauge
       query: |
-        SELECT 'Real' as name, ROUND(value, 1) || '%' as value FROM cpu_real_percentage
-        UNION ALL
-        SELECT 'Requests' as name, ROUND(value, 1) || '%' as value FROM cpu_request_percentage
-        UNION ALL
-        SELECT 'Limits' as name, ROUND(value, 1) || '%' as value FROM cpu_limit_percentage
+        SELECT 'Requests' as name, ROUND(value, 1) as value FROM memory_request
+      bargauge:
+        group: "Memory"
+        max: ".dataset.total_machine_memory[0].value"
+        unit: " GB"
+        format: percentage
+        thresholds:
+          - percent: 0
+            color: '#F25C54'
+          - percent: 30
+            color: '#F4B23C'
+          - percent: 70
+            color: '#28C19B'
+          - percent: 100
+            color: '#F25C54'
+    - name: Memory Limits
+      type: bargauge
+      query: |
+        SELECT 'Limits' as name, ROUND(value, 1) as value FROM memory_limit
+      bargauge:
+        group: "Memory"
+        max: ".dataset.total_machine_memory[0].value"
+        unit: " GB"
+        format: multiplier
+        thresholds:
+          - percent: 0
+            color: '#F25C54'
+          - percent: 30
+            color: '#F4B23C'
+          - percent: 100
+            color: '#28C19B'
+          - percent: 400
+            color: '#F25C54'  
+    - name: CPU Real Usage
+      type: bargauge
+      query: |
+        SELECT 'Real' as name, ROUND(value, 1) as value FROM cpu_real
+      bargauge:
+        group: "CPU"
+        max: ".dataset.total_cpu[0].value"
+        unit: " cores"
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 80
+            color: '#F25C54'
+    - name: CPU Requests
+      type: bargauge
+      query: |
+        SELECT 'Requests' as name, ROUND(value, 1) as value FROM cpu_request
+      bargauge:
+        group: "CPU"
+        max: ".dataset.total_cpu[0].value"
+        unit: " cores"
+        format: percentage
+        thresholds:
+          - percent: 0
+            color: '#F25C54'
+          - percent: 30
+            color: '#F4B23C'
+          - percent: 70
+            color: '#28C19B'
+          - percent: 100
+            color: '#F25C54'
+    - name: CPU Limits
+      type: bargauge
+      query: |
+        SELECT 'Limits' as name, ROUND(value, 1) as value FROM cpu_limit
+      bargauge:
+        group: "CPU"
+        max: ".dataset.total_cpu[0].value"
+        unit: " cores"
+        format: multiplier
+        thresholds:
+          - percent: 0
+            color: '#F25C54'
+          - percent: 30
+            color: '#F4B23C'
+          - percent: 100
+            color: '#28C19B'
+          - percent: 400
+            color: '#F25C54'  
   columns:
     - name: name
       type: config_item
@@ -97,7 +185,7 @@ spec:
         max: row.cpu_limit
         thresholds:
           - percent: 0
-            color: '#8BC34A'
+            color: '#28C19B'
           - percent: 70
             color: '#F4B23C'
           - percent: 85
@@ -111,7 +199,7 @@ spec:
         max: row.memory_limit
         thresholds:
           - percent: 0
-            color: '#8BC34A'
+            color: '#28C19B'
           - percent: 75
             color: '#F4B23C'
           - percent: 90
@@ -150,6 +238,7 @@ spec:
     cpu_usage_by_namespace:
       columns:
         namespace: string
+        value : decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -162,6 +251,7 @@ spec:
     memory_usage_by_namespace:
       columns:
         namespace: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -174,6 +264,7 @@ spec:
     cpu_limit_by_namespace:
       columns:
         namespace: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -186,6 +277,7 @@ spec:
     memory_limit_by_namespace:
       columns:
         namespace: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -205,6 +297,7 @@ spec:
     pods_node_distribution:
       columns:
         node: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -232,6 +325,7 @@ spec:
     resource_count_by_type:
       columns:
         resource_type: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
@@ -245,36 +339,41 @@ spec:
           (label_replace(count(kube_persistentvolumeclaim_info), "resource_type", "Persistent Volume Claims", "", "")) or
           (label_replace(count(kube_ingress_info), "resource_type", "Ingresses", "", "")) or
           (label_replace(count(kube_cronjob_info), "resource_type", "CronJobs", "", ""))
-    memory_real_percentage:
+    cpu_real:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"}) / sum(node_memory_MemTotal_bytes{job="node-exporter"}) * 100
-    memory_request_percentage:
+          sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m]))
+    cpu_request:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_pod_container_resource_requests{resource="memory"}) / sum(machine_memory_bytes{}) * 100
-    memory_limit_percentage:
+          sum(kube_pod_container_resource_requests{resource="cpu"})
+    cpu_limit:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_pod_container_resource_limits{resource="memory"}) / sum(machine_memory_bytes{}) * 100
-    cpu_real_percentage:
+          sum(kube_pod_container_resource_limits{resource="cpu"})
+    memory_real:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          avg(sum by (instance, cpu) (rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m]))) * 100
-    cpu_request_percentage:
+          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"}) / 1024 / 1024 / 1024
+    memory_request:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_pod_container_resource_requests{resource="cpu"}) / sum(machine_cpu_cores{}) * 100
-    cpu_limit_percentage:
+          sum(kube_pod_container_resource_requests{resource="memory"}) / 1024 / 1024 / 1024
+    memory_limit:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_pod_container_resource_limits{resource="cpu"}) / sum(machine_cpu_cores{}) * 100
+          sum(kube_pod_container_resource_limits{resource="memory"}) / 1024 / 1024 / 1024
+    total_machine_memory:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(machine_memory_bytes{}) / 1024 / 1024 / 1024
     namespaces:
       configs:
         tagSelector: "cluster=$(.var.cluster)"
