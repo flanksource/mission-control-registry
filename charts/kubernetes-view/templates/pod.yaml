@@ -13,6 +13,9 @@ spec:
       - configTab:
           types:
             - Kubernetes::Pod
+        template:
+          cluster: '$(.config.tags.cluster)'
+          pod_name: '$(.config.name)'
   templating:
     - key: cluster
       label: Cluster
@@ -27,15 +30,14 @@ spec:
           types:
             - Kubernetes::Pod
   panels:
-    - name: Pod Status
-      type: text
-      query: SELECT status AS value FROM pod LIMIT 1
-    - name: Containers
+    - name: Pod Info
       type: table
-      query: SELECT json_extract(value, '$.name') AS name, json_extract(value, '$.image') AS image FROM pod, json_each(json_extract(pod.config, '$.spec.containers')) WHERE json_extract(value, '$.image') IS NOT NULL
-    - name: Node
-      type: text
-      query: SELECT COALESCE(json_extract(config, '$.spec.nodeName'), 'Not scheduled') AS value FROM pod LIMIT 1
+      query: >
+        SELECT 'Status' AS name, status AS value FROM pod
+        UNION
+        SELECT 'Container(' || json_extract(value, '$.name') || ')' AS name, json_extract(value, '$.image') AS value FROM pod, json_each(json_extract(pod.config, '$.spec.containers')) WHERE json_extract(value, '$.image') IS NOT NULL
+        UNION
+        SELECT 'Node' AS name, COALESCE(json_extract(config, '$.spec.nodeName'), 'Not scheduled') AS value FROM pod
     - name: Volumes Used
       type: table
       query: SELECT json_extract(value, '$.name') AS name FROM pod, json_each(json_extract(pod.config, '$.spec.volumes')) WHERE json_extract(value, '$.name') IS NOT NULL
