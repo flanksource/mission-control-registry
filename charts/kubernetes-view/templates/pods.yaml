@@ -15,7 +15,9 @@ spec:
   columns:
     - name: namespace
       type: string
-      cardPosition: subtitle
+      card:
+        position: subtitle
+      icon: "'namespace'"
       primaryKey: true
       filter:
         type: multiselect
@@ -29,24 +31,29 @@ spec:
     - name: name
       type: config_item
       primaryKey: true
-      cardPosition: title
+      card:
+        position: title
       url:
         config: row.id
     - name: status
       type: status
       icon: row.health
-      cardPosition: deck
+      card:
+        position: subtitle
       filter:
         type: multiselect
     - name: health
       type: health
       hidden: true
+      card:
+        useForAccent: true
       filter:
         type: multiselect
     - name: memory
       type: gauge
       unit: bytes
-      cardPosition: deck
+      card:
+        position: headerRight
       description: Memory usage
       gauge:
         max: row.memory_limit
@@ -60,7 +67,8 @@ spec:
     - name: cpu
       type: gauge
       unit: millicore
-      cardPosition: deck
+      card:
+        position: headerRight
       gauge:
         max: row.cpu_limit
         thresholds:
@@ -72,18 +80,22 @@ spec:
             color: '#F25C54'
     - name: created
       type: datetime
-      cardPosition: footer
+      card:
+        position: body
     - name: updated
       type: datetime
-      cardPosition: footer
+      card:
+        position: body
     - name: image
       type: string
       hidden: true
-      cardPosition: body
+      card:
+        position: body
     - name: node
       type: string
       hidden: true
-      cardPosition: body
+      card:
+        position: body
   merge: |
     SELECT
       pod.id,

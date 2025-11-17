@@ -36,14 +36,16 @@ spec:
   columns:
     - name: name
       type: config_item
-      cardPosition: title
+      card:
+        position: title
       primaryKey: true
       url:
         config: row.id
     - name: status
       type: status
       icon: row.health
-      cardPosition: deck
+      card:
+        position: deck
       filter:
         type: multiselect
     - name: health
@@ -54,7 +56,8 @@ spec:
     - name: memory
       type: gauge
       unit: bytes
-      cardPosition: deck
+      card:
+        position: deck
       description: Memory usage
       gauge:
         max: row.memory_limit
@@ -68,7 +71,8 @@ spec:
     - name: cpu
       type: gauge
       unit: millicore
-      cardPosition: deck
+      card:
+        position: deck
       gauge:
         max: row.cpu_limit
         thresholds:
@@ -80,18 +84,22 @@ spec:
             color: '#F25C54'
     - name: updated
       type: datetime
-      cardPosition: footer
+      card:
+        position: footer
     - name: created
       type: datetime
-      cardPosition: footer
+      card:
+        position: footer
     - name: image
       type: string
       hidden: true
-      cardPosition: body
+      card:
+        position: body
     - name: node
       type: string
       hidden: true
-      cardPosition: body
+      card:
+        position: body
   merge: |
     SELECT
       pod.id,

@@ -167,7 +167,8 @@ spec:
     - name: name
       type: config_item
       icon: "'namespace'"
-      cardPosition: title
+      card:
+        position: title
       primaryKey: true
       url:
         view:
@@ -180,7 +181,8 @@ spec:
       type: gauge
       unit: millicore
       description: CPU usage
-      cardPosition: deck
+      card:
+        position: deck
       gauge:
         max: row.cpu_limit
         thresholds:
@@ -193,7 +195,8 @@ spec:
     - name: memory_usage
       type: gauge
       unit: bytes
-      cardPosition: deck
+      card:
+        position: deck
       description: Memory usage
       gauge:
         max: row.memory_limit
@@ -206,11 +209,13 @@ spec:
             color: '#F25C54'
     - name: pods
       type: number
-      cardPosition: body
+      card:
+        position: body
       description: Total number of running pods
     - name: created_at
       type: datetime
-      cardPosition: footer
+      card:
+        position: footer
   merge: |
     SELECT
       namespaces.id,

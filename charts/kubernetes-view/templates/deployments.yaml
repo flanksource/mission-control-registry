@@ -12,6 +12,8 @@ spec:
     {{- if .Values.views.deployments.sidebar }}
     sidebar: true
     {{- end }}
+    card:
+      default: true
   panels:
     - name: Health
       description: Helm Releases grouped by health
@@ -44,11 +46,15 @@ spec:
     - name: application
       type: string
       description: The application name.
+      card:
+        position: title
       url:
         config: row.id
     - name: namespace
       type: string
       description: The namespace name.
+      card:
+        position: subtitle
       filter:
         type: multiselect
       url:
@@ -56,24 +62,34 @@ spec:
     - name: chart
       type: string
       description: The chart name.
+      card:
+        position: body
     - name: version
       type: string
       description: The version of the deployment.
+      card:
+        position: body
     - name: status
       type: status
       icon: row.health
       description: The status of the deployment.
+      card:
+        position: subtitle
       filter:
         type: multiselect
     - name: health
       type: health
       hidden: true
       description: The health of the deployment.
+      card:
+        useForAccent: true
       filter:
         type: multiselect
     - name: lastUpdated
       type: datetime
       description: The last updated time.
+      card:
+        position: body
   queries:
     helm_releases:
       configs:
