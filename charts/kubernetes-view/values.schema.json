@@ -91,6 +91,23 @@
           "title": "enabled",
           "type": "boolean"
         },
+        "helmReleases": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled"
+            },
+            "sidebar": {
+              "default": true,
+              "required": [],
+              "title": "sidebar"
+            }
+          },
+          "required": [],
+          "title": "helmReleases"
+        },
         "pod": {
           "additionalProperties": false,
           "properties": {

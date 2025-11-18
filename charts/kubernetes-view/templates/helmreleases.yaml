@@ -1,28 +1,55 @@
-{{- if and .Values.views.enabled .Values.views.deployments.enabled }}
+{{- if and .Values.views.enabled .Values.views.helmReleases.enabled }}
 apiVersion: mission-control.flanksource.com/v1
 kind: View
 metadata:
-  name: deployments
+  name: helmreleases
   labels:
     {{- include "kubernetes-view.labels" . | nindent 4 }}
 spec:
   display:
-    title: Deployments
-    icon: kubernetes::deployment
-    {{- if .Values.views.deployments.sidebar }}
+    title: Helm Releases
+    icon: rocket
+    {{- if .Values.views.helmReleases.sidebar }}
     sidebar: true
     {{- end }}
+    card:
+      default: true
+  panels:
+    - name: Health
+      description: Helm Releases grouped by health
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          healthy: "#28C19B"
+          unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM helm_releases GROUP BY health
+    - name: Status
+      description: Helm Releases grouped by status
+      type: piechart
+      piechart:
+        colors:
+          InstallSucceeded: "#28C19B"
+          RollbackSucceeded: "#F4B23C"
+          UpgradeFailed: "#F04E6E"
+          UpgradeSucceeded: "#5965F2"
+          Reconciling: "#666666"
+      query: SELECT COUNT(*) AS count, status FROM helm_releases GROUP BY status
   columns:
     - name: id
       type: string
       description: The id of the deployment.
       primaryKey: true
       hidden: true
-    - name: name
-      type: config_item
-      description: The deployment name.
+    - name: application
+      type: string
+      description: The application name.
       card:
         position: title
+      url:
+        config: row.id
     - name: namespace
       type: string
       description: The namespace name.
@@ -32,14 +59,14 @@ spec:
         type: multiselect
       url:
         config: f("name=$(tags.namespace) tags.cluster=$(tags.cluster) type=Kubernetes::Namespace", row)
-    - name: readyReplicas
+    - name: chart
       type: string
-      description: The number of ready replicas.
+      description: The chart name.
       card:
         position: body
-    - name: replicas
+    - name: version
       type: string
-      description: The desired number of replicas.
+      description: The version of the deployment.
       card:
         position: body
     - name: status
@@ -58,29 +85,22 @@ spec:
         useForAccent: true
       filter:
         type: multiselect
-    - name: createdAt
-      type: datetime
-      description: The creation timestamp.
-      card:
-        position: body
     - name: lastUpdated
       type: datetime
       description: The last updated time.
       card:
         position: body
   queries:
-    deployments:
+    helm_releases:
       configs:
         tagSelector: "cluster={{ .Values.clusterName }}"
         agent: "all"
         types:
-          - Kubernetes::Deployment
+          - Kubernetes::HelmRelease
   mapping:
-    readyReplicas: >
-      has(row.config.status.readyReplicas) ? 
-        row.config.status.readyReplicas : 0
+    application: row.name
     namespace: row.tags.namespace
-    replicas: row.config.spec.replicas
-    createdAt: row.created_at
+    chart: row.config.status.history[0].chartName
+    version: row.config.status.history[0].chartVersion
     lastUpdated: row.updated_at
 {{- end }}

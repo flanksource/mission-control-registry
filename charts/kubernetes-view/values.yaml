@@ -56,6 +56,21 @@ views:
   # @schema
   # required: false
   # @schema
+  helmReleases:
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    enabled: true
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    sidebar: true
+
+  # @schema
+  # required: false
+  # @schema
   deployments:
     # @schema
     # required: false
