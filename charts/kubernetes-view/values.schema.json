@@ -15,7 +15,7 @@
       "title": "fullnameOverride"
     },
     "global": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "prometheus": {
           "additionalProperties": false,
