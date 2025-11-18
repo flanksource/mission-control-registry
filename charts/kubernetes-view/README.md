@@ -15,6 +15,7 @@ A Helm chart for Kubernetes views in Flanksource Mission Control
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | clusterName | string | `""` |  |
+| enabled | bool | `true` |  |
 | global.prometheus.connection | string | `""` |  |
 | labels | object | `{}` |  |
 | views.clusterOverview.enabled | bool | `true` |  |
