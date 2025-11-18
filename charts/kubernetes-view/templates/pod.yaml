@@ -13,7 +13,7 @@ spec:
       - configTab:
           types:
             - Kubernetes::Pod
-        template:
+        variables:
           cluster: '$(.config.tags.cluster)'
           pod_name: '$(.config.name)'
   templating:
