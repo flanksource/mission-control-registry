@@ -18,6 +18,7 @@ labels: {}
 
 # @schema
 # required: false
+# additionalProperties: true
 # @schema
 global:
   # @schema
