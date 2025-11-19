@@ -12,6 +12,13 @@ spec:
     {{- if .Values.views.deployments.sidebar }}
     sidebar: true
     {{- end }}
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          types:
+            - Kubernetes::Cluster
   columns:
     - name: id
       type: string
@@ -71,7 +78,7 @@ spec:
   queries:
     deployments:
       configs:
-        tagSelector: "cluster={{ .Values.clusterName }}"
+        tagSelector: "cluster=$(.var.cluster)"
         agent: "all"
         types:
           - Kubernetes::Deployment

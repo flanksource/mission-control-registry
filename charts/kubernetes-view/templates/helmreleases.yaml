@@ -14,6 +14,13 @@ spec:
     {{- end }}
     card:
       default: true
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          types:
+            - Kubernetes::Cluster
   panels:
     - name: Health
       description: Helm Releases grouped by health
@@ -93,7 +100,7 @@ spec:
   queries:
     helm_releases:
       configs:
-        tagSelector: "cluster={{ .Values.clusterName }}"
+        tagSelector: "cluster=$(.var.cluster)"
         agent: "all"
         types:
           - Kubernetes::HelmRelease

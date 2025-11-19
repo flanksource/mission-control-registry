@@ -2,12 +2,6 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "additionalProperties": false,
   "properties": {
-    "clusterName": {
-      "default": "",
-      "minLength": 1,
-      "title": "clusterName",
-      "type": "string"
-    },
     "enabled": {
       "default": true,
       "description": "Field that can be used as a condition when kubernetes-view is a dependency.\nThis definition is only here as a placeholder such that it is included in\nthe json schema.\nSee https://helm.sh/docs/chart_best_practices/dependencies/#conditions-and-tags\nfor more info.\n+docs:hidden",
@@ -145,8 +139,7 @@
     }
   },
   "required": [
-    "enabled",
-    "clusterName"
+    "enabled"
   ],
   "type": "object"
 }
