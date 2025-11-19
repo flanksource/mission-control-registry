@@ -156,7 +156,6 @@ spec:
           ) * 1000
     pod:
       configs:
-        tagSelector: "cluster={{ .Values.clusterName }}"
         agent: "all"
         types:
           - Kubernetes::Pod
