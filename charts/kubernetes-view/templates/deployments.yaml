@@ -39,7 +39,7 @@ spec:
       filter:
         type: multiselect
       url:
-        config: f("name=$(tags.namespace) tags.cluster=$(tags.cluster) type=Kubernetes::Namespace", row)
+        config: f("name=$(.namespace) tags.cluster=$(.cluster) type=Kubernetes::Namespace", row)
     - name: readyReplicas
       type: string
       description: The number of ready replicas.
@@ -66,6 +66,35 @@ spec:
         useForAccent: true
       filter:
         type: multiselect
+    - name: cpu
+      type: gauge
+      unit: millicore
+      description: CPU usage across all pods.
+      card:
+        position: headerRight
+      gauge:
+        thresholds:
+          - percent: 0
+            color: '#8BC34A'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: memory
+      type: gauge
+      unit: bytes
+      description: Memory usage across all pods.
+      card:
+        position: headerRight
+      gauge:
+        max: row.memory_limit
+        thresholds:
+          - percent: 0
+            color: green
+          - percent: 75
+            color: orange
+          - percent: 90
+            color: red
     - name: createdAt
       type: datetime
       description: The creation timestamp.
@@ -83,12 +112,90 @@ spec:
         agent: "all"
         types:
           - Kubernetes::Deployment
+    cpu_usage_by_deployment:
+      columns:
+        namespace: string
+        deployment: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, deployment) (
+            label_replace(
+              rate(container_cpu_usage_seconds_total{
+                container!="",
+                container!="POD"
+              }[5m]),
+              "deployment", "$1", "pod", "^(.*)-[0-9a-f]+-[0-9a-z]+$"
+            )
+          ) * 1000
+    memory_usage_by_deployment:
+      columns:
+        namespace: string
+        deployment: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, deployment) (
+            label_replace(
+              container_memory_working_set_bytes{
+                container!="",
+                container!="POD"
+              },
+              "deployment", "$1", "pod", "^(.*)-[0-9a-f]+-[0-9a-z]+$"
+            )
+          )
+    memory_limit_by_deployment:
+      columns:
+        namespace: string
+        deployment: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, deployment) (
+            label_replace(
+              kube_pod_container_resource_limits{
+                resource="memory",
+                container!="",
+                container!="POD"
+              },
+              "deployment", "$1", "pod", "^(.*)-[0-9a-f]+-[0-9a-z]+$"
+            )
+          )
+  merge: |
+    SELECT
+      deployments.id,
+      deployments.name,
+      json_extract(deployments.tags, '$.namespace') AS namespace,
+      json_extract(deployments.tags, '$.cluster') AS cluster,
+      deployments.status,
+      deployments.health,
+      deployments.created_at,
+      deployments.updated_at,
+      CAST(CASE
+        WHEN json_extract(deployments.config, '$.status.readyReplicas') IS NULL THEN 0
+        ELSE CAST(json_extract(deployments.config, '$.status.readyReplicas') AS INTEGER)
+      END AS TEXT) AS readyReplicas,
+      CAST(json_extract(deployments.config, '$.spec.replicas') AS TEXT) AS replicas,
+      COALESCE(cpu_usage.value, 0) as cpu,
+      COALESCE(memory_usage.value, 0) as memory,
+      COALESCE(memory_limit.value, 0) as memory_limit
+    FROM deployments
+    LEFT JOIN cpu_usage_by_deployment AS cpu_usage
+      ON deployments.name = cpu_usage.deployment
+      AND json_extract(deployments.tags, '$.namespace') = cpu_usage.namespace
+    LEFT JOIN memory_usage_by_deployment AS memory_usage
+      ON deployments.name = memory_usage.deployment
+      AND json_extract(deployments.tags, '$.namespace') = memory_usage.namespace
+    LEFT JOIN memory_limit_by_deployment AS memory_limit
+      ON deployments.name = memory_limit.deployment
+      AND json_extract(deployments.tags, '$.namespace') = memory_limit.namespace
   mapping:
-    readyReplicas: >
-      has(row.config.status.readyReplicas) ? 
-        row.config.status.readyReplicas : 0
-    namespace: row.tags.namespace
-    replicas: row.config.spec.replicas
     createdAt: row.created_at
     lastUpdated: row.updated_at
+    cpu: row.cpu
+    memory: row.memory
+    memory_limit: row.memory_limit
 {{- end }}
