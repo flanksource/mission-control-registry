@@ -36,6 +36,14 @@ spec:
       description: Pods grouped by status
       type: piechart
       piechart:
+        colors:
+          Completed: "#8BC34A"
+          Running: "#28C19B"
+          Failed: "#F25C54"
+          Pending: "#F4B23C"
+          Terminated: "#666666"
+          TerminatingStalled: "#F04E6E"
+          Unscheduled: "#FFA726"
         showLabels: true
       query: SELECT COUNT(*) AS count, status FROM pod GROUP BY status
     - name: Memory Usage

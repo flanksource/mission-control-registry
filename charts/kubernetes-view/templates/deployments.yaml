@@ -20,6 +20,22 @@ spec:
           agent: "all"
           types:
             - Kubernetes::Cluster
+  panels:
+    - name: Health
+      description: Deployments grouped by health
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          healthy: "#28C19B"
+          unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM deployments GROUP BY health
+    - name: Status
+      description: Deployments grouped by status
+      type: piechart
+      query: SELECT COUNT(*) AS count, status FROM deployments GROUP BY status
   columns:
     - name: id
       type: string
