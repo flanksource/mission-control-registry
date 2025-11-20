@@ -18,7 +18,7 @@ spec:
             - Kubernetes::Cluster
   display:
     title: Cluster
-    icon: overview
+    icon: kubernetes::cluster
     {{- if .Values.views.clusterOverview.sidebar }}
     sidebar: true
     {{- end }}
@@ -167,7 +167,6 @@ spec:
   columns:
     - name: name
       type: config_item
-      icon: "'namespace'"
       card:
         position: title
       primaryKey: true
@@ -183,7 +182,7 @@ spec:
       unit: millicore
       description: CPU usage
       card:
-        position: deck
+        position: headerRight
       gauge:
         max: row.cpu_limit
         thresholds:
@@ -197,7 +196,7 @@ spec:
       type: gauge
       unit: bytes
       card:
-        position: deck
+        position: headerRight
       description: Memory usage
       gauge:
         max: row.memory_limit
