@@ -1,4 +1,3 @@
-clusterName: "test-cluster"
 global:
   prometheus:
     connection: connection://mc/prometheus
