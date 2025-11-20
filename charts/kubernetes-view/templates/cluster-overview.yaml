@@ -13,6 +13,7 @@ spec:
       label: Cluster
       valueFrom:
         config:
+          agent: "all"
           types:
             - Kubernetes::Cluster
   display:

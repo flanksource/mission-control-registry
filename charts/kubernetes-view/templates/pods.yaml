@@ -12,6 +12,14 @@ spec:
     {{- if .Values.views.pods.sidebar }}
     sidebar: true
     {{- end }}
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
   columns:
     - name: namespace
       type: string
@@ -157,6 +165,7 @@ spec:
     pod:
       configs:
         agent: "all"
+        tagSelector: "cluster=$(.var.cluster)"
         types:
           - Kubernetes::Pod
   mapping:

@@ -17,6 +17,7 @@ spec:
       label: Cluster
       valueFrom:
         config:
+          agent: "all"
           types:
             - Kubernetes::Cluster
     - key: namespace
