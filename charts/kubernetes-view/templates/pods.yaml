@@ -20,6 +20,58 @@ spec:
           agent: "all"
           types:
             - Kubernetes::Cluster
+  panels:
+    - name: Health
+      description: Pods grouped by health
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          healthy: "#28C19B"
+          unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM pod GROUP BY health
+    - name: Status
+      description: Pods grouped by status
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT COUNT(*) AS count, status FROM pod GROUP BY status
+    - name: Memory Usage
+      description: Total memory usage across all pods
+      type: gauge
+      query: |
+        SELECT SUM(memory.value) AS value
+        FROM memory
+        LEFT JOIN pod ON memory.pod = pod.name AND memory.namespace = json_extract(pod.tags, '$.namespace')
+      gauge:
+        max: ".dataset.total_memory[0].value"
+        unit: bytes
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: CPU Usage
+      description: Total CPU usage across all pods
+      type: gauge
+      query: |
+        SELECT SUM(cpu.value) AS value
+        FROM cpu
+        LEFT JOIN pod ON cpu.pod = pod.name AND cpu.namespace = json_extract(pod.tags, '$.namespace')
+      gauge:
+        max: ".dataset.total_cpu[0].value"
+        unit: millicore
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
   columns:
     - name: namespace
       type: string
@@ -168,6 +220,16 @@ spec:
         tagSelector: "cluster=$(.var.cluster)"
         types:
           - Kubernetes::Pod
+    total_memory:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(machine_memory_bytes{})
+    total_cpu:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(machine_cpu_cores{}) * 1000
   mapping:
     created: row.created_at
     updated: row.updated_at
