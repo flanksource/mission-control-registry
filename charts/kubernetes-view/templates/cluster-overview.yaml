@@ -35,6 +35,7 @@ spec:
       type: gauge
       query: SELECT value FROM cpu_usage
       gauge:
+        unit: millicore
         max: ".dataset.total_cpu[0].value"
         thresholds:
           - percent: 0
@@ -48,7 +49,7 @@ spec:
       query: SELECT value FROM memory_usage
       gauge:
         max: ".dataset.total_memory[0].value"
-        unit: GB
+        unit: bytes
         thresholds:
           - percent: 0
             color: '#28C19B'
@@ -69,7 +70,7 @@ spec:
       bargauge:
         group: "Memory"
         max: ".dataset.total_machine_memory[0].value"
-        unit: " GB"
+        unit: bytes
         thresholds:
           - percent: 0
             color: '#28C19B'
@@ -84,7 +85,7 @@ spec:
       bargauge:
         group: "Memory"
         max: ".dataset.total_machine_memory[0].value"
-        unit: " GB"
+        unit: bytes
         format: percentage
         thresholds:
           - percent: 0
@@ -102,7 +103,7 @@ spec:
       bargauge:
         group: "Memory"
         max: ".dataset.total_machine_memory[0].value"
-        unit: " GB"
+        unit: bytes
         format: multiplier
         thresholds:
           - percent: 0
@@ -120,7 +121,7 @@ spec:
       bargauge:
         group: "CPU"
         max: ".dataset.total_cpu[0].value"
-        unit: " cores"
+        unit: millicores
         thresholds:
           - percent: 0
             color: '#28C19B'
@@ -135,7 +136,7 @@ spec:
       bargauge:
         group: "CPU"
         max: ".dataset.total_cpu[0].value"
-        unit: " cores"
+        unit: millicores
         format: percentage
         thresholds:
           - percent: 0
@@ -153,7 +154,7 @@ spec:
       bargauge:
         group: "CPU"
         max: ".dataset.total_cpu[0].value"
-        unit: " cores"
+        unit: millicores
         format: multiplier
         thresholds:
           - percent: 0
@@ -311,22 +312,22 @@ spec:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(machine_cpu_cores{})
+          sum(machine_cpu_cores{}) * 1000
     cpu_usage:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m]))
+          sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m])) * 1000
     total_memory:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_node_status_allocatable{resource="memory"}) / 1024 / 1024 / 1024
+          sum(kube_node_status_allocatable{resource="memory"})
     memory_usage:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"}) / 1024 / 1024 / 1024
+          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"})
     resource_count_by_type:
       columns:
         resource_type: string
@@ -348,37 +349,37 @@ spec:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m]))
+          sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m])) * 1000
     cpu_request:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_pod_container_resource_requests{resource="cpu"})
+          sum(kube_pod_container_resource_requests{resource="cpu"}) * 1000
     cpu_limit:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_pod_container_resource_limits{resource="cpu"})
+          sum(kube_pod_container_resource_limits{resource="cpu"}) * 1000
     memory_real:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"}) / 1024 / 1024 / 1024
+          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"})
     memory_request:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_pod_container_resource_requests{resource="memory"}) / 1024 / 1024 / 1024
+          sum(kube_pod_container_resource_requests{resource="memory"})
     memory_limit:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(kube_pod_container_resource_limits{resource="memory"}) / 1024 / 1024 / 1024
+          sum(kube_pod_container_resource_limits{resource="memory"})
     total_machine_memory:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum(machine_memory_bytes{}) / 1024 / 1024 / 1024
+          sum(machine_memory_bytes{})
     namespaces:
       configs:
         tagSelector: "cluster=$(.var.cluster)"
