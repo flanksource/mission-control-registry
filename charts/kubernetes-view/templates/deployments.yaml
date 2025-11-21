@@ -1,4 +1,4 @@
-{{- if and .Values.views.enabled .Values.views.deployments.enabled }}
+{{- if and .Values.views.enabled .Values.views.deployments.enabled .Values.global.prometheus.connection }}
 apiVersion: mission-control.flanksource.com/v1
 kind: View
 metadata:
