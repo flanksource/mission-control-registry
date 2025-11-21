@@ -49,6 +49,23 @@ views:
   # @schema
   # required: false
   # @schema
+  ingress:
+    # @schema
+    # required: false
+    # default: true
+    # type: boolean
+    # @schema
+    enabled: true
+    # @schema
+    # required: false
+    # type: boolean
+    # default: true
+    # @schema
+    sidebar: true
+
+  # @schema
+  # required: false
+  # @schema
   helmReleases:
     # @schema
     # required: false

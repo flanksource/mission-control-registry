@@ -102,6 +102,23 @@
           "required": [],
           "title": "helmReleases"
         },
+        "ingress": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": true,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "ingress"
+        },
         "pod": {
           "additionalProperties": false,
           "properties": {
