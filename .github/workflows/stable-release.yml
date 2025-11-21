@@ -29,7 +29,7 @@ jobs:
     outputs:
       chart_version: ${{ steps.set-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           token: "${{ secrets.FLANKBOT }}"
 
@@ -72,7 +72,7 @@ jobs:
           git push
 
       - name: Clone charts repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           repository: "${{ github.repository_owner }}/charts"
           path: chart-index
@@ -91,28 +91,31 @@ jobs:
           branch: gh-pages
           repository: ./chart-index
 
+  update-mission-control-dependency:
+    runs-on: ubuntu-latest
+    needs: release
+    if: inputs.chart == 'mission-control'
+    steps:
       - name: Clone mission-control-chart repo
-        if: inputs.chart == 'mission-control'
-        uses: actions/checkout@v3
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           repository: "${{ github.repository_owner }}/mission-control-chart"
           path: mission-control-chart
           token: "${{ secrets.FLANKBOT }}"
 
       - name: Update mission-control-agent dependency
-        if: inputs.chart == 'mission-control'
         run: |
           # mission-control chart needs to be updated as a dependency for mission-control-agent
-          yq e '.dependencies[] |= select(.name == "mission-control-watchtower").version = env(NEW_CHART_VERSION)' -i ./mission-control-chart/agent-chart/Chart.yaml
-
-          # We sleep for 120 seconds to allow charts repo to publish the mission-control-watchtower helm chart
+          # Sleep to allow charts repo to publish the mission-control-watchtower helm chart
           sleep 120
+
+          CHART_VERSION="${{ needs.release.outputs.chart_version }}"
+          yq -i e '.dependencies[] |= select(.name == "mission-control-watchtower").version = "'"$CHART_VERSION"'"' mission-control-chart/agent-chart/Chart.yaml
 
       - name: Push changes to chart repo
         uses: stefanzweifel/git-auto-commit-action@v4
-        if: inputs.chart == 'mission-control'
         with:
-          commit_message: "chore: bump mission-control-watchtower to ${{ env.NEW_CHART_VERSION }}"
+          commit_message: "chore: bump mission-control-watchtower to ${{ needs.release.outputs.chart_version }}"
           branch: main
           repository: ./mission-control-chart
 
@@ -122,7 +125,7 @@ jobs:
     if: inputs.chart == 'kubernetes-view'
     steps:
       - name: Clone mission-control-chart repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           repository: "${{ github.repository_owner }}/mission-control-chart"
           token: "${{ secrets.FLANKBOT }}"
