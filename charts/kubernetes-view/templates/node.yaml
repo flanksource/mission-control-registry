@@ -183,6 +183,19 @@ spec:
       unit: bytes
       hidden: true
       description: Allocatable memory
+    - name: zone
+      type: string
+      card:
+        position: body
+      description: Availability zone
+      filter:
+        type: multiselect
+    - name: uptime
+      type: duration
+      description: Node uptime
+    - name: load
+      type: number
+      description: 5-minute CPU load average
     - name: created_at
       type: datetime
       card:
@@ -201,7 +214,10 @@ spec:
       COALESCE(MAX(pods_count_by_node.value), 0) AS pods,
       COALESCE(MAX(allocatable_cpu_by_node.value), 0) AS allocatable_cpu,
       COALESCE(MAX(allocatable_memory_by_node.value), 0) AS allocatable_memory,
-      COALESCE(MIN(node_roles.role), 'worker') AS role
+      CASE WHEN json_extract(nodes.labels, '$."node-role.kubernetes.io/control-plane"') IS NOT NULL THEN 'control-plane' ELSE 'worker' END AS role,
+      json_extract(nodes.labels, '$."topology.kubernetes.io/zone"') AS zone,
+      COALESCE(MAX(node_uptime.value), 0) AS uptime,
+      COALESCE(MAX(node_load.value), 0) AS load
     FROM nodes
     LEFT JOIN cpu_usage_by_node ON nodes.name = cpu_usage_by_node.node
     LEFT JOIN memory_usage_by_node ON nodes.name = memory_usage_by_node.node
@@ -209,7 +225,8 @@ spec:
     LEFT JOIN pods_count_by_node ON nodes.name = pods_count_by_node.node
     LEFT JOIN allocatable_cpu_by_node ON nodes.name = allocatable_cpu_by_node.node
     LEFT JOIN allocatable_memory_by_node ON nodes.name = allocatable_memory_by_node.node
-    LEFT JOIN node_roles ON nodes.name = node_roles.node
+    LEFT JOIN node_uptime ON nodes.name = node_uptime.node
+    LEFT JOIN node_load ON nodes.name = node_load.node
     GROUP BY nodes.name, json_extract(nodes.tags, '$.cluster')
     ORDER BY name
   queries:
@@ -287,14 +304,30 @@ spec:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           sum by (node) (kube_node_status_allocatable{resource="memory"})
-    node_roles:
+    node_uptime:
       columns:
         node: string
-        role: string
+        value: decimal
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
-          sum by (node, role) (kube_node_role)
+          sum by (node) (
+            (node_time_seconds{job="node-exporter"} - node_boot_time_seconds{job="node-exporter"})
+            * on(instance) group_left(node)
+            label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+          ) * 1e9
+    node_load:
+      columns:
+        node: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (node) (
+            node_load5{job="node-exporter"}
+            * on(instance) group_left(node)
+            label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+          )
     total_cpu:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
