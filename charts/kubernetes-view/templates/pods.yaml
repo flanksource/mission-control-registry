@@ -162,6 +162,8 @@ spec:
     - name: node
       type: string
       hidden: true
+      filter:
+        type: multiselect
       card:
         position: body
   merge: |
