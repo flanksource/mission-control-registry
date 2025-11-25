@@ -167,12 +167,6 @@ spec:
       card:
         position: body
       description: Running pods count
-      url:
-        view:
-          filter:
-            viewvar__cluster: row.cluster
-          name: >
-            'pods'
     - name: allocatable_cpu
       type: number
       unit: millicore
