@@ -1,0 +1,328 @@
+{{- if and .Values.views.enabled .Values.views.nodes.enabled .Values.global.prometheus.connection }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: nodes
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  cache:
+    refreshTimeout: 30s
+  display:
+    title: Nodes
+    icon: kubernetes::node
+    {{- if .Values.views.nodes.sidebar }}
+    sidebar: true
+    {{- end }}
+    plugins:
+      - configTab:
+          types:
+            - Kubernetes::Node
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+  panels:
+    - name: Health
+      description: Nodes grouped by health
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          healthy: "#28C19B"
+          unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM nodes GROUP BY health
+    - name: CPU Usage
+      type: gauge
+      query: SELECT value FROM cpu_usage
+      gauge:
+        unit: millicore
+        max: ".dataset.total_cpu[0].value"
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: Memory Usage
+      type: gauge
+      query: SELECT value FROM memory_usage
+      gauge:
+        max: ".dataset.total_memory[0].value"
+        unit: bytes
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: Disk Usage
+      type: gauge
+      query: SELECT value FROM disk_usage
+      gauge:
+        max: ".dataset.total_disk[0].value"
+        unit: bytes
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: Pods Node Distribution
+      description: Distribution of pods across nodes
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT value as "count", node FROM pods_count_by_node
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: config_item
+      card:
+        position: title
+      url:
+        config: row.id
+    - name: cluster
+      type: string
+      icon: "'kubernetes::cluster'"
+    - name: role
+      type: string
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: status
+      type: status
+      icon: row.health
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: health
+      type: health
+      hidden: true
+      card:
+        useForAccent: true
+      filter:
+        type: multiselect
+    - name: cpu
+      type: gauge
+      unit: millicore
+      card:
+        position: headerRight
+      description: CPU usage
+      gauge:
+        max: row.allocatable_cpu
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: memory
+      type: gauge
+      unit: bytes
+      card:
+        position: headerRight
+      description: Memory usage
+      gauge:
+        max: row.allocatable_memory
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: disk
+      type: gauge
+      unit: percent
+      card:
+        position: headerRight
+      description: Disk usage percentage
+      gauge:
+        max: "100"
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: pods
+      type: number
+      card:
+        position: body
+      description: Running pods count
+      url:
+        view:
+          filter:
+            viewvar__cluster: row.cluster
+          name: >
+            'pods'
+    - name: allocatable_cpu
+      type: number
+      unit: millicore
+      hidden: true
+      description: Allocatable CPU
+    - name: allocatable_memory
+      type: number
+      unit: bytes
+      hidden: true
+      description: Allocatable memory
+    - name: created_at
+      type: datetime
+      card:
+        position: footer
+  merge: |
+    SELECT
+      MIN(nodes.id) AS id,
+      nodes.name,
+      json_extract(nodes.tags, '$.cluster') AS cluster,
+      MIN(nodes.status) AS status,
+      MIN(nodes.health) AS health,
+      MIN(nodes.created_at) AS created_at,
+      COALESCE(MAX(cpu_usage_by_node.value), 0) AS cpu,
+      COALESCE(MAX(memory_usage_by_node.value), 0) AS memory,
+      COALESCE(MAX(disk_usage_by_node.value), 0) AS disk,
+      COALESCE(MAX(pods_count_by_node.value), 0) AS pods,
+      COALESCE(MAX(allocatable_cpu_by_node.value), 0) AS allocatable_cpu,
+      COALESCE(MAX(allocatable_memory_by_node.value), 0) AS allocatable_memory,
+      COALESCE(MIN(node_roles.role), 'worker') AS role
+    FROM nodes
+    LEFT JOIN cpu_usage_by_node ON nodes.name = cpu_usage_by_node.node
+    LEFT JOIN memory_usage_by_node ON nodes.name = memory_usage_by_node.node
+    LEFT JOIN disk_usage_by_node ON nodes.name = disk_usage_by_node.node
+    LEFT JOIN pods_count_by_node ON nodes.name = pods_count_by_node.node
+    LEFT JOIN allocatable_cpu_by_node ON nodes.name = allocatable_cpu_by_node.node
+    LEFT JOIN allocatable_memory_by_node ON nodes.name = allocatable_memory_by_node.node
+    LEFT JOIN node_roles ON nodes.name = node_roles.node
+    GROUP BY nodes.name, json_extract(nodes.tags, '$.cluster')
+    ORDER BY name
+  queries:
+    nodes:
+      configs:
+        tagSelector: "cluster=$(.var.cluster)"
+        agent: "all"
+        types:
+          - Kubernetes::Node
+    cpu_usage_by_node:
+      columns:
+        node: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (node) (
+            rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m])
+            * on(instance) group_left(node)
+            label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+          ) * 1000
+    memory_usage_by_node:
+      columns:
+        node: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (node) (
+            (node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"})
+            * on(instance) group_left(node)
+            label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+          )
+    disk_usage_by_node:
+      columns:
+        node: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          (
+            sum by (node) (
+              (node_filesystem_size_bytes{fstype=~"ext4|xfs", job="node-exporter"} - node_filesystem_avail_bytes{fstype=~"ext4|xfs", job="node-exporter"})
+              * on(instance) group_left(node)
+              label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+            )
+            /
+            sum by (node) (
+              node_filesystem_size_bytes{fstype=~"ext4|xfs", job="node-exporter"}
+              * on(instance) group_left(node)
+              label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+            )
+          ) * 100
+    pods_count_by_node:
+      columns:
+        node: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          count(kube_pod_info) by (node)
+    allocatable_cpu_by_node:
+      columns:
+        node: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (node) (kube_node_status_allocatable{resource="cpu"}) * 1000
+    allocatable_memory_by_node:
+      columns:
+        node: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (node) (kube_node_status_allocatable{resource="memory"})
+    node_roles:
+      columns:
+        node: string
+        role: string
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (node, role) (kube_node_role)
+    total_cpu:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(machine_cpu_cores{}) * 1000
+    cpu_usage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m])) * 1000
+    total_memory:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(kube_node_status_allocatable{resource="memory"})
+    memory_usage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"})
+    total_disk:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(node_filesystem_size_bytes{fstype=~"ext4|xfs", job="node-exporter"})
+    disk_usage:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(node_filesystem_size_bytes{fstype=~"ext4|xfs", job="node-exporter"} - node_filesystem_avail_bytes{fstype=~"ext4|xfs", job="node-exporter"})
+{{- end }}
