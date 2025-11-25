@@ -119,6 +119,23 @@
           "required": [],
           "title": "ingress"
         },
+        "nodes": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "required": [],
+              "title": "enabled"
+            },
+            "sidebar": {
+              "default": true,
+              "required": [],
+              "title": "sidebar"
+            }
+          },
+          "required": [],
+          "title": "nodes"
+        },
         "pod": {
           "additionalProperties": false,
           "properties": {

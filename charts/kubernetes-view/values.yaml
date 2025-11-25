@@ -132,3 +132,18 @@ views:
     # default: true
     # @schema
     sidebar: true
+
+  # @schema
+  # required: false
+  # @schema
+  nodes:
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    enabled: true
+    # @schema
+    # required: false
+    # default: true
+    # @schema
+    sidebar: true
