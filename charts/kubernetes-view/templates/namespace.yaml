@@ -136,6 +136,22 @@ spec:
       hidden: true
       card:
         position: body
+  sections:
+    - title: Deployments
+      icon: deployment
+      viewRef:
+        namespace: mc
+        name: deployments
+    - title: Helm Releases
+      icon: helm
+      viewRef:
+        namespace: mc
+        name: helmreleases
+    - title: Ingresses
+      icon: ingress
+      viewRef:
+        namespace: mc
+        name: ingresses
   merge: |
     SELECT
       pod.id,
