@@ -107,7 +107,7 @@ spec:
             container_memory_working_set_bytes{
               pod="$(.var.pod_name)",
               container!="POD", # Skip The pause/infra container
-              image!="" # Skip dead containers
+              container!="" # Skip dead containers
             }
           )
     cpu_usage:
@@ -122,8 +122,8 @@ spec:
             irate(container_cpu_usage_seconds_total{
               pod="$(.var.pod_name)",
               container!="POD",
-              image!=""
-            }[30s])
+              container!=""
+            }[5m])
           ) * 1000
     pod:
       configs:

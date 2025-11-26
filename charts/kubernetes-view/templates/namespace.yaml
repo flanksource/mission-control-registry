@@ -175,7 +175,7 @@ spec:
           sum by (namespace, pod) (
             container_memory_working_set_bytes{
               container!="POD", # Skip The pause/infra container
-              image!="" # Skip dead containers
+              container!="" # Skip dead containers
             }
           )
     cpu: # cpu_per_pod
@@ -189,8 +189,8 @@ spec:
           sum by (namespace, pod) (
             irate(container_cpu_usage_seconds_total{
               container!="POD", # Skip The pause/infra container
-              image!="" # Skip dead containers
-            }[30s])
+              container!="" # Skip dead containers
+            }[5m])
           ) * 1000
     pod: # all pods in the namespace
       configs:
@@ -208,7 +208,7 @@ spec:
             irate(container_cpu_usage_seconds_total{
               namespace=~"$(.var.namespace)",
               container!="POD",
-              image!=""
+              container!=""
             }[5m])
           ) * 1000
     namespace_memory_usage:
@@ -221,7 +221,7 @@ spec:
             container_memory_working_set_bytes{
               namespace=~"$(.var.namespace)",
               container!="POD",
-              image!=""
+              container!=""
             }
           ) or vector(0)
     namespace_memory_limit:
