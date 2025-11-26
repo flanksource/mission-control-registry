@@ -127,6 +127,7 @@ spec:
           ) * 1000
     pod:
       configs:
+        agent: "all"
         tagSelector: "cluster=$(.var.cluster)"
         name: $(.var.pod_name)
         types:

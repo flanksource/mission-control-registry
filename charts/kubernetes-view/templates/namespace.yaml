@@ -33,6 +33,7 @@ spec:
         - cluster
       valueFrom:
         config:
+          agent: "all"
           tagSelector: "cluster=$(.var.cluster)"
           types:
             - Kubernetes::Namespace

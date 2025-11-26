@@ -29,6 +29,7 @@ spec:
       configs:
         tagSelector: "cluster=$(.var.cluster)"
         search: "@order=name"
+        agent: "all"
         types:
           - Kubernetes::Ingress
   columns:
