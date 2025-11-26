@@ -57,7 +57,7 @@ spec:
       type: gauge
       query: SELECT value FROM namespace_memory_usage
       gauge:
-        max: ".dataset.namespace_memory_limit[0].value"
+        max: "size(.dataset.namespace_memory_limit) > 0 ? .dataset.namespace_memory_limit[0].value : 0"
         unit: bytes
         thresholds:
           - percent: 0

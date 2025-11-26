@@ -54,7 +54,7 @@ spec:
         FROM memory
         LEFT JOIN pod ON memory.pod = pod.name AND memory.namespace = json_extract(pod.tags, '$.namespace')
       gauge:
-        max: ".dataset.total_memory[0].value"
+        max: "size(.dataset.total_memory) > 0 ? .dataset.total_memory[0].value : 0"
         unit: bytes
         thresholds:
           - percent: 0
@@ -71,7 +71,7 @@ spec:
         FROM cpu
         LEFT JOIN pod ON cpu.pod = pod.name AND cpu.namespace = json_extract(pod.tags, '$.namespace')
       gauge:
-        max: ".dataset.total_cpu[0].value"
+        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
         unit: millicore
         thresholds:
           - percent: 0

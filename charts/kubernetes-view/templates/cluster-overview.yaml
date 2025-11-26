@@ -36,7 +36,7 @@ spec:
       query: SELECT value FROM cpu_usage
       gauge:
         unit: millicore
-        max: ".dataset.total_cpu[0].value"
+        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
         thresholds:
           - percent: 0
             color: '#28C19B'
@@ -48,7 +48,7 @@ spec:
       type: gauge
       query: SELECT value FROM memory_usage
       gauge:
-        max: ".dataset.total_memory[0].value"
+        max: "size(.dataset.total_memory) > 0 ? .dataset.total_memory[0].value : 0"
         unit: bytes
         thresholds:
           - percent: 0
@@ -69,7 +69,7 @@ spec:
         SELECT 'Real' as name, ROUND(value, 1) as value FROM memory_real
       bargauge:
         group: "Memory"
-        max: ".dataset.total_machine_memory[0].value"
+        max: "size(.dataset.total_machine_memory) > 0 ? .dataset.total_machine_memory[0].value : 0"
         unit: bytes
         thresholds:
           - percent: 0
@@ -84,7 +84,7 @@ spec:
         SELECT 'Requests' as name, ROUND(value, 1) as value FROM memory_request
       bargauge:
         group: "Memory"
-        max: ".dataset.total_machine_memory[0].value"
+        max: "size(.dataset.total_machine_memory) > 0 ? .dataset.total_machine_memory[0].value : 0"
         unit: bytes
         format: percentage
         thresholds:
@@ -102,7 +102,7 @@ spec:
         SELECT 'Limits' as name, ROUND(value, 1) as value FROM memory_limit
       bargauge:
         group: "Memory"
-        max: ".dataset.total_machine_memory[0].value"
+        max: "size(.dataset.total_machine_memory) > 0 ? .dataset.total_machine_memory[0].value : 0"
         unit: bytes
         format: multiplier
         thresholds:
@@ -120,7 +120,7 @@ spec:
         SELECT 'Real' as name, ROUND(value, 1) as value FROM cpu_real
       bargauge:
         group: "CPU"
-        max: ".dataset.total_cpu[0].value"
+        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
         unit: millicores
         thresholds:
           - percent: 0
@@ -135,7 +135,7 @@ spec:
         SELECT 'Requests' as name, ROUND(value, 1) as value FROM cpu_request
       bargauge:
         group: "CPU"
-        max: ".dataset.total_cpu[0].value"
+        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
         unit: millicores
         format: percentage
         thresholds:
@@ -153,7 +153,7 @@ spec:
         SELECT 'Limits' as name, ROUND(value, 1) as value FROM cpu_limit
       bargauge:
         group: "CPU"
-        max: ".dataset.total_cpu[0].value"
+        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
         unit: millicores
         format: multiplier
         thresholds:
