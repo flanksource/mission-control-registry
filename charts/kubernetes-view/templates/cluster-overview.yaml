@@ -251,7 +251,7 @@ spec:
           sum by (namespace) (
             irate(container_cpu_usage_seconds_total{
               container!="POD",
-              image!=""
+              container!=""
             }[5m])
           ) * 1000
     memory_usage_by_namespace:
@@ -264,7 +264,7 @@ spec:
           sum by (namespace) (
             container_memory_working_set_bytes{
               container!="POD",
-              image!=""
+              container!=""
             }
           )
     cpu_limit_by_namespace:
