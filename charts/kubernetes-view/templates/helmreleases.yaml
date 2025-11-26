@@ -108,7 +108,7 @@ spec:
   mapping:
     application: row.name
     namespace: row.tags.namespace
-    chart: row.config.status.history[0].chartName
-    version: row.config.status.history[0].chartVersion
+    chart: row.config.spec.chart.spec.chart
+    version: row.config.status.lastAttemptedRevision
     lastUpdated: row.updated_at
 {{- end }}
