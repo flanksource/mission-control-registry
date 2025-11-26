@@ -43,7 +43,7 @@ spec:
       query: SELECT value FROM cpu_usage
       gauge:
         unit: millicore
-        max: ".dataset.total_cpu[0].value"
+        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
         thresholds:
           - percent: 0
             color: '#28C19B'
@@ -55,7 +55,7 @@ spec:
       type: gauge
       query: SELECT value FROM memory_usage
       gauge:
-        max: ".dataset.total_memory[0].value"
+        max: "size(.dataset.total_memory) > 0 ? .dataset.total_memory[0].value : 0"
         unit: bytes
         thresholds:
           - percent: 0
@@ -68,7 +68,7 @@ spec:
       type: gauge
       query: SELECT value FROM disk_usage
       gauge:
-        max: ".dataset.total_disk[0].value"
+        max: "size(.dataset.total_disk) > 0 ? .dataset.total_disk[0].value : 0"
         unit: bytes
         thresholds:
           - percent: 0
