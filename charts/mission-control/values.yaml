@@ -1,13 +1,54 @@
 # yaml-language-server: $schema=values.schema.json
+# Values files
 nameOverride: ""
 fullnameOverride: ""
+
+# @schema
+# type: object
+# additionalProperties: true
+# required: false
+# @schema
 labels: {}
+
+# @schema
+# type: string
+# required: true
+# @schema
 topologyName: mission-control
+
+# @schema
+# type: string
+# required: true
+# @schema
 connectionName: mission-control-db
+
+# @schema
+# type: boolean
+# required: false
+# @schema
 isAgent: false
+
+# @schema
+# type: boolean
+# required: false
+# @schema
 playbooks: true
+
+# @schema
+# type: object
+# required: false
+# @schema
 pushLocation:
+  # @schema
+  # required: false
+  # type: string
+  # @schema
   url: ""
+
+# @schema
+# type: object
+# required: false
+# @schema
 topology:
   enabled: true
 
@@ -19,6 +60,7 @@ views:
   enabled: true
 
   # @schema
+  # type: object
   # required: false
   # @schema
   unhealthyConfigs:

@@ -24,13 +24,14 @@
       "type": "boolean"
     },
     "labels": {
-      "additionalProperties": false,
+      "additionalProperties": true,
       "required": [],
       "title": "labels",
       "type": "object"
     },
     "nameOverride": {
       "default": "",
+      "description": "",
       "title": "nameOverride",
       "type": "string"
     },
@@ -48,9 +49,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "url"
-      ],
+      "required": [],
       "title": "pushLocation",
       "type": "object"
     },
@@ -63,9 +62,7 @@
           "type": "boolean"
         }
       },
-      "required": [
-        "enabled"
-      ],
+      "required": ["enabled"],
       "title": "topology",
       "type": "object"
     },
@@ -115,25 +112,14 @@
             }
           },
           "required": [],
-          "title": "unhealthyConfigs"
+          "title": "unhealthyConfigs",
+          "type": "object"
         }
       },
-      "required": [
-        "enabled"
-      ],
+      "required": ["enabled"],
       "title": "views"
     }
   },
-  "required": [
-    "nameOverride",
-    "fullnameOverride",
-    "labels",
-    "topologyName",
-    "connectionName",
-    "isAgent",
-    "playbooks",
-    "pushLocation",
-    "topology"
-  ],
+  "required": ["nameOverride", "fullnameOverride", "topologyName", "connectionName"],
   "type": "object"
 }
