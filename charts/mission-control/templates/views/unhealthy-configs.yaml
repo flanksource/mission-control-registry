@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/view.schema.json
-{{- if and .Values.views.enabled .Values.views.unhealthyConfigs}}
+{{- if and .Values.views.enabled .Values.views.unhealthyConfigs.enabled }}
 apiVersion: mission-control.flanksource.com/v1
 kind: View
 metadata:
@@ -10,7 +10,9 @@ spec:
   display:
     title: Configs
     icon: warning
+    {{- if .Values.views.unhealthyConfigs.sidebar }}
     sidebar: true
+    {{- end }}
   panels:
     - name: By Health
       description: Configs grouped by health status

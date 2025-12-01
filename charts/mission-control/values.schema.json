@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "connectionName": {
+      "default": "mission-control-db",
+      "title": "connectionName",
+      "type": "string"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "title": "fullnameOverride",
+      "type": "string"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "isAgent": {
+      "default": false,
+      "title": "isAgent",
+      "type": "boolean"
+    },
+    "labels": {
+      "additionalProperties": false,
+      "required": [],
+      "title": "labels",
+      "type": "object"
+    },
+    "nameOverride": {
+      "default": "",
+      "title": "nameOverride",
+      "type": "string"
+    },
+    "playbooks": {
+      "default": true,
+      "title": "playbooks",
+      "type": "boolean"
+    },
+    "pushLocation": {
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "default": "",
+          "title": "url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "title": "pushLocation",
+      "type": "object"
+    },
+    "topology": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "topology",
+      "type": "object"
+    },
+    "topologyName": {
+      "default": "mission-control",
+      "title": "topologyName",
+      "type": "string"
+    },
+    "views": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "If this is set to false, no views will be created",
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "pods": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": false,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": false,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "pods"
+        },
+        "unhealthyConfigs": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": true,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "unhealthyConfigs"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "views"
+    }
+  },
+  "required": [
+    "nameOverride",
+    "fullnameOverride",
+    "labels",
+    "topologyName",
+    "connectionName",
+    "isAgent",
+    "playbooks",
+    "pushLocation",
+    "topology"
+  ],
+  "type": "object"
+}

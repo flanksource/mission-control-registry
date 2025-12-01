@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=values.schema.json
 nameOverride: ""
 fullnameOverride: ""
 labels: {}
@@ -6,13 +7,50 @@ connectionName: mission-control-db
 isAgent: false
 playbooks: true
 pushLocation:
-  url: ''
+  url: ""
 topology:
   enabled: true
+
+# @schema
+# required: false
+# @schema
 views:
+  # If this is set to false, no views will be created
   enabled: true
-  unhealthyConfigs: true
-  pods: true
+
+  # @schema
+  # required: false
+  # @schema
+  unhealthyConfigs:
+    # @schema
+    # required: false
+    # default: true
+    # type: boolean
+    # @schema
+    enabled: true
+    # @schema
+    # required: false
+    # type: boolean
+    # default: true
+    # @schema
+    sidebar: true
+
+  # @schema
+  # required: false
+  # @schema
+  pods:
+    # @schema
+    # required: false
+    # default: false
+    # type: boolean
+    # @schema
+    enabled: false
+    # @schema
+    # required: false
+    # type: boolean
+    # default: false
+    # @schema
+    sidebar: false
 # username:
 #   valueFrom:
 #     secretKeyRef:
