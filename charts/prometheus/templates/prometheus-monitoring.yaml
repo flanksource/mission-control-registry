@@ -1,0 +1,125 @@
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: prometheus
+  namespace: mc
+spec:
+  display:
+    title: Prometheus
+    icon: prometheus
+    sidebar: true
+  cache:
+    maxAge: 5m
+    minAge: 10s
+  queries:
+    metrics:
+      columns:
+        value: decimal
+      prometheus:
+        connection: connection://mc/prometheus
+        query: |
+          count({__name__=~".+"})
+    disk:
+      columns:
+        instance: string
+        value: bytes
+      prometheus:
+        connection: connection://mc/prometheus
+        query: |
+          sum by (instance) (prometheus_tsdb_storage_blocks_bytes)
+    memory:
+      columns:
+        instance: string
+        value: bytes
+      prometheus:
+        connection: connection://mc/prometheus
+        query: |
+          max by (instance) (container_memory_working_set_bytes{namespace="monitoring",container="prometheus"})
+    targets:
+      columns:
+        instance: string
+        value: decimal
+      prometheus:
+        connection: connection://mc/prometheus
+        query: |
+          sum by (instance) (prometheus_target_scrape_pool_targets)
+    slow_rules:
+      columns:
+        instance: string
+        value: decimal
+      prometheus:
+        connection: connection://mc/prometheus
+        query: |
+          count by (instance) (prometheus_rule_group_last_duration_seconds > 1)
+    version:
+      columns:
+        __name__: string
+        instance: string
+        version: string
+        branch: string
+        goversion: string
+        revision: string
+        container: string
+        endpoint: string
+        goarch: string
+        goos: string
+        job: string
+        namespace: string
+        pod: string
+        service: string
+        tags: string
+        value: decimal
+      prometheus:
+        connection: connection://mc/prometheus
+        query: |
+          prometheus_build_info
+    alerts:
+      columns:
+        value: decimal
+      prometheus:
+        connection: connection://mc/prometheus
+        query: |
+          count(ALERTS{alertstate="firing"})
+  panels:
+    - name: Total Metrics
+      description: Total number of metrics in Prometheus
+      type: number
+      query: SELECT CAST(value AS INTEGER) as value FROM metrics LIMIT 1
+    - name: Disk Usage
+      description: Prometheus TSDB storage blocks size
+      type: number
+      query: SELECT SUM(CAST(value AS INTEGER)) as value FROM disk
+      number:
+        unit: bytes
+    - name: Memory Usage
+      description: Prometheus memory usage
+      type: number
+      query: SELECT MAX(CAST(value AS INTEGER)) as value FROM memory
+      number:
+        unit: bytes
+    - name: Scrape Targets
+      description: Total number of scrape pool targets
+      type: number
+      query: SELECT SUM(CAST(value AS INTEGER)) as value FROM targets
+    - name: Slow Rule Groups
+      description: Rule groups with evaluation duration > 1 second
+      type: number
+      query: SELECT COALESCE(SUM(CAST(value AS INTEGER)), 0) as value FROM slow_rules
+    - name: Prometheus Version
+      description: Current Prometheus version
+      type: text
+      query: SELECT COALESCE(MAX(version), 'unknown') as value FROM version
+    - name: Firing Alerts
+      description: Number of currently firing alerts
+      type: gauge
+      gauge:
+        min: "0"
+        max: "100"
+        thresholds:
+          - percent: 0
+            color: green
+          - percent: 10
+            color: orange
+          - percent: 25
+            color: red
+      query: SELECT CAST(value AS INTEGER) as value FROM alerts LIMIT 1
