@@ -1,0 +1,11 @@
+apiVersion: canaries.flanksource.com/v1
+kind: Canary
+metadata:
+  name: mssql-check
+spec:
+  interval: 30
+  mssql:
+    - name: mssql pass
+      connection: "connection://{{ .Release.Namespace }}/{{ .Values.connectionName }}" 
+      query: SELECT 1
+      results: 1
