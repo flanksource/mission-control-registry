@@ -175,6 +175,7 @@ spec:
       pod.status,
       pod.health,
       pod.config,
+      pod.__grants,
       pod.created_at,
       pod.updated_at,
       memory.value as memory,
