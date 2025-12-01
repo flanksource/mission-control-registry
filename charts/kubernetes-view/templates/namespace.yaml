@@ -1,4 +1,4 @@
-{{- if and .Values.views.enabled .Values.views.pods.enabled .Values.global.prometheus.connection }}
+{{- if and .Values.views.enabled .Values.views.namespace.enabled .Values.global.prometheus.connection }}
 apiVersion: mission-control.flanksource.com/v1
 kind: View
 metadata:
@@ -137,21 +137,27 @@ spec:
       card:
         position: body
   sections:
+    {{- if .Values.views.namespace.deployments.enabled }}
     - title: Deployments
       icon: deployment
       viewRef:
         namespace: mc
-        name: deployments
+        name: namespace-deployments
+    {{- end }}
+    {{- if .Values.views.namespace.helmReleases.enabled }}
     - title: Helm Releases
       icon: helm
       viewRef:
         namespace: mc
-        name: helmreleases
+        name: namespace-helmreleases
+    {{- end }}
+    {{- if .Values.views.namespace.ingress.enabled }}
     - title: Ingresses
       icon: ingress
       viewRef:
         namespace: mc
-        name: ingresses
+        name: namespace-ingresses
+    {{- end }}
   merge: |
     SELECT
       pod.id,
