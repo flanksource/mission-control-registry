@@ -53,6 +53,10 @@ spec:
       icon: row.health
       filter:
         type: multiselect
+    - name: tags
+      type: labels
+      filter:
+        type: multiselect
     - name: created
       type: datetime
     - name: updated
@@ -65,5 +69,4 @@ spec:
   mapping:
     updated: row.updated_at
     created: row.created_at
-    
 {{- end}}
