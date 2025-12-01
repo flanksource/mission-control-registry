@@ -1,15 +1,18 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/view.schema.json
-{{ if .Values.view.enabled -}}
+{{- if and .Values.views.enabled .Values.views.pods.enabled }}
 apiVersion: mission-control.flanksource.com/v1
 kind: View
 metadata:
   name: mission-control-pods
   labels:
-    {{- include "kubernetes-view.labels" . | nindent 4 }}
+    {{- include "mission-control.labels" . | nindent 4 }}
 spec:
   display:
     title: Mission Control Pods
     icon: pod
+    {{- if .Values.views.pods.sidebar }}
+    sidebar: true
+    {{- end }}
   panels:
     - name: Job History
       type: table
