@@ -4,6 +4,12 @@ nameOverride: ""
 fullnameOverride: ""
 
 # @schema
+# required: false
+# type: string
+# @schema
+prometheusURL: ""
+
+# @schema
 # type: object
 # additionalProperties: true
 # required: false
