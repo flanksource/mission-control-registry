@@ -40,6 +40,11 @@
       "title": "playbooks",
       "type": "boolean"
     },
+    "prometheusURL": {
+      "default": "",
+      "title": "prometheusURL",
+      "type": "string"
+    },
     "pushLocation": {
       "additionalProperties": false,
       "properties": {
