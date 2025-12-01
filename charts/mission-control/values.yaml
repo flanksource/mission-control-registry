@@ -7,8 +7,12 @@ isAgent: false
 playbooks: true
 pushLocation:
   url: ''
-view:
-  enabled: false
+topology:
+  enabled: true
+views:
+  enabled: true
+  unhealthyConfigs: true
+  pods: true
 # username:
 #   valueFrom:
 #     secretKeyRef:

@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/view.schema.json
+{{- if and .Values.views.enabled .Values.views.unhealthyConfigs}}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: unhealthy-configs
+  labels:
+    {{- include "mission-control.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Configs
+    icon: warning
+    sidebar: true
+  panels:
+    - name: By Health
+      description: Configs grouped by health status
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          unhealthy: "#F04E6E"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM configs GROUP BY health
+    - name: By Type
+      description: Unhealthy configs grouped by type
+      type: piechart
+      query: SELECT COUNT(*) AS count, config_class AS type FROM configs GROUP BY config_class
+    - name: By Status
+      description: Unhealthy configs grouped by status
+      type: piechart
+      query: SELECT COUNT(*) AS count, status FROM configs GROUP BY status
+    - name: Total Unhealthy
+      description: Total count of unhealthy configs
+      type: number
+      query: SELECT COUNT(*) AS value FROM configs
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: config_item
+      url:
+        config: row.id
+    - name: health
+      type: health
+      filter:
+        type: multiselect
+    - name: status
+      type: status
+      icon: row.health
+      filter:
+        type: multiselect
+    - name: created
+      type: datetime
+    - name: updated
+      type: datetime
+  queries:
+    configs:
+      configs:
+        agent: "all"
+        health: "unhealthy,warning"
+  mapping:
+    updated: row.updated_at
+    created: row.created_at
+    
+{{- end}}
