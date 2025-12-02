@@ -1,0 +1,32 @@
+# logical id of the database instance used to create an idempotenty config-db id
+# that is consistent across restarts and db failovers
+id: mssql
+# Use connectionName for a connection:// reference (created by this chart)
+# or url for a direct connection string
+connectionName: sql-server
+
+# url: "sqlserver://sa:YourStrong@Passw0rd@localhost:1433"
+playbooks:
+  enabled: true
+  runSql: true
+  runAgentJob: true
+  grantAccess: true
+  killLongRunningTransactions: true
+
+canary:
+  schedule: "@every 5m"
+  enabled: true
+scrape:
+  schedule: "@every 4h"
+  incrementalSchedule: "@every 15m"
+  databases: true
+  jobs: true
+rds:
+  # Enable RDS task scraping (for AWS RDS SQL Server instances)
+  tasks: true
+# Playbook approvers for SQL execution
+approvers:
+  people:
+    - admin
+  # teams:
+  #   - dba-team

@@ -1,0 +1,59 @@
+{{- if .Values.playbooks.killLongRunningTransactions }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kill-long-running-transactions
+spec:
+  title: Kill Long Running Transactions
+  icon: mssql
+  description: List and kill MSSQL transactions running longer than threshold
+  configs:
+    - types:
+        - MSSQL::Server
+  parameters:
+    - name: threshold
+      label: Transactions older than
+      type: list
+      default: "300"
+      properties:
+        options:
+          - label: "5 minutes"
+            value: "300"
+          - label: "15 minutes"
+            value: "900"
+          - label: "30 minutes"
+            value: "1800"
+          - label: "1 hour"
+            value: "3600"
+          - label: "4 hours"
+            value: "14400"
+    - name: kill
+      label: Kill matching transactions
+      type: checkbox
+      default: "false"
+  approval:
+    type: any
+    approvers:
+      {{- with .Values.approvers.people }}
+      people:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.approvers.teams }}
+      teams:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  actions:
+    - name: List Long Running Transactions
+      sql:
+        {{ include "mssql.connection" . }}
+        driver: mssql
+        query: |
+{{ .Files.Get "conf/list-long-running-transactions.sql" | indent 10 }}
+    - name: Kill Long Running Transactions
+      if: params.kill == 'true'
+      sql:
+        {{ include "mssql.connection" . }}
+        driver: mssql
+        query: |
+{{ .Files.Get "conf/kill-long-running-transactions.sql" | indent 10 }}
+{{- end }}

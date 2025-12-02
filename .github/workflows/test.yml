@@ -32,6 +32,7 @@ jobs:
             playbooks-ai: charts/playbooks-ai/**
             playbooks-flux: charts/playbooks-flux/**
             helm: charts/helm/**
+            mssql: charts/mssql/**
 
   # Job to build and test each of modified packages
   test:

@@ -1,0 +1,154 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/refs/heads/main/schema/openapi/scrape_config.schema.json
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: {{.Values.id}}-scraper
+spec:
+  schedule: '{{.Values.scrape.schedule}}'
+  sql:
+  - {{ include "mssql.connection" . }}
+    type: MSSQL::Server
+    id: '{{.Values.id}}'
+    name: '{{.Values.id}}'
+    transform:
+      expr: |+
+        [{
+          'ServerName': config.ServerName,
+          'BuildClrVersion': config.BuildClrVersion,
+          'Collation': config.Collation,
+          'Edition': config.Edition,
+          'EngineEdition': config.EngineEdition,
+          'InstanceName': config.InstanceName,
+          'IsClustered': config.IsClustered,
+          'IsHadrEnabled': config.IsHadrEnabled,
+          'MachineName': config.MachineName,
+          'ProductVersion': config.ProductVersion,
+          'ProductLevel': config.ProductLevel,
+          'ProductMajorVersion': config.ProductMajorVersion,
+          'ProductMinorVersion': config.ProductMinorVersion,
+          'ContainedUsers': config.ContainedUsers,
+          'audits': has(config.audits) && config.audits != null ? config.audits.JSONArray() : []
+        }].toJSON()
+    query: |
+{{ .Files.Get "conf/server-info.sql" | indent 6 }}
+{{- if .Values.scrape.databases -}}
+  - {{ include "mssql.connection" . }}
+    type: MSSQL::Database
+    id: $.id
+    name: $.name
+    transform:
+      relationship:
+        - filter: config_type == 'MSSQL::Database'
+          parent: true
+          type:
+            value: 'MSSQL::Server'
+          name:
+            expr:  '"{{.Values.id}}"'
+      expr: |+
+        [{
+          'id': config.id,
+          'name': config.name,
+          'status': config.status,
+          'iscontained': config.iscontained,
+          'recovery_model': config.recovery_model,
+          'compatibility_level': config.compatibility_level,
+          'collation': config.collation,
+          'is_auto_close_on': config.is_auto_close_on,
+          'is_auto_shrink_on': config.is_auto_shrink_on,
+          'is_auto_create_stats_on': config.is_auto_create_stats_on,
+          'is_auto_update_stats_on': config.is_auto_update_stats_on,
+          'is_read_only': config.is_read_only,
+          'is_encrypted': config.is_encrypted,
+          'snapshot_isolation': config.snapshot_isolation,
+          'is_read_committed_snapshot_on': config.is_read_committed_snapshot_on,
+          'page_verify': config.page_verify,
+          'files': config.files.JSONArray(),
+          'users': config.users.JSONArray(),
+          'audits': has(config.audits) && config.audits != null ? config.audits.JSONArray() : []
+        }].toJSON()
+    query: |
+      DECLARE @configId nvarchar(200) = '{{.Values.id}}'
+{{ .Files.Get "conf/database-info.sql" | indent 6 }}
+{{- end }}
+{{- if .Values.scrape.jobs -}}
+  - {{ include "mssql.connection" . }}
+    type: MSSQL::AgentJob
+    id: $.id
+    name: $.name
+    transform:
+      expr: |+
+        [{
+          'id': '{{.Values.id}}' + '/' + config.job_name,
+          'name': config.job_name,
+          'updated_at': config.run_datetime,
+          'health': config.status == 'Succeeded' ? 'Healthy' : 'Unhealthy',
+          'last_run': {
+            'status': config.status,
+            'date': config.run_datetime,
+            'duration': config.duration_seconds,
+          },
+          'steps': has(config.steps) && config.steps != null ? config.steps.JSONArray() : [],
+          'schedules': has(config.schedules) && config.schedules != null ? config.schedules.JSONArray() : []
+        }].toJSON()
+    query: |
+      DECLARE @configId nvarchar(200) = '{{.Values.id}}'
+{{ .Files.Get "conf/agent-jobs.sql" | indent 6 }}
+{{- end }}
+
+---
+
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: {{.Values.id}}-scraper-incremental
+spec:
+  schedule: "{{.Values.scrape.incrementalSchedule}}"
+  full: true
+  sql:
+  {{- if .Values.scrape.jobs }}
+  - driver: mssql
+    {{ include "mssql.connection" . }}
+    type: MSSQL::AgentJob
+    id: $.id
+    transform:
+      expr: |+
+        [
+          {
+            'id':  '{{.Values.id}}' + '/' + config.job_name,
+            'changes': [
+              {
+                'name': config.job_name,
+                'id': config.external_change_id,
+                'created_at': config.created_at,
+                'change_type': config.change_type,
+                'details': config.message
+              }
+            ]
+          }
+        ].toJSON()
+    query: |
+      DECLARE @configId nvarchar(200) = '{{.Values.id}}'
+      {{ .Files.Get "conf/agent-jobs-history.sql" | indent 6 }}
+  {{- end }}
+  {{- if .Values.rds.tasks }}
+  - {{ include "mssql.connection" . }}
+    type: MSSQL::Database
+    id: $.id
+    transform:
+      expr: |+
+        [{
+          'id':  '{{.Values.id}}' + '/' + config.database_name,
+          'name':config.database_name,
+          'changes': [{
+            'id':'{{.Values.id}}' + '/' + config.task_id,
+            'change_type': config.change_type,
+            'summary': config.summary,
+            'details': config.details,
+            'severity': config.severity,
+            'created_at': config.created_at
+          }]
+        }].toJSON()
+    query: |
+      DECLARE @configId nvarchar(200) = '{{.Values.id}}'
+      {{ .Files.Get "conf/rds-tasks.sql" | indent 6 }}
+  {{- end }}

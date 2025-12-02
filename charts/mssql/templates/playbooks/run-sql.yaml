@@ -1,0 +1,38 @@
+{{- if .Values.playbooks.runSQL }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: run-mssql-sql
+spec:
+  title: Run SQL
+  icon: mssql
+  description: Run arbitrary SQL against MSSQL server with approval
+  configs:
+    - types:
+        - MSSQL::Server
+        - MSSQL::Database
+  parameters:
+    - name: sql
+      label: SQL Statement
+      type: text
+      properties:
+        multiline: true
+  approval:
+    type: any
+    approvers:
+      {{- with .Values.approvers.people }}
+      people:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.approvers.teams }}
+      teams:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  actions:
+    - name: Run SQL
+      sql:
+        {{ include "mssql.connection" . }}
+        driver: mssql
+        query: |
+          {{`{{.params.sql}}`}}
+{{- end }}

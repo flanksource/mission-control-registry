@@ -1,0 +1,15 @@
+{{- if .Values.canary.enabled }}
+apiVersion: canaries.flanksource.com/v1
+kind: Canary
+metadata:
+  name: {{.Values.id}}
+spec:
+  schedule: '{{.Values.canary.schedule}}'
+  mssql:
+    - name: mssql pass
+      {{ if .Values.url -}}
+      connection: {{ .Values.url }}
+      {{ else -}}
+      connection: connection://{{ .Release.Namespace }}/{{ .Values.connectionName }}
+      {{- end -}}
+{{- end }}

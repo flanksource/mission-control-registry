@@ -1,0 +1,43 @@
+{{- if .Values.playbooks.runAgentJobNow }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: run-agent-job-now
+spec:
+  title: Run Agent Job Now
+  icon: mssql
+  description: Execute T-SQL steps from an Agent Job immediately
+  configs:
+    - types:
+        - MSSQL::Server
+  parameters:
+    - name: job_name
+      label: Job Name
+  approval:
+    type: any
+    approvers:
+      {{- with .Values.approvers.people }}
+      people:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.approvers.teams }}
+      teams:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+  actions:
+    - name: Get Job Steps
+      sql:
+        {{ include "mssql.connection" . }}
+        driver: mssql
+        query: |
+{{ .Files.Get "conf/get-agent-job-steps.sql" | indent 10 }}
+    - name: Execute T-SQL Steps
+      sql:
+        {{ include "mssql.connection" . }}
+        driver: mssql
+        query: |
+          {{`{{- range $i, $step := getAction("Get Job Steps").result.results }}`}}
+          -- Step {{`{{$step.step_id}}`}}: {{`{{$step.step_name}}`}}
+          {{`{{$step.sql}}`}}
+          {{`{{ end }}`}}
+{{- end }}

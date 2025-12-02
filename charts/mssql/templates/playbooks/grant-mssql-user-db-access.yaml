@@ -1,0 +1,64 @@
+{{- if .Values.playbooks.grantAccess }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: grant-mssql-access
+spec:
+  description: Grant an MSSQL user read or readwrite access to a database
+  parameters:
+    - name: database
+      label: Database
+      type: config
+      properties:
+        filter:
+          - types:
+              - MSSQL::Database
+    - name: user
+      label: Existing database User
+    - name: access
+      label: Access Type
+      type: list
+      properties:
+        options:
+          - label: "ReadOnly"
+            value: "ReadOnly"
+          - label: "Read & Write"
+            value: "ReadWrite"
+    - name: delay
+      label: Expires after
+      type: list
+      properties:
+        options:
+          - label: "1 minute"
+            value: "1m"
+          - label: "4 hours"
+            value: "4h"
+          - label: "8 hours"
+            value: "8h"
+          - label: "3 days"
+            value: "3d"
+          - label: "10 days"
+            value: "10d"
+          - label: "2 weeks"
+            value: "14d"
+          - label: "30 days"
+            value: "30d"
+          - label: "Indefinitely"
+            value: "0"
+  actions:
+    - name: Assign Database User Roles
+      if: "always()"
+      sql:
+        {{ include "mssql.connection" . }}
+        driver: mssql
+        query: |
+{{ .Files.Get "conf/grant-db-access.sql" | indent 10 }}
+    - name: Clear Rolebinding
+      if: getAction('Assign Database User Roles').status != 'failed' && params.delay != "0"
+      delay: ".params.delay"
+      sql:
+        {{ include "mssql.connection" . }}
+        driver: mssql
+        query: |
+{{ .Files.Get "conf/revoke-db-access.sql" | indent 10 }}
+{{- end }}
