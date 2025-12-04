@@ -1,4 +1,4 @@
-{{- if .Values.playbooks.killLongRunningTransactions }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.killLongRunningTransactions }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:

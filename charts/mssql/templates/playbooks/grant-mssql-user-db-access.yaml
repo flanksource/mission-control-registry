@@ -1,9 +1,11 @@
-{{- if .Values.playbooks.grantAccess }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.grantAccess }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:
   name: grant-mssql-access
 spec:
+  title: "Grant MSSQL Database User Access"
+  icon: mssql
   description: Grant an MSSQL user read or readwrite access to a database
   parameters:
     - name: database

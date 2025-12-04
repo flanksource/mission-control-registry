@@ -54,7 +54,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 Connection string - returns url if set, otherwise builds connection:// reference
 */}}
 {{- define "mssql.connection" -}}
-
 {{- if .Values.url -}}
 connection: {{ .Values.url }}
 {{- else -}}

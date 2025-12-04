@@ -1,4 +1,4 @@
-{{- if .Values.playbooks.runAgentJobNow }}
+{{- if and .Values.playbooks.enabled .Values.playbooks.runAgentJob }}
 apiVersion: mission-control.flanksource.com/v1
 kind: Playbook
 metadata:

@@ -1,32 +1,56 @@
-# logical id of the database instance used to create an idempotenty config-db id
+# -- Logical ID of the database instance used to create an idempotent config-db ID
 # that is consistent across restarts and db failovers
 id: mssql
-# Use connectionName for a connection:// reference (created by this chart)
-# or url for a direct connection string
+
+# -- Connection name for a connection:// reference (created externally)
+# Use either connectionName OR url, not both
 connectionName: sql-server
 
-# url: "sqlserver://sa:YourStrong@Passw0rd@localhost:1433"
+# -- Direct connection string to the MSSQL server
+# Example: "sqlserver://sa:YourStrong@Passw0rd@localhost:1433"
+# url: ""
+
+# -- Playbook configuration
 playbooks:
+  # -- Enable all playbooks
   enabled: true
+  # -- Enable "Run SQL" playbook for executing arbitrary SQL
   runSql: true
+  # -- Enable "Run Agent Job Now" playbook for executing T-SQL steps from agent jobs
   runAgentJob: true
+  # -- Enable "Grant DB Access" playbook for granting temporary database access
   grantAccess: true
+  # -- Enable "Kill Long Running Transactions" playbook
   killLongRunningTransactions: true
 
+# -- Health check canary configuration
 canary:
+  # -- Cron schedule for health checks
   schedule: "@every 5m"
+  # -- Enable health check canary
   enabled: true
+
+# -- Scraper configuration for discovering MSSQL resources
 scrape:
+  # -- Cron schedule for full scrape
   schedule: "@every 4h"
+  # -- Cron schedule for incremental scrape (changes only)
   incrementalSchedule: "@every 15m"
+  # -- Scrape database information
   databases: true
+  # -- Scrape SQL Agent jobs and their history
   jobs: true
+
+# -- AWS RDS specific configuration
 rds:
-  # Enable RDS task scraping (for AWS RDS SQL Server instances)
-  tasks: true
-# Playbook approvers for SQL execution
+  # -- Enable RDS task scraping (for AWS RDS SQL Server instances)
+  tasks: false
+
+# -- Playbook approvers configuration
 approvers:
+  # -- List of people who can approve playbook executions
   people:
-    - admin
+  # - admin
+  # -- List of teams who can approve playbook executions
   # teams:
   #   - dba-team

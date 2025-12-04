@@ -1,0 +1,37 @@
+MSSQL Mission Control Bundle installed successfully!
+
+Components deployed:
+{{- if .Values.canary.enabled }}
+- Health Check Canary (schedule: {{ .Values.canary.schedule }})
+{{- end }}
+- Config Scraper (schedule: {{ .Values.scrape.schedule }})
+{{- if .Values.playbooks.enabled }}
+
+Playbooks:
+{{- if .Values.playbooks.runSql }}
+  - Run SQL: Execute arbitrary SQL statements with approval
+{{- end }}
+{{- if .Values.playbooks.grantAccess }}
+  - Grant DB Access: Grant temporary read/write access to databases
+{{- end }}
+{{- if .Values.playbooks.killLongRunningTransactions }}
+  - Kill Long Running Transactions: List and terminate long-running queries
+{{- end }}
+{{- if .Values.playbooks.runAgentJob }}
+  - Run Agent Job Now: Execute T-SQL steps from SQL Agent jobs
+{{- end }}
+{{- end }}
+
+Scraped Resources:
+- MSSQL::Server
+{{- if .Values.scrape.databases }}
+- MSSQL::Database
+{{- end }}
+{{- if .Values.scrape.jobs }}
+- MSSQL::AgentJob (with history as changes)
+{{- end }}
+{{- if .Values.rds.tasks }}
+- RDS Tasks (as changes)
+{{- end }}
+
+Connection: {{ if .Values.url }}{{ .Values.url }}{{ else }}connection://{{ .Release.Namespace }}/{{ .Values.connectionName }}{{ end }}
