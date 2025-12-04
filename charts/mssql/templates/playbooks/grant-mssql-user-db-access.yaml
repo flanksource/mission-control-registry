@@ -47,6 +47,7 @@ spec:
             value: "30d"
           - label: "Indefinitely"
             value: "0"
+  {{ include "mssql.approvers" . | indent 2 | trim }}
   actions:
     - name: Assign Database User Roles
       if: "always()"

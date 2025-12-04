@@ -101,21 +101,23 @@
     },
     "approvers": {
       "type": "object",
-      "description": "Playbook approvers configuration",
+      "description": "Playbook approvers configuration (optional)",
       "properties": {
         "people": {
-          "type": "array",
-          "description": "List of people who can approve playbook executions",
+          "type": ["array", "null"],
+          "description": "List of people who can approve playbook executions (optional)",
           "items": {
             "type": "string"
-          }
+          },
+          "default": []
         },
         "teams": {
-          "type": "array",
-          "description": "List of teams who can approve playbook executions",
+          "type": ["array", "null"],
+          "description": "List of teams who can approve playbook executions (optional)",
           "items": {
             "type": "string"
-          }
+          },
+          "default": []
         }
       }
     }

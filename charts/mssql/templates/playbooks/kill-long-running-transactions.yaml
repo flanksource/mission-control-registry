@@ -31,17 +31,7 @@ spec:
       label: Kill matching transactions
       type: checkbox
       default: "false"
-  approval:
-    type: any
-    approvers:
-      {{- with .Values.approvers.people }}
-      people:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.approvers.teams }}
-      teams:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+  {{ include "mssql.approvers" . | indent 2 | trim }}
   actions:
     - name: List Long Running Transactions
       sql:
