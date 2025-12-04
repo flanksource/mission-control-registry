@@ -52,12 +52,10 @@ spec:
       primaryKey: true
       hidden: true
     - name: application
-      type: string
+      type: config_item
       description: The application name.
       card:
         position: title
-      url:
-        config: row.id
     - name: namespace
       type: string
       description: The namespace name.

@@ -101,8 +101,6 @@ spec:
       primaryKey: true
       card:
         position: title
-      url:
-        config: row.id
     - name: tags
       type: labels
       card:

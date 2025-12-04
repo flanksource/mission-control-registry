@@ -139,7 +139,7 @@ spec:
   sections:
     {{- if .Values.views.namespace.deployments.enabled }}
     - title: Deployments
-      icon: deployment
+      icon: kubernetes::deployment
       viewRef:
         namespace: {{.Release.Namespace}}
         name: namespace-deployments
