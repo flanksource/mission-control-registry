@@ -61,8 +61,8 @@ spec:
             'snapshot_isolation': config.snapshot_isolation,
             'is_read_committed_snapshot_on': config.is_read_committed_snapshot_on,
             'page_verify': config.page_verify,
-            'files': config.files.JSONArray(),
-            'users': config.users.JSONArray(),
+            'files': has(config.files) && config.files != null ? config.files.JSONArray() : [],
+            'users': has(config.users) && config.users != null ? config.users.JSONArray() : [],
             'audits': has(config.audits) && config.audits != null ? config.audits.JSONArray() : []
           }].toJSON()
       query: |
