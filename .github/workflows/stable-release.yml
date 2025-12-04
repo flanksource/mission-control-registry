@@ -22,6 +22,7 @@ on:
           - playbooks-ai
           - playbooks-flux
           - helm
+          - mssql
 
 jobs:
   release:
