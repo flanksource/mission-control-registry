@@ -11,7 +11,7 @@ CREATE TABLE #job_steps (
 );
 
 DECLARE @job_id UNIQUEIDENTIFIER;
-SELECT @job_id = job_id FROM msdb.dbo.sysjobs WHERE name = '{{.params.job_name}}';
+SELECT @job_id = job_id FROM msdb.dbo.sysjobs WHERE name = '{{.config.name}}';
 
 IF @job_id IS NOT NULL
 BEGIN
