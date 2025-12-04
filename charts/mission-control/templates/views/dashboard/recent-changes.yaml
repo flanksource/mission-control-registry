@@ -31,28 +31,49 @@ spec:
       type: piechart
       query: SELECT COUNT(*) AS count, change_type AS type FROM recent_changes GROUP BY change_type
   columns:
-    - name: id
+    - name: change_id
       type: string
       hidden: true
       primaryKey: true
-    - name: name
-      type: config_item
-      url:
-        config: row.config_id
-    - name: change_type
+    - name: last_seen
+      type: datetime
+    - name: config_type
       type: string
+      hidden: true
       filter:
         type: multiselect
+    - name: catalog
+      type: config_item
+    - name: type
+      type: string
+      icon: row.type
+      filter:
+        type: multiselect
+    - name: summary
+      type: string
     - name: severity
       type: string
       filter:
         type: multiselect
-    - name: created
-      type: datetime
-    - name: first_observed
-      type: datetime
+      hidden: true
+    - name: tags
+      type: labels
+      filter:
+        type: multiselect
+    - name: created_by
+      type: string
   merge: >
-    SELECT id, config_id, name, change_type, severity, created_at AS created, first_observed
+    SELECT 
+      id as change_id,
+      config_id as id,
+      name as catalog,
+      type as config_type,
+      change_type as type,
+      severity,
+      summary,
+      tags,
+      created_at AS last_seen,
+      source as created_by
     FROM recent_changes
   queries:
     changes_count_last_24h:
@@ -65,5 +86,5 @@ spec:
       changes:
         name: "*"
         limit: 10 # TODO: This should be higher but we need to implement table page size in view spec first
-        search: severity!=info change_type!=diff
+        search: "severity!=info change_type!=diff @order=-created_at"
 {{- end}}
