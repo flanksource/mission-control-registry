@@ -47,6 +47,38 @@ skipTLSVerify: false
 
 # @schema
 # type: object
+# description: Views configuration
+# @schema
+views:
+  enabled: true
+  # @schema
+  # required: false
+  # description: Account Number
+  # @schema
+  account: ""
+  # @schema
+  # description: AWS Overview view configuration
+  # @schema
+  awsOverview:
+    # @schema
+    # description: Name of the AWS Overview view
+    # @schema
+    name: aws-overview
+    # @schema
+    # description: Title of the AWS Overview view
+    # @schema
+    title: AWS Overview
+    # @schema
+    # description: Enable the AWS Overview view
+    # @schema
+    enabled: true
+    # @schema
+    # description: Enable the sidebar for the AWS Overview view
+    # @schema
+    sidebar: true
+
+# @schema
+# type: object
 # description: Import and correlate cloudtrail events with AWS resources
 # @schema
 cloudtrail:
@@ -76,11 +108,14 @@ costReporting:
   s3BucketPath: ""
   table: ""
 
-
 includeResources: []
 
 excludeResources: []
 
+# @schema
+# type: object
+# description: Transform configuration
+# @schema
 transform:
   changes:
     mapping:
@@ -99,11 +134,9 @@ transform:
           {"type": "Kubernetes::Node", "labels": {"account": labels['account'], "alpha.eksctl.io/cluster-name": labels["alpha.eksctl.io/cluster-name"]}}
         ].toJSON()
 
-
     - filter: config_type == 'AWS::EC2:Instance'
       expr: |
         [{"type": "Kubernetes::Node", "labels": {"alpha.eksctl.io/instance-id": config["instance_id"]}}].toJSON()
-
 
     - filter: config_type == 'AWS::IAM::Role'
       expr: |
