@@ -21,6 +21,22 @@ spec:
       type: number
       description: Last 24 hours
       query: SELECT count as value FROM changes_count_last_24h
+    - name: Changes by Type
+      description: Changes in the 1hr
+      type: timeseries
+      timeseries:
+        style: points
+        timeKey: time_bucket
+        valueKey: changes
+      query: SELECT time_bucket, changes, change_type FROM changes_by_type_timeseries
+    - name: Changes by Config Type
+      description: Changes in the 1hr
+      type: timeseries
+      timeseries:
+        style: points
+        timeKey: time_bucket
+        valueKey: changes
+      query: SELECT time_bucket, changes, config_type FROM changes_by_config_type_timeseries
     - name: By Severity
       description: Recent Changes grouped by severity
       type: piechart
@@ -86,6 +102,44 @@ spec:
       source as created_by
     FROM recent_changes
   queries:
+    changes_by_config_type_timeseries:
+      columns:
+        time_bucket: timestamp
+        config_type: string
+        changes: integer
+      sql:
+        connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
+        query: >
+          SELECT 
+              to_timestamp(
+                  floor(extract(epoch FROM created_at) / 30) * 30
+              ) AT TIME ZONE 'UTC' AS time_bucket,
+              type as config_type,
+              count(*) AS changes
+          FROM catalog_changes
+          WHERE NOW() - created_at <= INTERVAL '1 HOUR' 
+            AND type != 'diff'
+          GROUP BY time_bucket, config_type
+          ORDER BY time_bucket DESC;
+    changes_by_type_timeseries:
+      columns:
+        time_bucket: timestamp
+        change_type: string
+        changes: integer
+      sql:
+        connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
+        query: >
+          SELECT 
+              to_timestamp(
+                  floor(extract(epoch FROM created_at) / 30) * 30
+              ) AT TIME ZONE 'UTC' AS time_bucket,
+              change_type,
+              count(*) AS changes
+          FROM catalog_changes
+          WHERE NOW() - created_at <= INTERVAL '1 HOUR' 
+            AND change_type != 'diff'
+          GROUP BY time_bucket, change_type
+          ORDER BY time_bucket DESC;
     changes_count_last_24h:
       columns:
         count: integer
