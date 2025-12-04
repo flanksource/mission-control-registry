@@ -109,7 +109,7 @@ spec:
       transform:
         expr: |
           [{
-            'id': '{{ .Values.id }}' + '/' + config.job_name,
+            'id': '{{ .Values.id }}' + '/' + config.job_name.lowerAscii(),
             'changes': [{
               'name': config.job_name,
               'id': config.external_change_id,
@@ -130,7 +130,7 @@ spec:
       transform:
         expr: |
           [{
-            'id': '{{ .Values.id }}' + '/' + config.database_name,
+            'id': '{{ .Values.id }}' + '/' + config.database_name.lowerAscii(),
             'name': config.database_name,
             'changes': [{
               'id': '{{ .Values.id }}' + '/' + config.task_id,

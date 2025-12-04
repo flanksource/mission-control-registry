@@ -9,10 +9,7 @@ spec:
   description: Execute T-SQL steps from an Agent Job immediately
   configs:
     - types:
-        - MSSQL::Server
-  parameters:
-    - name: job_name
-      label: Job Name
+        - MSSQL::AgentJob
   {{ include "mssql.approvers" . | indent 2 | trim }}
   actions:
     - name: Get Job Steps
