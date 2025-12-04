@@ -103,6 +103,10 @@ spec:
         position: title
       url:
         config: row.id
+    - name: tags
+      type: labels
+      card:
+        position: body
     - name: status
       type: status
       icon: row.health
@@ -174,6 +178,7 @@ spec:
       json_extract(pod.tags, '$.cluster') AS cluster,
       pod.status,
       pod.health,
+      pod.tags,
       pod.config,
       pod.__grants,
       pod.created_at,

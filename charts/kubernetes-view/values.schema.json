@@ -119,6 +119,54 @@
           "required": [],
           "title": "ingress"
         },
+        "namespace": {
+          "additionalProperties": false,
+          "properties": {
+            "deployments": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": true,
+                  "title": "enabled",
+                  "type": "boolean"
+                }
+              },
+              "required": [],
+              "title": "deployments"
+            },
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "helmReleases": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": true,
+                  "title": "enabled",
+                  "type": "boolean"
+                }
+              },
+              "required": [],
+              "title": "helmReleases"
+            },
+            "ingress": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": true,
+                  "title": "enabled",
+                  "type": "boolean"
+                }
+              },
+              "required": [],
+              "title": "ingress"
+            }
+          },
+          "required": [],
+          "title": "namespace"
+        },
         "nodes": {
           "additionalProperties": false,
           "properties": {
