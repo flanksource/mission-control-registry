@@ -60,3 +60,22 @@ connection: {{ .Values.url }}
 connection: connection://{{ .Release.Namespace }}/{{ .Values.connectionName }}
 {{- end -}}
 {{- end }}
+
+{{/*
+Playbook approvers - renders approval block if approvers are configured
+*/}}
+{{- define "mssql.approvers" -}}
+{{- if or .Values.approvers.people .Values.approvers.teams }}
+approval:
+  type: any
+  approvers:
+    {{- with .Values.approvers.people }}
+    people:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+    {{- with .Values.approvers.teams }}
+    teams:
+      {{- toYaml . | nindent 6 }}
+    {{- end }}
+{{- end -}}
+{{- end }}

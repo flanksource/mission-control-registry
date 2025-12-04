@@ -17,17 +17,7 @@ spec:
       type: text
       properties:
         multiline: true
-  approval:
-    type: any
-    approvers:
-      {{- with .Values.approvers.people }}
-      people:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.approvers.teams }}
-      teams:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+  {{ include "mssql.approvers" . | indent 2 | trim }}
   actions:
     - name: Run SQL
       sql:

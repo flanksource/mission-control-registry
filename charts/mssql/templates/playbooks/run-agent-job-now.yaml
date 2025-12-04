@@ -13,17 +13,7 @@ spec:
   parameters:
     - name: job_name
       label: Job Name
-  approval:
-    type: any
-    approvers:
-      {{- with .Values.approvers.people }}
-      people:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.approvers.teams }}
-      teams:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+  {{ include "mssql.approvers" . | indent 2 | trim }}
   actions:
     - name: Get Job Steps
       sql:
