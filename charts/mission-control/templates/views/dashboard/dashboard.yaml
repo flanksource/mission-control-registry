@@ -1,0 +1,66 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/view.schema.json
+{{- if and .Values.views.enabled .Values.views.dashboard.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: mission-control-dashboard
+  labels:
+    {{- include "mission-control.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Dashboard
+    icon: overview
+    ordinal: 1
+    {{- if .Values.views.dashboard.sidebar }}
+    sidebar: true
+    {{- end }}
+  panels:
+    - name: Health Checks
+      type: piechart
+      query: SELECT status as label, count FROM health_check_statuses
+      piechart:
+        colors:
+          healthy: "#28a745"
+          unhealthy: "#dc3545"
+  queries:
+    health_check_statuses:
+      columns:
+        status: string
+        count: integer
+      sql:
+        connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
+        query: >
+          SELECT status, COUNT(*) as count
+          FROM checks
+          WHERE deleted_at IS NULL
+          GROUP BY status;
+  sections:
+    {{- if .Values.views.unhealthyConfigs.enabled }}
+    - title: Unhealthy Configs
+      icon: warning
+      viewRef:
+        namespace: "{{ .Release.Namespace }}"
+        name: unhealthy-configs
+    {{- end }}
+    {{- if .Values.views.recentChanges.enabled }}
+    - title: Recent Changes
+      icon: changes
+      viewRef:
+        namespace: "{{ .Release.Namespace }}"
+        name: recent-changes
+    {{- end }}
+    {{- if .Values.views.failingHealthChecks.enabled }}
+    - title: Failing Health Checks
+      icon: health
+      viewRef:
+        namespace: "{{ .Release.Namespace }}"
+        name: failing-health-checks
+    {{- end }}
+    {{- if .Values.views.notificationSendHistory.enabled }}
+    - title: Notification Send History
+      icon: bell
+      viewRef:
+        namespace: "{{ .Release.Namespace }}"
+        name: notification-send-history
+    {{- end }}
+{{- end }}

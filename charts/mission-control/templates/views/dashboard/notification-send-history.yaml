@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/view.schema.json
+{{- if and .Values.views.enabled .Values.views.notificationSendHistory.enabled}}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: notification-send-history
+  labels:
+    {{- include "mission-control.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Notification Send History
+    icon: bell
+    {{- if .Values.views.notificationSendHistory.sidebar }}
+    sidebar: true
+    {{- end }}
+  cache:
+    maxAge: 10m
+    minAge: 5s
+  columns:
+    - name: id
+      type: string
+      primaryKey: true
+      hidden: true
+    - name: notification_id
+      type: string
+    - name: status
+      type: status
+    - name: created_at
+      type: datetime
+    - name: duration
+      type: duration
+    - name: retries
+      type: number
+    - name: count
+      type: number
+    - name: error
+      type: string
+  queries:
+    notification_send_history:
+      columns:
+        id: string
+        notification_id: string
+        status: string
+        error: string
+        created_at: datetime
+        duration_millis: integer
+        retries: integer
+        count: integer
+      sql:
+        connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
+        query: |
+          SELECT
+            id,
+            notification_id,
+            status,
+            error,
+            created_at,
+            duration_millis AS duration,
+            retries,
+            count
+          FROM notification_send_history
+          ORDER BY created_at DESC
+          LIMIT 10
+{{- end}}

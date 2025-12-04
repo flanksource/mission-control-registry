@@ -7,13 +7,33 @@
       "title": "connectionName",
       "type": "string"
     },
+    "createConnection": {
+      "default": true,
+      "title": "createConnection",
+      "type": "boolean"
+    },
     "fullnameOverride": {
       "default": "",
       "title": "fullnameOverride",
       "type": "string"
     },
     "global": {
-      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "additionalProperties": true,
+      "properties": {
+        "prometheus": {
+          "additionalProperties": false,
+          "properties": {
+            "connection": {
+              "default": "",
+              "title": "connection",
+              "type": "string"
+            }
+          },
+          "required": [],
+          "title": "prometheus",
+          "type": "object"
+        }
+      },
       "required": [],
       "title": "global",
       "type": "object"
@@ -31,9 +51,9 @@
     },
     "nameOverride": {
       "default": "",
-      "description": "",
       "title": "nameOverride",
-      "type": "string"
+      "type": "string",
+      "description": ""
     },
     "playbooks": {
       "default": true,
@@ -67,7 +87,9 @@
           "type": "boolean"
         }
       },
-      "required": ["enabled"],
+      "required": [
+        "enabled"
+      ],
       "title": "topology",
       "type": "object"
     },
@@ -79,17 +101,11 @@
     "views": {
       "additionalProperties": false,
       "properties": {
-        "enabled": {
-          "default": true,
-          "description": "If this is set to false, no views will be created",
-          "title": "enabled",
-          "type": "boolean"
-        },
-        "pods": {
+        "dashboard": {
           "additionalProperties": false,
           "properties": {
             "enabled": {
-              "default": false,
+              "default": true,
               "title": "enabled",
               "type": "boolean"
             },
@@ -100,7 +116,122 @@
             }
           },
           "required": [],
-          "title": "pods"
+          "title": "dashboard",
+          "type": "object"
+        },
+        "enabled": {
+          "default": true,
+          "description": "If this is set to false, no views will be created",
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "failingHealthChecks": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": false,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "failingHealthChecks",
+          "type": "object"
+        },
+        "job_histories": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": false,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "job_histories",
+          "type": "object"
+        },
+        "notificationSendHistory": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": false,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "notificationSendHistory",
+          "type": "object"
+        },
+        "pods": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": false,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "pods",
+          "type": "object"
+        },
+        "recentChanges": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": false,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "recentChanges",
+          "type": "object"
+        },
+        "system": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "sidebar": {
+              "default": false,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "system",
+          "type": "object"
         },
         "unhealthyConfigs": {
           "additionalProperties": false,
@@ -111,7 +242,7 @@
               "type": "boolean"
             },
             "sidebar": {
-              "default": true,
+              "default": false,
               "title": "sidebar",
               "type": "boolean"
             }
@@ -121,10 +252,15 @@
           "type": "object"
         }
       },
-      "required": ["enabled"],
-      "title": "views"
+      "required": [
+        "enabled"
+      ],
+      "title": "views",
+      "type": "object"
     }
   },
-  "required": ["nameOverride", "fullnameOverride", "topologyName", "connectionName"],
+  "required": [
+    "connectionName"
+  ],
   "type": "object"
 }

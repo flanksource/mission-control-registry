@@ -1,0 +1,69 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/view.schema.json
+{{- if and .Values.views.enabled .Values.views.recentChanges.enabled}}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: recent-changes
+  labels:
+    {{- include "mission-control.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Recent Changes
+    icon: warning
+    {{- if .Values.views.recentChanges.sidebar }}
+    sidebar: true
+    {{- end }}
+  panels:
+    - name: Recent Changes
+      type: number
+      description: Last 24 hours
+      query: SELECT count as value FROM changes_count_last_24h
+    - name: By Severity
+      description: Recent Changes grouped by severity
+      type: piechart
+      piechart:
+        colors:
+          unhealthy: "#F04E6E"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, severity FROM recent_changes GROUP BY severity
+    - name: By Type
+      description: Recent Changes grouped by type
+      type: piechart
+      query: SELECT COUNT(*) AS count, change_type AS type FROM recent_changes GROUP BY change_type
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: config_item
+      url:
+        config: row.config_id
+    - name: change_type
+      type: string
+      filter:
+        type: multiselect
+    - name: severity
+      type: string
+      filter:
+        type: multiselect
+    - name: created
+      type: datetime
+    - name: first_observed
+      type: datetime
+  merge: >
+    SELECT id, config_id, name, change_type, severity, created_at AS created, first_observed
+    FROM recent_changes
+  queries:
+    changes_count_last_24h:
+      columns:
+        count: integer
+      sql:
+        connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
+        query: SELECT COUNT(*) AS count FROM config_changes WHERE NOW() - created_at <= INTERVAL '24 hours';
+    recent_changes:
+      changes:
+        name: "*"
+        limit: 10 # TODO: This should be higher but we need to implement table page size in view spec first
+        search: severity!=info change_type!=diff
+{{- end}}
