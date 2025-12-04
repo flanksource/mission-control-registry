@@ -23,6 +23,8 @@ spec:
       hidden: true
     - name: notification_id
       type: string
+      url:
+        template: "/notifications/$(.row.notification_id)"
     - name: status
       type: status
     - name: created_at
