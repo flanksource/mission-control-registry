@@ -11,6 +11,8 @@ spec:
   display:
     title: Nodes
     icon: kubernetes::node
+    table:
+      columnWidth: [3, 3, 2, 2, 1, 1, 1, 1, 2, 1, 1, 2]
     {{- if .Values.views.nodes.sidebar }}
     sidebar: true
     {{- end }}
