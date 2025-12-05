@@ -22,6 +22,18 @@ spec:
         colors:
           healthy: "#06b6d4"
           unhealthy: "#F04E6E"
+    - name: Playbook Runs
+      type: timeseries
+      timeseries:
+        style: points
+        timeKey: time_bucket
+        valueKey: total
+      query: >
+        SELECT
+          time_bucket,
+          status,
+          total
+        FROM playbook_runs;
     - name: Check Runs
       description: Check runs in the 1hr
       type: timeseries
@@ -35,6 +47,25 @@ spec:
           total
         FROM check_runs;
   queries:
+    playbook_runs:
+      columns:
+        time_bucket: timestamp
+        status: boolean
+        total: integer
+      sql:
+        connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
+        query: >
+          SELECT 
+            to_timestamp(
+                  floor(extract(epoch FROM created_at) / 15) * 15
+              ) AT TIME ZONE 'UTC' AS time_bucket,
+            status,
+            COUNT(*) AS total
+          FROM playbook_runs
+          WHERE NOW() - created_at <= INTERVAL '24 HOUR'
+          GROUP BY time_bucket, status
+          ORDER BY time_bucket DESC
+          LIMIT 10000; -- max limit
     check_runs:
       columns:
         time_bucket: timestamp
