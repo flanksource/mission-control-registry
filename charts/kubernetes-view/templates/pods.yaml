@@ -12,6 +12,9 @@ spec:
     {{- if .Values.views.pods.sidebar }}
     sidebar: true
     {{- end }}
+    table:
+      sort: namespace, name
+      size: 10
   templating:
     - key: cluster
       label: Cluster
