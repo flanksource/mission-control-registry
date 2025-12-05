@@ -25,7 +25,9 @@ spec:
         {{ include "mssql.connection" . }}
         driver: mssql
         query: |
-          -- Executed by Mission Control Playbook ID: $( .playbook.id ) by User:  $(.user.name) $( .user.email )
-          $( .config.type == 'MSSQL::Database' ? 'USE [' + .config.name + '];' : '' )
+          -- Executed by Mission Control
+          -- Playbook ID: $( .playbook.id )
+          -- User: $(.user.name) $( .user.email )
+          $( if eq .config.type "MSSQL::Database" )USE [$( .config.name )]; $( end )
           $( .params.sql )
 {{- end }}
