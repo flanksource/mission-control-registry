@@ -12,19 +12,10 @@ spec:
         - MSSQL::AgentJob
   {{ include "mssql.approvers" . | indent 2 | trim }}
   actions:
-    - name: Get Job Steps
-      sql:
-        {{ include "mssql.connection" . }}
-        driver: mssql
-        query: |
-{{ .Files.Get "conf/get-agent-job-steps.sql" | indent 10 }}
+
     - name: Execute T-SQL Steps
       sql:
         {{ include "mssql.connection" . }}
         driver: mssql
-        query: |
-          {{`{{- range $i, $step := getAction("Get Job Steps").result.results }}`}}
-          -- Step {{`{{$step.step_id}}`}}: {{`{{$step.step_name}}`}}
-          {{`{{$step.sql}}`}}
-          {{`{{ end }}`}}
+        query: "$(.config.config.sql)"
 {{- end }}

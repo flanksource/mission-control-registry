@@ -76,7 +76,7 @@ spec:
       transform:
         expr: |
           [{
-            'id': '{{ .Values.id }}' + '/' + config.job_name,
+            'id': config.job_id,
             'name': config.job_name,
             'updated_at': config.run_datetime,
             'health': config.status == 'Succeeded' ? 'Healthy' : 'Unhealthy',
@@ -85,11 +85,9 @@ spec:
               'date': config.run_datetime,
               'duration': config.duration_seconds,
             },
-            'steps': has(config.steps) && config.steps != null ? config.steps.JSONArray() : [],
-            'schedules': has(config.schedules) && config.schedules != null ? config.schedules.JSONArray() : []
+            'sql': config.sql
           }].toJSON()
       query: |
-        DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
 {{ .Files.Get "conf/agent-jobs.sql" | indent 8 }}
 {{- end }}
 ---
@@ -105,11 +103,11 @@ spec:
     - driver: mssql
       {{ include "mssql.connection" . | indent 6 | trim }}
       type: MSSQL::AgentJob
-      id: $.id
+      id: $.job_id
       transform:
         expr: |
           [{
-            'id': '{{ .Values.id }}' + '/' + config.job_name.lowerAscii(),
+            'id':  config.job_id,
             'changes': [{
               'name': config.job_name,
               'id': config.external_change_id,
@@ -120,7 +118,6 @@ spec:
             }]
           }].toJSON()
       query: |
-        DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
 {{ .Files.Get "conf/agent-jobs-history.sql" | indent 8 }}
 {{- end }}
 {{- if .Values.rds.tasks }}
