@@ -14,9 +14,10 @@ spec:
   parameters:
     - name: sql
       label: SQL Statement
-      type: text
       properties:
-        multiline: true
+          size: large
+          language: sql
+      type: code
   {{ include "mssql.approvers" . | indent 2 | trim }}
   actions:
     - name: Run SQL
@@ -24,5 +25,7 @@ spec:
         {{ include "mssql.connection" . }}
         driver: mssql
         query: |
-          {{`{{.params.sql}}`}}
+          -- Executed by Mission Control Playbook ID: $( .playbook.id ) by User:  $(.user.name) $( .user.email )
+          $( .config.type == 'MSSQL::Database' ? 'USE [' + .config.name + '];' : '' )
+          $( .params.sql )
 {{- end }}

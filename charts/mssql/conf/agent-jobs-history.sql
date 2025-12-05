@@ -1,6 +1,7 @@
 SELECT
     j.name AS job_name,
-    convert(varchar(200), j.job_id) + '/' + convert(varchar(200), h.instance_id) + '/' +  convert(varchar(200), h.step_id) as external_change_id,
+    lower(CAST(j.job_id AS NVARCHAR(36))) as job_id,
+    lower(convert(varchar(200), j.job_id) + '/' + convert(varchar(200), h.instance_id) + '/' +  convert(varchar(200), h.step_id)) as external_change_id,
     h.step_name as change_type,
     CASE
         WHEN h.run_status = 0 THEN 'Failed'
