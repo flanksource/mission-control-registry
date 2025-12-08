@@ -5,7 +5,6 @@
     "enabled": {
       "default": true,
       "description": "Field that can be used as a condition when kubernetes-view is a dependency.\nThis definition is only here as a placeholder such that it is included in\nthe json schema.\nSee https://helm.sh/docs/chart_best_practices/dependencies/#conditions-and-tags\nfor more info.\n+docs:hidden",
-      "required": [],
       "title": "enabled",
       "type": "boolean"
     },
@@ -83,7 +82,6 @@
         "enabled": {
           "default": true,
           "description": "If this is set to false, no views will be created",
-          "required": [],
           "title": "enabled",
           "type": "boolean"
         },
@@ -92,7 +90,6 @@
           "properties": {
             "enabled": {
               "default": true,
-              "required": [],
               "title": "enabled",
               "type": "boolean"
             },
@@ -101,7 +98,6 @@
               "properties": {
                 "enabled": {
                   "default": true,
-                  "required": [],
                   "title": "enabled",
                   "type": "boolean"
                 }
@@ -114,7 +110,6 @@
               "properties": {
                 "enabled": {
                   "default": true,
-                  "required": [],
                   "title": "enabled",
                   "type": "boolean"
                 }
@@ -124,7 +119,6 @@
             },
             "sidebar": {
               "default": false,
-              "required": [],
               "title": "sidebar",
               "type": "boolean"
             }
@@ -154,13 +148,11 @@
           "properties": {
             "enabled": {
               "default": true,
-              "required": [],
               "title": "enabled",
               "type": "boolean"
             },
             "sidebar": {
               "default": true,
-              "required": [],
               "title": "sidebar",
               "type": "boolean"
             }
@@ -176,7 +168,6 @@
               "properties": {
                 "enabled": {
                   "default": true,
-                  "required": [],
                   "title": "enabled",
                   "type": "boolean"
                 }
@@ -186,7 +177,6 @@
             },
             "enabled": {
               "default": true,
-              "required": [],
               "title": "enabled",
               "type": "boolean"
             },
@@ -195,7 +185,6 @@
               "properties": {
                 "enabled": {
                   "default": true,
-                  "required": [],
                   "title": "enabled",
                   "type": "boolean"
                 }
@@ -208,7 +197,6 @@
               "properties": {
                 "enabled": {
                   "default": true,
-                  "required": [],
                   "title": "enabled",
                   "type": "boolean"
                 }
