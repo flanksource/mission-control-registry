@@ -1,0 +1,256 @@
+{{- if and .Values.views.enabled .Values.views.helmRelease.enabled .Values.views.helmRelease.pods.enabled .Values.global.prometheus.connection }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: helm-release-pods
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Helm Release Pods
+    icon: pod
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+    - key: release
+      label: Helm Release
+      dependsOn:
+        - cluster
+      valueFrom:
+        config:
+          agent: "all"
+          tagSelector: "cluster=$(.var.cluster)"
+          types:
+            - Kubernetes::HelmRelease
+  panels:
+    - name: Pod Health
+      description: Pods grouped by health
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          healthy: "#28C19B"
+          unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM pod GROUP BY health
+    - name: Memory Usage
+      description: Total memory usage across release pods
+      type: gauge
+      query: |
+        SELECT SUM(memory.value) AS value
+        FROM memory
+        LEFT JOIN pod ON memory.pod = pod.name AND memory.namespace = json_extract(pod.tags, '$.namespace')
+      gauge:
+        max: "size(.dataset.total_memory) > 0 ? .dataset.total_memory[0].value : 0"
+        unit: bytes
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 75
+            color: '#F4B23C'
+          - percent: 90
+            color: '#F25C54'
+    - name: CPU Usage
+      description: Total CPU usage across release pods
+      type: gauge
+      query: |
+        SELECT SUM(cpu.value) AS value
+        FROM cpu
+        LEFT JOIN pod ON cpu.pod = pod.name AND cpu.namespace = json_extract(pod.tags, '$.namespace')
+      gauge:
+        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
+        unit: millicore
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+  columns:
+    - name: namespace
+      type: string
+      card:
+        position: subtitle
+      icon: "'namespace'"
+      primaryKey: true
+      filter:
+        type: multiselect
+    - name: name
+      type: config_item
+      primaryKey: true
+      card:
+        position: title
+    - name: tags
+      type: labels
+      card:
+        position: body
+    - name: status
+      type: status
+      icon: row.health
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: health
+      type: health
+      hidden: true
+      card:
+        useForAccent: true
+      filter:
+        type: multiselect
+    - name: memory
+      type: gauge
+      unit: bytes
+      card:
+        position: headerRight
+      description: Memory usage
+      gauge:
+        max: row.memory_limit
+        thresholds:
+          - percent: 0
+            color: green
+          - percent: 75
+            color: orange
+          - percent: 90
+            color: red
+    - name: cpu
+      type: gauge
+      unit: millicore
+      card:
+        position: headerRight
+      description: CPU usage
+      gauge:
+        max: row.cpu_limit
+        thresholds:
+          - percent: 0
+            color: '#8BC34A'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: created
+      type: datetime
+      card:
+        position: body
+    - name: updated
+      type: datetime
+      card:
+        position: body
+    - name: image
+      type: string
+      hidden: true
+      card:
+        position: body
+    - name: node
+      type: string
+      hidden: true
+      filter:
+        type: multiselect
+      card:
+        position: body
+  merge: |
+    SELECT
+      pod.id,
+      pod.name,
+      json_extract(pod.tags, '$.namespace') AS namespace,
+      json_extract(pod.tags, '$.cluster') AS cluster,
+      pod.status,
+      pod.health,
+      pod.tags,
+      pod.config,
+      pod.__grants,
+      pod.created_at,
+      pod.updated_at,
+      memory.value as memory,
+      to_bytes(COALESCE(
+        json_extract(pod.config, '$.spec.containers[0].resources.limits.memory'), 
+        ''
+      )) AS memory_limit,
+      cpu.value as cpu,
+      to_millicores(COALESCE(
+        json_extract(pod.config, '$.spec.containers[0].resources.limits.cpu'), 
+        ''
+      )) AS cpu_limit
+    FROM pod
+    LEFT JOIN memory
+      ON pod.name = memory.pod 
+      AND json_extract(pod.tags, '$.namespace') = memory.namespace
+    LEFT JOIN cpu
+      ON pod.name = cpu.pod 
+      AND json_extract(pod.tags, '$.namespace') = cpu.namespace
+    ORDER BY namespace, name
+  queries:
+    memory:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, pod) (
+            container_memory_working_set_bytes{
+              app_kubernetes_io_instance="$(.var.release)",
+              container!="POD",
+              container!=""
+            }
+          )
+    cpu:
+      columns:
+        namespace: string
+        pod: string
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum by (namespace, pod) (
+            irate(container_cpu_usage_seconds_total{
+              app_kubernetes_io_instance="$(.var.release)",
+              container!="POD",
+              container!=""
+            }[5m])
+          ) * 1000
+    pod:
+      configs:
+        agent: "all"
+        tagSelector: "cluster=$(.var.cluster)"
+        labelSelector: "app.kubernetes.io/instance=$(.var.release)"
+        types:
+          - Kubernetes::Pod
+    total_memory:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(
+            container_memory_working_set_bytes{
+              app_kubernetes_io_instance="$(.var.release)",
+              container!="POD",
+              container!=""
+            }
+          )
+    total_cpu:
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: |
+          sum(
+            irate(container_cpu_usage_seconds_total{
+              app_kubernetes_io_instance="$(.var.release)",
+              container!="POD",
+              container!=""
+            }[5m])
+          ) * 1000
+  mapping:
+    created: row.created_at
+    updated: row.updated_at
+    image: >
+      has(row.config) ? row.config.JSON().spec.containers[0].image : "N/A"
+    node: >
+      has(row.config) ? (has(row.config.JSON().spec.nodeName) ? row.config.JSON().spec.nodeName : "N/A"): "N/A"
+{{- end }}
