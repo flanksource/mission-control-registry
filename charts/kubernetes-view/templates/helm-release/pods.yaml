@@ -44,8 +44,8 @@ spec:
       type: gauge
       query: |
         SELECT SUM(memory.value) AS value
-        FROM memory
-        LEFT JOIN pod ON memory.pod = pod.name AND memory.namespace = json_extract(pod.tags, '$.namespace')
+        FROM pod
+        LEFT JOIN memory ON memory.pod = pod.name AND memory.namespace = json_extract(pod.tags, '$.namespace')
       gauge:
         max: "size(.dataset.total_memory) > 0 ? .dataset.total_memory[0].value : 0"
         unit: bytes
@@ -61,8 +61,8 @@ spec:
       type: gauge
       query: |
         SELECT SUM(cpu.value) AS value
-        FROM cpu
-        LEFT JOIN pod ON cpu.pod = pod.name AND cpu.namespace = json_extract(pod.tags, '$.namespace')
+        FROM pod
+        LEFT JOIN cpu ON cpu.pod = pod.name AND cpu.namespace = json_extract(pod.tags, '$.namespace')
       gauge:
         max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
         unit: millicore
@@ -197,7 +197,6 @@ spec:
         query: |
           sum by (namespace, pod) (
             container_memory_working_set_bytes{
-              app_kubernetes_io_instance="$(.var.release)",
               container!="POD",
               container!=""
             }
@@ -212,7 +211,6 @@ spec:
         query: |
           sum by (namespace, pod) (
             irate(container_cpu_usage_seconds_total{
-              app_kubernetes_io_instance="$(.var.release)",
               container!="POD",
               container!=""
             }[5m])
@@ -230,7 +228,6 @@ spec:
         query: |
           sum(
             container_memory_working_set_bytes{
-              app_kubernetes_io_instance="$(.var.release)",
               container!="POD",
               container!=""
             }
@@ -241,7 +238,6 @@ spec:
         query: |
           sum(
             irate(container_cpu_usage_seconds_total{
-              app_kubernetes_io_instance="$(.var.release)",
               container!="POD",
               container!=""
             }[5m])
