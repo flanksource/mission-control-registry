@@ -47,7 +47,6 @@ spec:
         FROM pod
         LEFT JOIN memory ON memory.pod = pod.name AND memory.namespace = json_extract(pod.tags, '$.namespace')
       gauge:
-        max: "size(.dataset.total_memory) > 0 ? .dataset.total_memory[0].value : 0"
         unit: bytes
         thresholds:
           - percent: 0
@@ -64,7 +63,6 @@ spec:
         FROM pod
         LEFT JOIN cpu ON cpu.pod = pod.name AND cpu.namespace = json_extract(pod.tags, '$.namespace')
       gauge:
-        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
         unit: millicore
         thresholds:
           - percent: 0
@@ -222,26 +220,6 @@ spec:
         labelSelector: "app.kubernetes.io/instance=$(.var.release)"
         types:
           - Kubernetes::Pod
-    total_memory:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(
-            container_memory_working_set_bytes{
-              container!="POD",
-              container!=""
-            }
-          )
-    total_cpu:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(
-            irate(container_cpu_usage_seconds_total{
-              container!="POD",
-              container!=""
-            }[5m])
-          ) * 1000
   mapping:
     created: row.created_at
     updated: row.updated_at
