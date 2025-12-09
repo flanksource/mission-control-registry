@@ -8,6 +8,9 @@ metadata:
 spec:
   display:
     title: Deployments
+    table:
+      sort: name
+      size: 10
     icon: kubernetes::deployment
     {{- if .Values.views.deployments.sidebar }}
     sidebar: true
@@ -47,6 +50,7 @@ spec:
       description: The deployment name.
       card:
         position: title
+      width: "3"
     - name: namespace
       type: string
       description: The namespace name.
@@ -56,16 +60,19 @@ spec:
         type: multiselect
       url:
         config: f("name=$(.namespace) tags.cluster=$(.cluster) type=Kubernetes::Namespace", row)
+      width: "2"
     - name: readyReplicas
       type: string
       description: The number of ready replicas.
       card:
         position: body
+      width: "1"
     - name: replicas
       type: string
       description: The desired number of replicas.
       card:
         position: body
+      width: "1"
     - name: status
       type: status
       icon: row.health
@@ -74,6 +81,7 @@ spec:
         position: subtitle
       filter:
         type: multiselect
+      width: "1"
     - name: health
       type: health
       hidden: true
@@ -96,6 +104,7 @@ spec:
             color: '#F4B23C'
           - percent: 85
             color: '#F25C54'
+      width: "1"
     - name: memory
       type: gauge
       unit: bytes
@@ -111,16 +120,19 @@ spec:
             color: orange
           - percent: 90
             color: red
+      width: "1"
     - name: createdAt
       type: datetime
       description: The creation timestamp.
       card:
         position: body
+      width: "2"
     - name: lastUpdated
       type: datetime
       description: The last updated time.
       card:
         position: body
+      width: "2"
   queries:
     deployments:
       configs:

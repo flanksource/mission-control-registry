@@ -39,6 +39,7 @@ spec:
       hidden: true
       primaryKey: true
     - name: last_seen
+      width: "2"
       type: datetime
     - name: config_type
       type: string
@@ -46,24 +47,30 @@ spec:
       filter:
         type: multiselect
     - name: catalog
+      width: "4"
       type: config_item
     - name: type
+      width: "2"
       type: string
       icon: row.type
       filter:
         type: multiselect
     - name: summary
+      width: "4"
       type: string
     - name: severity
+      width: "2"
       type: string
       filter:
         type: multiselect
       hidden: true
     - name: tags
+      width: "3"
       type: labels
       filter:
         type: multiselect
     - name: created_by
+      width: "2"
       type: string
   merge: >
     SELECT 

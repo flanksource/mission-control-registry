@@ -13,7 +13,7 @@ spec:
     sidebar: true
     {{- end }}
     table:
-      sort: namespace, name
+      sort: name
       size: 10
   templating:
     - key: cluster
@@ -99,15 +99,18 @@ spec:
             viewvar__cluster: row.cluster
           name: >
             'namespace'
+      width: "2"
     - name: name
       type: config_item
       primaryKey: true
       card:
         position: title
+      width: "3"
     - name: tags
       type: labels
       card:
         position: body
+      width: "3"
     - name: status
       type: status
       icon: row.health
@@ -115,6 +118,7 @@ spec:
         position: subtitle
       filter:
         type: multiselect
+      width: "2"
     - name: health
       type: health
       hidden: true
@@ -137,6 +141,7 @@ spec:
             color: orange
           - percent: 90
             color: red
+      width: "1"
     - name: cpu
       type: gauge
       unit: millicore
@@ -151,14 +156,17 @@ spec:
             color: '#F4B23C'
           - percent: 85
             color: '#F25C54'
+      width: "1"
     - name: created
       type: datetime
       card:
         position: body
+      width: "2"
     - name: updated
       type: datetime
       card:
         position: body
+      width: "2"
     - name: image
       type: string
       hidden: true

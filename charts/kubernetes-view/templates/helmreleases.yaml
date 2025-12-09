@@ -12,6 +12,9 @@ spec:
     {{- if .Values.views.helmReleases.sidebar }}
     sidebar: true
     {{- end }}
+    table:
+      sort: application
+      size: 10
     card:
       default: true
   templating:

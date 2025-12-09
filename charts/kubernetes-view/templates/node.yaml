@@ -12,7 +12,8 @@ spec:
     title: Nodes
     icon: kubernetes::node
     table:
-      columnWidth: [3, 3, 2, 2, 1, 1, 1, 1, 2, 1, 1, 2]
+      sort: name
+      size: 10
     {{- if .Values.views.nodes.sidebar }}
     sidebar: true
     {{- end }}
@@ -96,15 +97,18 @@ spec:
         position: title
       url:
         config: row.id
+      width: "3"
     - name: cluster
       type: string
       icon: "'kubernetes::cluster'"
+      width: "2"
     - name: role
       type: string
       card:
         position: subtitle
       filter:
         type: multiselect
+      width: "2"
     - name: status
       type: status
       icon: row.health
@@ -112,6 +116,7 @@ spec:
         position: subtitle
       filter:
         type: multiselect
+      width: "2"
     - name: health
       type: health
       hidden: true
@@ -119,6 +124,7 @@ spec:
         useForAccent: true
       filter:
         type: multiselect
+      width: "1"
     - name: cpu
       type: gauge
       unit: millicore
@@ -134,6 +140,7 @@ spec:
             color: '#F4B23C'
           - percent: 85
             color: '#F25C54'
+      width: "1"
     - name: memory
       type: gauge
       unit: bytes
@@ -149,6 +156,7 @@ spec:
             color: '#F4B23C'
           - percent: 85
             color: '#F25C54'
+      width: "1"
     - name: disk
       type: gauge
       unit: percent
@@ -164,11 +172,13 @@ spec:
             color: '#F4B23C'
           - percent: 85
             color: '#F25C54'
+      width: "1"
     - name: pods
       type: number
       card:
         position: body
       description: Running pods count
+      width: "1"
     - name: allocatable_cpu
       type: number
       unit: millicore
@@ -181,6 +191,7 @@ spec:
       description: Allocatable memory
     - name: zone
       type: string
+      width: "2"
       card:
         position: body
       description: Availability zone
@@ -188,12 +199,15 @@ spec:
         type: multiselect
     - name: uptime
       type: duration
+      width: "1"
       description: Node uptime
     - name: load
       type: number
+      width: "1"
       description: 5-minute CPU load average
     - name: created_at
       type: datetime
+      width: "2"
       card:
         position: footer
   merge: |
