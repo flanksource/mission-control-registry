@@ -1,0 +1,58 @@
+{{- if and .Values.views.enabled .Values.views.helmRelease.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: helm-release
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Helm Release
+    icon: helm
+    {{- if .Values.views.helmRelease.sidebar }}
+    sidebar: true
+    {{- end }}
+    plugins:
+      - configTab:
+          types:
+            - Kubernetes::HelmRelease
+        variables:
+          cluster: '$(.config.tags.cluster)'
+          namespace: '$(.config.tags.namespace)'
+          release: '$(.config.name)'
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+    - key: release
+      label: Helm Release
+      dependsOn:
+        - cluster
+      valueFrom:
+        config:
+          agent: "all"
+          tagSelector: "cluster=$(.var.cluster)"
+          types:
+            - Kubernetes::HelmRelease
+{{- if or .Values.views.helmRelease.pods.enabled .Values.views.helmRelease.resources.enabled }}
+  sections:
+    {{- if .Values.views.helmRelease.pods.enabled }}
+    - title: Pods
+      icon: pod
+      viewRef:
+        namespace: {{ .Release.Namespace }}
+        name: helm-release-pods
+    {{- end }}
+    {{- if .Values.views.helmRelease.resources.enabled }}
+    - title: Resources
+      icon: kubernetes
+      viewRef:
+        namespace: {{ .Release.Namespace }}
+        name: helm-release-resources
+    {{- end }}
+{{- end }}
+{{- end }}

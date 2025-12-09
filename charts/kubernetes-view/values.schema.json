@@ -85,6 +85,47 @@
           "title": "enabled",
           "type": "boolean"
         },
+        "helmRelease": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "pods": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": true,
+                  "title": "enabled",
+                  "type": "boolean"
+                }
+              },
+              "required": [],
+              "title": "pods"
+            },
+            "resources": {
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "default": true,
+                  "title": "enabled",
+                  "type": "boolean"
+                }
+              },
+              "required": [],
+              "title": "resources"
+            },
+            "sidebar": {
+              "default": false,
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "helmRelease"
+        },
         "helmReleases": {
           "additionalProperties": false,
           "properties": {
