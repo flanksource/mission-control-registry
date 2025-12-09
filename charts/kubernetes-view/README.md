@@ -25,7 +25,7 @@ A Helm chart for Kubernetes views in Flanksource Mission Control
 | views.helmRelease.enabled | bool | `true` |  |
 | views.helmRelease.pods.enabled | bool | `true` |  |
 | views.helmRelease.resources.enabled | bool | `true` |  |
-| views.helmRelease.sidebar | bool | `true` |  |
+| views.helmRelease.sidebar | bool | `false` |  |
 | views.helmReleases.enabled | bool | `true` |  |
 | views.helmReleases.sidebar | bool | `true` |  |
 | views.ingress.enabled | bool | `true` |  |

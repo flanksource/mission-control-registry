@@ -12,7 +12,7 @@ spec:
   display:
     title: System
     ordinal: 2
-    icon: system
+    icon: server
     {{- if .Values.views.system.sidebar }}
     sidebar: true
     {{- end }}

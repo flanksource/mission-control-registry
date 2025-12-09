@@ -133,7 +133,7 @@ views:
     # default: false
     # type: boolean
     # @schema
-    sidebar: true
+    sidebar: false
     # @schema
     # required: false
     # @schema
