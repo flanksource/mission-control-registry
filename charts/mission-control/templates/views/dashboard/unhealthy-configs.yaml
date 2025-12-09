@@ -13,6 +13,9 @@ spec:
     {{- if .Values.views.unhealthyConfigs.sidebar }}
     sidebar: true
     {{- end }}
+    table:
+      size: 10
+      sort: -created
   panels:
     - name: By Health
       description: Configs grouped by health status

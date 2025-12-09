@@ -13,6 +13,9 @@ spec:
     {{- if .Values.views.recentChanges.sidebar }}
     sidebar: true
     {{- end }}
+    table:
+      size: 10
+      sort: -last_seen
   panels:
     - name: Recent Changes
       type: number
@@ -36,6 +39,7 @@ spec:
       hidden: true
       primaryKey: true
     - name: last_seen
+      width: "2"
       type: datetime
     - name: config_type
       type: string
@@ -43,24 +47,30 @@ spec:
       filter:
         type: multiselect
     - name: catalog
+      width: "4"
       type: config_item
     - name: type
+      width: "2"
       type: string
       icon: row.type
       filter:
         type: multiselect
     - name: summary
+      width: "4"
       type: string
     - name: severity
+      width: "2"
       type: string
       filter:
         type: multiselect
       hidden: true
     - name: tags
+      width: "3"
       type: labels
       filter:
         type: multiselect
     - name: created_by
+      width: "2"
       type: string
   merge: >
     SELECT 
@@ -85,6 +95,5 @@ spec:
     recent_changes:
       changes:
         name: "*"
-        limit: 10 # TODO: This should be higher but we need to implement table page size in view spec first
         search: "severity!=info change_type!=diff @order=-created_at"
 {{- end}}
