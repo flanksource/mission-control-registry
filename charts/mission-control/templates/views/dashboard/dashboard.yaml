@@ -9,7 +9,7 @@ metadata:
 spec:
   display:
     title: Dashboard
-    icon: overview
+    icon: dashboard-line
     ordinal: 1
     {{- if .Values.views.dashboard.sidebar }}
     sidebar: true

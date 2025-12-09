@@ -9,6 +9,9 @@ spec:
   display:
     title: Helm Release Pods
     icon: pod
+    table:
+      sort: name
+      size: 10
   templating:
     - key: cluster
       label: Cluster
