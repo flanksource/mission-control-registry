@@ -45,8 +45,6 @@ spec:
       primaryKey: true
     - name: name
       type: config_item
-      url:
-        config: row.id
     - name: health
       type: health
       filter:
