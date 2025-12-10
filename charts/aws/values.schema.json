@@ -183,22 +183,6 @@
       "required": [],
       "title": "skipTLSVerify"
     },
-    "topology": {
-      "additionalProperties": false,
-      "properties": {
-        "name": {
-          "default": "aws",
-          "required": [],
-          "title": "name",
-          "type": "string"
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "title": "topology",
-      "type": "object"
-    },
     "transform": {
       "additionalProperties": false,
       "properties": {
@@ -416,7 +400,6 @@
   },
   "required": [
     "labels",
-    "topology",
     "scraper",
     "connection",
     "includeResources",
