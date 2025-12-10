@@ -68,11 +68,14 @@ spec:
           - percent: 90
             color: '#F25C54'
   columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
     - name: name
       type: config_item
       card:
         position: title
-      primaryKey: true
       url:
         config: row.id
     - name: status
