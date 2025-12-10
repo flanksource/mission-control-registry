@@ -55,15 +55,6 @@ spec:
       description: The deployment name.
       card:
         position: title
-    - name: namespace
-      type: string
-      description: The namespace name.
-      card:
-        position: subtitle
-      filter:
-        type: multiselect
-      url:
-        config: f("name=$(.namespace) tags.cluster=$(.cluster) type=Kubernetes::Namespace", row)
     - name: readyReplicas
       type: string
       description: The number of ready replicas.

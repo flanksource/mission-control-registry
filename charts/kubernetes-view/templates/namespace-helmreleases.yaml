@@ -66,15 +66,6 @@ spec:
         position: title
       url:
         config: row.id
-    - name: namespace
-      type: string
-      description: The namespace name.
-      card:
-        position: subtitle
-      filter:
-        type: multiselect
-      url:
-        config: f("name=$(tags.namespace) tags.cluster=$(tags.cluster) type=Kubernetes::Namespace", row)
     - name: chart
       type: string
       description: The chart name.
