@@ -1,8 +1,6 @@
 # yaml-language-server: $schema=values.schema.json
 labels: {}
 
-topology:
-  name: aws
 scraper:
   name: aws
 
