@@ -13,6 +13,9 @@ spec:
     {{- if .Values.views.notificationSendHistory.sidebar }}
     sidebar: true
     {{- end }}
+    table:
+      size: 10
+      sort: -created_at
   cache:
     maxAge: 10m
     minAge: 5s
@@ -61,6 +64,6 @@ spec:
             retries,
             count
           FROM notification_send_history
+          WHERE NOW() - created_at < INTERVAL '12 hours'
           ORDER BY created_at DESC
-          LIMIT 10
 {{- end}}
