@@ -18,6 +18,7 @@ ct_install: $(LOCALBIN)
 values.schema.json: .bin/helm-schema
 	.bin/helm-schema -r -f values.yaml
 	yq -i '.properties.nameOverride.description = ""' values.schema.json
+	yq -i '.additionalProperties = true' values.schema.json
 
 .PHONY: chart
 chart: values.schema.json  README.md
