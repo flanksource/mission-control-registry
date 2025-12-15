@@ -103,7 +103,7 @@ spec:
     - driver: mssql
       {{ include "mssql.connection" . | indent 6 | trim }}
       type: MSSQL::AgentJob
-      id: $.job_id
+      id: $.id
       transform:
         expr: |
           [{

@@ -1,0 +1,100 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mssql
+spec:
+  selector:
+    matchLabels:
+      app: mssql
+  serviceName: mssql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mssql
+    spec:
+      volumes:
+        - name: tls-volume
+          secret:
+            secretName: mssql-tls
+        - name: mssql-config-volume
+          configMap:
+            name: mssql
+            items:
+              - key: mssql.conf
+                path: mssql.conf
+
+      containers:
+        - name: mssql
+          image: mcr.microsoft.com/azure-sql-edge:latest
+          volumeMounts:
+            - name: mssql-config-volume
+              mountPath: /etc/opt/mssql
+            - name: tls-volume
+              mountPath: /etc/ssl/certs/mssql.pem
+              subPath: tls.crt
+            - name: tls-volume
+              mountPath: /etc/ssl/private/mssql.key
+              subPath: tls.key
+          ports:
+            - containerPort: 1433
+              name: db
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: SA_PASSWORD
+              value: "Your_password123"
+            - name: MSSQL_PID
+              value: "Developer"
+            - name: MSSQL_ENABLE_HADR
+              value: "true"
+
+            - name: MSSQL_AGENT_ENABLED
+              value: "true"
+
+---
+kind: Certificate
+apiVersion: cert-manager.io/v1
+metadata:
+  name: mssql-tls
+spec:
+  secretName: mssql-tls
+  commonName: mssql.local
+  dnsNames:
+    - mssql.local
+  issuerRef:
+    name: default-issuer
+    kind: ClusterIssuer
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: default-issuer
+spec:
+  selfSigned: {}
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mssql
+data:
+  mssql.conf: |
+    [network]
+    tlscert = /etc/ssl/certs/mssql.pem
+    tlskey = /etc/ssl/private/mssql.key
+    tlsprotocols = 1.2
+    forceencryption = 1
+
+    [EULA]
+    accepteula = Y
+    accepteulaml = Y
+
+    [coredump]
+    captureminiandfull = true
+    coredumptype = full
+
+    [hadr]
+    hadrenabled = 1
+
+    [language]
+    lcid = 1033

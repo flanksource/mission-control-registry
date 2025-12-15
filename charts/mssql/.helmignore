@@ -1,1 +1,4 @@
 .db
+test/
+.bin/
+.claude/
