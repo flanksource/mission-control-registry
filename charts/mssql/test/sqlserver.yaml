@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mssql
+  namespace: default
 spec:
   selector:
     matchLabels:
@@ -14,9 +15,6 @@ spec:
         app: mssql
     spec:
       volumes:
-        - name: tls-volume
-          secret:
-            secretName: mssql-tls
         - name: mssql-config-volume
           configMap:
             name: mssql
@@ -30,12 +28,6 @@ spec:
           volumeMounts:
             - name: mssql-config-volume
               mountPath: /etc/opt/mssql
-            - name: tls-volume
-              mountPath: /etc/ssl/certs/mssql.pem
-              subPath: tls.crt
-            - name: tls-volume
-              mountPath: /etc/ssl/private/mssql.key
-              subPath: tls.key
           ports:
             - containerPort: 1433
               name: db
@@ -48,43 +40,16 @@ spec:
               value: "Developer"
             - name: MSSQL_ENABLE_HADR
               value: "true"
-
             - name: MSSQL_AGENT_ENABLED
               value: "true"
-
----
-kind: Certificate
-apiVersion: cert-manager.io/v1
-metadata:
-  name: mssql-tls
-spec:
-  secretName: mssql-tls
-  commonName: mssql.local
-  dnsNames:
-    - mssql.local
-  issuerRef:
-    name: default-issuer
-    kind: ClusterIssuer
----
-apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
-metadata:
-  name: default-issuer
-spec:
-  selfSigned: {}
 ---
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: mssql
+  namespace: default
 data:
   mssql.conf: |
-    [network]
-    tlscert = /etc/ssl/certs/mssql.pem
-    tlskey = /etc/ssl/private/mssql.key
-    tlsprotocols = 1.2
-    forceencryption = 1
-
     [EULA]
     accepteula = Y
     accepteulaml = Y

@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/flanksource/clicky"
 	"github.com/flanksource/commons-test/helm"
+	"github.com/flanksource/commons-test/mission_control"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -26,10 +27,12 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 
 	Context("SQL Server Bundle", Ordered, func() {
 		var mssqlChart *helm.HelmChart
+
 		It("Can be Installed", func() {
 			mssqlChart = helm.NewHelmChart(ctx, "..").
 				Release("mssql-bundle").
 				Namespace("mission-control").
+				ForceConflicts().
 				SetValue("connectionName", "").
 				SetValue("url", connectionString)
 			Expect(mssqlChart.InstallOrUpgrade()).NotTo(HaveOccurred())
@@ -39,7 +42,7 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 		})
 
 		It("Runs the main scraper successfully", func() {
-			mainScraper, err := mcInstance.Get(ctx, "ScrapeConfig", "mission-control", "mssql-scraper")
+			mainScraper, err := k8s.Get(ctx, "ScrapeConfig", "mission-control", "mssql-scraper")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(mainScraper).NotTo(BeNil())
 
@@ -50,7 +53,7 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 		})
 
 		It("Runs the incremental scraper successfully", func() {
-			incrementalScraper, err := mcInstance.Get(ctx, "ScrapeConfig", "mission-control", "mssql-scraper-incremental")
+			incrementalScraper, err := k8s.Get(ctx, "ScrapeConfig", "mission-control", "mssql-scraper-incremental")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(incrementalScraper).NotTo(BeNil())
 
@@ -61,7 +64,7 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 		})
 
 		It("Creates MSSQL:Server config items", func() {
-			servers, err := mcInstance.QueryCatalog(ResourceSelector{Types: []string{"MSSQL::Server"}})
+			servers, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::Server"}})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(servers).NotTo(BeEmpty(), "Expected at least one MSSQL::Server config item")
 			for _, s := range servers {
@@ -70,7 +73,7 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 		})
 
 		It("Creates MSSQL:Database config items", func() {
-			databases, err := mcInstance.QueryCatalog(ResourceSelector{Types: []string{"MSSQL::Database"}})
+			databases, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::Database"}})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(databases).NotTo(BeEmpty(), "Expected at least one MSSQL::Database config item")
 			for _, db := range databases {

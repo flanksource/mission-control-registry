@@ -14,8 +14,6 @@ CREATE TABLE Employees (
     Position NVARCHAR(100)
 );
 
-
-
 CREATE TABLE EmployeeLogins (
     EmployeeID INT PRIMARY KEY,
     LoginTime DATETIME,

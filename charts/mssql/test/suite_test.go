@@ -13,6 +13,8 @@ import (
 	flanksourceCtx "github.com/flanksource/commons-db/context"
 	"github.com/flanksource/commons-db/kubernetes"
 	"github.com/flanksource/commons-test/helm"
+	k8stest "github.com/flanksource/commons-test/kubernetes"
+	"github.com/flanksource/commons-test/mission_control"
 	"github.com/flanksource/commons/http"
 	commonsLogger "github.com/flanksource/commons/logger"
 	_ "github.com/microsoft/go-mssqldb"
@@ -60,8 +62,10 @@ func TestHelm(t *testing.T) {
 	RunSpecs(t, "MSSQL Helm Chart Suite")
 }
 
-var mcInstance *MissionControl
+var mcInstance *mission_control.MissionControl
 var mcChart *helm.HelmChart
+
+var mcStopChan, configDBStopChan, mssqlStopChan chan struct{}
 var _ = BeforeSuite(func() {
 
 	// Get environment variables or use defaults
@@ -97,26 +101,27 @@ var _ = BeforeSuite(func() {
 	By("Installing Mission Control")
 	mcChart = helm.NewHelmChart(ctx, "../../../../mission-control-chart/chart/")
 	// mcChart = helm.NewHelmChart(ctx, "flanksource/mission-control")
+
 	Expect(mcChart.
 		Release("mission-control").Namespace("mission-control").
-		Values(map[string]interface{}{
-			"global": map[string]interface{}{
-				"ui": map[string]interface{}{
+		WaitFor(time.Minute * 5).
+		Values(map[string]any{
+			"global": map[string]any{
+				"ui": map[string]any{
 					"host": "mission-control.cluster.local",
 				},
 			},
 			"authProvider": "basic",
-
-			"htpasswd": map[string]interface{}{
+			"htpasswd": map[string]any{
 				"create": true,
 			},
-			"ingress": map[string]interface{}{
-				"enabled": true,
-				"annotations": map[string]interface{}{
-					"cert-manager.io/cluster-issuer": "self-signed",
-				},
+			"kratos": map[string]any{
+				"enabled": false,
 			},
-			"config-db": map[string]interface{}{
+			"ingress": map[string]any{
+				"enabled": false,
+			},
+			"config-db": map[string]any{
 				"logLevel": "-vvv",
 			},
 			"logLevel": "-vvv",
@@ -129,19 +134,23 @@ var _ = BeforeSuite(func() {
 	Expect(adminPassword).NotTo(BeEmpty(), "Mission Control admin password should not be empty")
 	logger.Infof(clicky.MustFormat(adminPassword))
 
-	podIP, err := k8s.GetPodIP(ctx, namespace, "app.kubernetes.io/name=mission-control")
-	Expect(err).NotTo(HaveOccurred(), "Failed to get Mission Control pod IP")
+	// Port forward to mission-control pod
+	var mcLocalPort int
+	mcLocalPort, mcStopChan, err = k8stest.PortForwardPod(ctx, k8s, kubeconfig, namespace, "app.kubernetes.io/name=mission-control", 8080)
+	Expect(err).NotTo(HaveOccurred(), "Failed to port forward to Mission Control pod")
+
+	// Port forward to config-db pod
+	var configDBLocalPort int
+	configDBLocalPort, configDBStopChan, err = k8stest.PortForwardPod(ctx, k8s, kubeconfig, namespace, "app.kubernetes.io/name=config-db", 8080)
+	Expect(err).NotTo(HaveOccurred(), "Failed to port forward to Config DB pod")
 
 	// Initialize Mission Control client, get credentianls and serviceIP from deployed chart.
-	mcInstance = &MissionControl{
-		Client:   k8s,
-		HTTP:     http.NewClient().BaseURL("http://"+podIP+":8080").Auth("admin@local", adminPassword),
+	mcInstance = &mission_control.MissionControl{
+		HTTP:     http.NewClient().BaseURL(fmt.Sprintf("http://localhost:%d", mcLocalPort)).Auth("admin@local", adminPassword),
 		Username: "admin@local",
 		Password: adminPassword,
+		ConfigDB: http.NewClient().BaseURL(fmt.Sprintf("http://localhost:%d", configDBLocalPort)).Auth("admin@local", adminPassword),
 	}
-	podIP, err = k8s.GetPodIP(ctx, namespace, "app.kubernetes.io/name=config-db")
-	Expect(err).NotTo(HaveOccurred(), "Failed to get Config DB pod IPs")
-	mcInstance.ConfigDB = http.NewClient().BaseURL("http://"+podIP+":8080").Auth("admin@local", adminPassword)
 
 	db, connectionString, err = setupSqlServer()
 	Expect(err).NotTo(HaveOccurred())
@@ -154,6 +163,15 @@ var _ = BeforeSuite(func() {
 
 })
 
+var _ = AfterSuite(func() {
+	if mcStopChan != nil {
+		close(mcStopChan)
+	}
+	if configDBStopChan != nil {
+		close(configDBStopChan)
+	}
+})
+
 func setupSqlServer() (*sql.DB, string, error) {
 
 	result, err := k8s.ApplyFile(context.Background(), "sqlserver.yaml")
@@ -161,27 +179,33 @@ func setupSqlServer() (*sql.DB, string, error) {
 	logger.Infof(result.Pretty().ANSI())
 	Expect(err).NotTo(HaveOccurred(), "Failed to deploy test SQL Server: %s", result)
 
-	if err := mcInstance.WaitForPod(context.TODO(), namespace, "mssql-0", time.Minute*5); err != nil {
+	mssqlNs := "default"
+	if err := k8s.WaitForPod(context.Background(), mssqlNs, "mssql-0", time.Minute*5); err != nil {
 		return nil, "", fmt.Errorf("SQL Server pod did not become ready in time: %v", err)
 	}
 
-	pod, err := mcInstance.Client.CoreV1().Pods(namespace).Get(context.TODO(), "mssql-0", v1.GetOptions{})
+	pod, err := k8s.CoreV1().Pods(mssqlNs).Get(context.TODO(), "mssql-0", v1.GetOptions{})
 	Expect(err).NotTo(HaveOccurred(), "Failed to get SQL Server pod: %s", err)
 	Expect(pod).NotTo(BeNil(), "Expected SQL Server pod to be found")
 	Expect(pod.Status.PodIP).NotTo(BeEmpty(), "Expected SQL Server pod to have a valid IP address")
 
-	// Build connection string
-	// connectionString = fmt.Sprintf("server=%s;port=1433;database=master;user id=sa;password=Your_password123;encrypt=disable",
-	// 	pod.Status.PodIP)
+	var mssqlPort int
+	mssqlPort, mssqlStopChan, err = k8stest.PortForwardPod(ctx, k8s, kubeconfig, mssqlNs, "app=mssql", 1433)
+	Expect(err).NotTo(HaveOccurred(), "Failed to port forward to MSSQL pod")
 
-	connectionString = fmt.Sprintf("sqlserver://sa:Your_password123@%s:1433?database=master;encrypt=disable",
+	connectionString = fmt.Sprintf("sqlserver://sa:Your_password123@%s:1433?database=master;encrypt=disable;TrustServerCertificate=true",
 		pod.Status.PodIP)
 
 	logger.Infof("Connecting to SQL Server with connection string: %s", connectionString)
 
-	db, err := sql.Open("sqlserver", connectionString)
+	connStringLocal := fmt.Sprintf("sqlserver://sa:Your_password123@localhost:%d?database=master;encrypt=disable;TrustServerCertificate=true",
+		mssqlPort)
+
+	db, err := sql.Open("sqlserver", connStringLocal)
 	if err != nil {
 		return nil, "", fmt.Errorf("Failed to open SQL Server connection: %v", err)
 	}
+	err = db.Ping()
+	Expect(err).NotTo(HaveOccurred())
 	return db, connectionString, nil
 }
