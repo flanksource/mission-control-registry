@@ -100,11 +100,12 @@ var _ = BeforeSuite(func() {
 
 	By("Installing Mission Control")
 	mcChart = helm.NewHelmChart(ctx, "../../../../mission-control-chart/chart/")
-	// mcChart = helm.NewHelmChart(ctx, "flanksource/mission-control")
+	//mcChart = helm.NewHelmChart(ctx, "flanksource/mission-control")
 
 	Expect(mcChart.
 		Release("mission-control").Namespace("mission-control").
 		WaitFor(time.Minute * 5).
+		ForceConflicts().
 		Values(map[string]any{
 			"global": map[string]any{
 				"ui": map[string]any{
@@ -115,14 +116,14 @@ var _ = BeforeSuite(func() {
 			"htpasswd": map[string]any{
 				"create": true,
 			},
-			"kratos": map[string]any{
-				"enabled": false,
-			},
-			"ingress": map[string]any{
-				"enabled": false,
-			},
+			"flanksource-ui": map[string]any{"enabled": false},
+			"kratos":         map[string]any{"enabled": false},
+			"ingress":        map[string]any{"enabled": false},
 			"config-db": map[string]any{
 				"logLevel": "-vvv",
+				"properties": map[string]any{
+					"log.exclusions": true,
+				},
 			},
 			"logLevel": "-vvv",
 		}).
@@ -207,5 +208,14 @@ func setupSqlServer() (*sql.DB, string, error) {
 	}
 	err = db.Ping()
 	Expect(err).NotTo(HaveOccurred())
+
+	qq, err := os.ReadFile("./test-data.sql")
+	Expect(err).NotTo(HaveOccurred())
+
+	r, err := db.Exec(string(qq))
+	Expect(err).NotTo(HaveOccurred())
+	logger.Infof(clicky.MustFormat(r))
+
+	time.Sleep(15 * time.Second)
 	return db, connectionString, nil
 }

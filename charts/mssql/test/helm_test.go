@@ -79,6 +79,22 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			for _, db := range databases {
 				By("Found database: " + db.Name)
 			}
+
+		})
+
+		It("Creates changes after running agent job", func() {
+			agentJobs, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::AgentJob"}})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(agentJobs).NotTo(BeEmpty(), "Expected at least one MSSQL::AgentJob config item")
+			for _, aj := range agentJobs {
+				By("Found agent job: " + aj.Name)
+			}
+
+			req := mission_control.CatalogChangesSearchRequest{ConfigType: "MSSQL::AgentJob"}
+			resp, err := mcInstance.SearchCatalogChanges(req)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.Changes).NotTo(BeEmpty(), "Expected at least one change for MSSQL::AgentJob")
+
 		})
 	})
 

@@ -24,7 +24,7 @@ spec:
 
       containers:
         - name: mssql
-          image: mcr.microsoft.com/azure-sql-edge:latest
+          image: mcr.microsoft.com/mssql/server:2022-latest
           volumeMounts:
             - name: mssql-config-volume
               mountPath: /etc/opt/mssql
