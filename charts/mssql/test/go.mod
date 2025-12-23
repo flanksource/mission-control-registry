@@ -8,7 +8,7 @@ require (
 	github.com/flanksource/clicky v1.12.0
 	github.com/flanksource/commons v1.43.2
 	github.com/flanksource/commons-db v0.1.2
-	github.com/flanksource/commons-test v0.1.6
+	github.com/flanksource/commons-test v0.1.9
 	github.com/microsoft/go-mssqldb v1.9.5
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2

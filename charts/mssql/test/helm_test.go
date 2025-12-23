@@ -94,7 +94,6 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			resp, err := mcInstance.SearchCatalogChanges(req)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(resp.Changes).NotTo(BeEmpty(), "Expected at least one change for MSSQL::AgentJob")
-
 		})
 	})
 
