@@ -177,11 +177,11 @@ func setupSqlServer() (*sql.DB, string, error) {
 	Expect(err).NotTo(HaveOccurred(), "Failed to deploy test SQL Server: %s", result)
 
 	mssqlNs := "default"
-	if err := k8s.WaitForPod(context.Background(), mssqlNs, "mssql-0", time.Minute*5); err != nil {
+	if err := k8s.WaitForPod(ctx, mssqlNs, "mssql-0", 10*time.Minute); err != nil {
 		return nil, "", fmt.Errorf("SQL Server pod did not become ready in time: %v", err)
 	}
 
-	pod, err := k8s.CoreV1().Pods(mssqlNs).Get(context.TODO(), "mssql-0", v1.GetOptions{})
+	pod, err := k8s.CoreV1().Pods(mssqlNs).Get(ctx, "mssql-0", v1.GetOptions{})
 	Expect(err).NotTo(HaveOccurred(), "Failed to get SQL Server pod: %s", err)
 	Expect(pod).NotTo(BeNil(), "Expected SQL Server pod to be found")
 	Expect(pod.Status.PodIP).NotTo(BeEmpty(), "Expected SQL Server pod to have a valid IP address")
