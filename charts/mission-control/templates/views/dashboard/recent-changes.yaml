@@ -22,7 +22,7 @@ spec:
       description: Last 24 hours
       query: SELECT count as value FROM changes_count_last_24h
     - name: Changes by Type
-      description: Changes in the 1hr
+      description: Changes in the last 1hr
       type: timeseries
       timeseries:
         style: points
@@ -30,7 +30,7 @@ spec:
         valueKey: changes
       query: SELECT time_bucket, changes, change_type FROM changes_by_type_timeseries
     - name: Changes by Config Type
-      description: Changes in the 1hr
+      description: Changes in the last 1hr
       type: timeseries
       timeseries:
         style: points
@@ -112,15 +112,15 @@ spec:
         query: >
           SELECT 
               to_timestamp(
-                  floor(extract(epoch FROM created_at) / 30) * 30
+                  floor(extract(epoch FROM created_at) / 15) * 15 -- like a 15s scrape interval
               ) AT TIME ZONE 'UTC' AS time_bucket,
               type as config_type,
               count(*) AS changes
           FROM catalog_changes
           WHERE NOW() - created_at <= INTERVAL '1 HOUR' 
-            AND type != 'diff'
+            AND type LIKE 'Kubernetes::%'
           GROUP BY time_bucket, config_type
-          ORDER BY time_bucket DESC;
+          ORDER BY 1 DESC;
     changes_by_type_timeseries:
       columns:
         time_bucket: timestamp
@@ -131,7 +131,7 @@ spec:
         query: >
           SELECT 
               to_timestamp(
-                  floor(extract(epoch FROM created_at) / 30) * 30
+                  floor(extract(epoch FROM created_at) / 15) * 15 -- like a 15s scrape interval
               ) AT TIME ZONE 'UTC' AS time_bucket,
               change_type,
               count(*) AS changes

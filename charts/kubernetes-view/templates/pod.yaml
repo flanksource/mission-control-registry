@@ -31,6 +31,16 @@ spec:
           types:
             - Kubernetes::Pod
   panels:
+    - name: CPU Usage History
+      description: Last 1h
+      type: timeseries
+      timeseries:
+        legend:
+          enable: true
+        style: lines
+        timeKey: timestamp
+        valueKey: value
+      query: SELECT * FROM cpu_usage_history ORDER BY timestamp
     - name: Pod Info
       type: properties
       query: >
@@ -68,6 +78,7 @@ spec:
         AND json_extract(pod.tags, '$.namespace') = cpu_usage.namespace 
         LIMIT 1
       gauge:
+        unit: millicore
         thresholds:
           - percent: 0
             color: '#8BC34A'
@@ -95,6 +106,27 @@ spec:
     FROM events
     ORDER BY created_at DESC
   queries:
+    cpu_usage_history:
+      columns:
+        node: string
+        container: string
+        timestamp: datetime
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: >
+          rate(container_cpu_usage_seconds_total{
+            pod="$(.var.pod_name)",
+            container!="",
+            image!~".*pause.*"
+          }[5m]) * 1000
+        labelKeys:
+          - node
+          - container
+        range:
+          start: "now-12h"
+          end: "now"
+          step: "5m"
     memory:
       columns:
         namespace: string
