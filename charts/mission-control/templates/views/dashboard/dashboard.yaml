@@ -15,25 +15,38 @@ spec:
     sidebar: true
     {{- end }}
   panels:
-    - name: Health Checks
-      type: piechart
-      query: SELECT status as label, count FROM health_check_statuses
-      piechart:
-        colors:
-          healthy: "#28a745"
-          unhealthy: "#dc3545"
+    - name: Check Runs
+      description: Check runs in the 1hr
+      type: timeseries
+      timeseries:
+        timeKey: time_bucket
+        valueKey: total
+      query: >
+        SELECT
+          time_bucket,
+          CASE WHEN status = TRUE THEN 'pass' ELSE 'fail' END AS status,
+          total
+        FROM check_runs;
   queries:
-    health_check_statuses:
+    check_runs:
       columns:
-        status: string
-        count: integer
+        time_bucket: timestamp
+        status: boolean
+        total: integer
       sql:
         connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
         query: >
-          SELECT status, COUNT(*) as count
-          FROM checks
-          WHERE deleted_at IS NULL
-          GROUP BY status;
+          SELECT 
+            to_timestamp(
+                  floor(extract(epoch FROM created_at) / 60) * 60
+              ) AT TIME ZONE 'UTC' AS time_bucket,
+            status,
+            COUNT(*) AS total
+          FROM check_statuses
+          WHERE NOW() - created_at <= INTERVAL '1 HOUR'
+          GROUP BY time_bucket, status
+          ORDER BY time_bucket DESC
+          LIMIT 10000; -- max limit
   sections:
     {{- if .Values.views.unhealthyConfigs.enabled }}
     - title: Unhealthy Configs

@@ -67,6 +67,7 @@ spec:
       configs:
         agent: "all"
         health: "unhealthy,warning"
+        limit: 10
   mapping:
     updated: row.updated_at
     created: row.created_at
