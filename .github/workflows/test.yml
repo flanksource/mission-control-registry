@@ -72,6 +72,11 @@ jobs:
         with:
           version: v4.0.4
 
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: v1.25.x
+
       - name: Create kind cluster
         uses: helm/kind-action@v1.10.0
 
