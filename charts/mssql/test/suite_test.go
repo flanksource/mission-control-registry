@@ -9,7 +9,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/flanksource/clicky"
 	flanksourceCtx "github.com/flanksource/commons-db/context"
 	"github.com/flanksource/commons-db/kubernetes"
 	"github.com/flanksource/commons-test/helm"
@@ -52,7 +51,6 @@ func findParentDir(dir string) string {
 		currentDir = filepath.Dir(currentDir)
 	}
 	return ""
-
 }
 
 func TestHelm(t *testing.T) {
@@ -99,11 +97,11 @@ var _ = BeforeSuite(func() {
 	Expect(err).NotTo(HaveOccurred())
 
 	By("Installing Mission Control")
-	mcChart = helm.NewHelmChart(ctx, "../../../../mission-control-chart/chart/")
-	//mcChart = helm.NewHelmChart(ctx, "flanksource/mission-control")
+	mcChart = helm.NewHelmChart(ctx, "flanksource/mission-control").
+		Repository("flanksource", "https://flanksource.github.io/charts").
+		Release("mission-control").Namespace("mission-control")
 
 	Expect(mcChart.
-		Release("mission-control").Namespace("mission-control").
 		WaitFor(time.Minute * 5).
 		ForceConflicts().
 		Values(map[string]any{
@@ -129,11 +127,10 @@ var _ = BeforeSuite(func() {
 		}).
 		InstallOrUpgrade()).NotTo(HaveOccurred())
 
-	adminPasswordSecret, err := k8s.CoreV1().Secrets(namespace).Get(context.TODO(), "mission-control-admin-password", v1.GetOptions{})
+	adminPasswordSecret, err := k8s.CoreV1().Secrets(namespace).Get(ctx, "mission-control-admin-password", v1.GetOptions{})
 	Expect(err).NotTo(HaveOccurred(), "Failed to get Mission Control admin password secret")
 	adminPassword := string(adminPasswordSecret.Data["password"])
 	Expect(adminPassword).NotTo(BeEmpty(), "Mission Control admin password should not be empty")
-	logger.Infof(clicky.MustFormat(adminPassword))
 
 	// Port forward to mission-control pod
 	var mcLocalPort int
@@ -174,7 +171,6 @@ var _ = AfterSuite(func() {
 })
 
 func setupSqlServer() (*sql.DB, string, error) {
-
 	result, err := k8s.ApplyFile(context.Background(), "sqlserver.yaml")
 	Expect(err).NotTo(HaveOccurred())
 	logger.Infof(result.Pretty().ANSI())
@@ -209,12 +205,11 @@ func setupSqlServer() (*sql.DB, string, error) {
 	err = db.Ping()
 	Expect(err).NotTo(HaveOccurred())
 
-	qq, err := os.ReadFile("./test-data.sql")
+	testDataSQL, err := os.ReadFile("./test-data.sql")
 	Expect(err).NotTo(HaveOccurred())
 
-	r, err := db.Exec(string(qq))
+	_, err = db.Exec(string(testDataSQL))
 	Expect(err).NotTo(HaveOccurred())
-	logger.Infof(clicky.MustFormat(r))
 
 	time.Sleep(15 * time.Second)
 	return db, connectionString, nil

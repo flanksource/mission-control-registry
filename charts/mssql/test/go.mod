@@ -8,12 +8,11 @@ require (
 	github.com/flanksource/clicky v1.12.0
 	github.com/flanksource/commons v1.43.2
 	github.com/flanksource/commons-db v0.1.2
-	github.com/flanksource/commons-test v0.1.9
+	github.com/flanksource/commons-test v0.1.10
 	github.com/microsoft/go-mssqldb v1.9.5
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
 	k8s.io/apimachinery v0.34.2
-	k8s.io/client-go v0.34.2
 )
 
 require (
@@ -221,6 +220,7 @@ require (
 	gorm.io/gorm v1.31.0 // indirect
 	k8s.io/api v0.34.2 // indirect
 	k8s.io/apiextensions-apiserver v0.34.2 // indirect
+	k8s.io/client-go v0.34.2 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250910181357-589584f1c912 // indirect
 	k8s.io/utils v0.0.0-20251002143259-bc988d571ff4 // indirect

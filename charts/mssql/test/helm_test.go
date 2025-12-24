@@ -79,7 +79,6 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			for _, db := range databases {
 				By("Found database: " + db.Name)
 			}
-
 		})
 
 		It("Creates changes after running agent job", func() {
@@ -96,5 +95,4 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			Expect(resp.Changes).NotTo(BeEmpty(), "Expected at least one change for MSSQL::AgentJob")
 		})
 	})
-
 })
