@@ -15,13 +15,6 @@ spec:
     sidebar: true
     {{- end }}
   panels:
-    # - name: Health Checks
-    #   type: piechart
-    #   query: SELECT status as label, count FROM health_check_statuses
-    #   piechart:
-    #     colors:
-    #       healthy: "#06b6d4"
-    #       unhealthy: "#F04E6E"
     - name: Job History
       type: timeseries
       timeseries:
@@ -74,17 +67,6 @@ spec:
           GROUP BY time_bucket, status
           ORDER BY time_bucket DESC
           LIMIT 10000; -- max limit
-    health_check_statuses:
-      columns:
-        status: string
-        count: integer
-      sql:
-        connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
-        query: >
-          SELECT status, COUNT(*) as count
-          FROM checks
-          WHERE deleted_at IS NULL
-          GROUP BY status;
   sections:
     {{- if .Values.views.unhealthyConfigs.enabled }}
     - title: Unhealthy Configs

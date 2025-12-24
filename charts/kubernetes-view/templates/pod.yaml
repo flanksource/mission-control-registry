@@ -219,36 +219,6 @@ spec:
           start: "now-12h"
           end: "now"
           step: "5m"
-    memory:
-      columns:
-        namespace: string
-        pod: string
-        value: decimal
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum by (namespace, pod) (
-            container_memory_working_set_bytes{
-              pod="$(.var.pod_name)",
-              container!="POD", # Skip The pause/infra container
-              container!="" # Skip dead containers
-            }
-          )
-    cpu_usage:
-      columns:
-        namespace: string
-        pod: string
-        value: decimal
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum by (namespace, pod) (
-            irate(container_cpu_usage_seconds_total{
-              pod="$(.var.pod_name)",
-              container!="POD",
-              container!=""
-            }[5m])
-          ) * 1000
     pod:
       configs:
         agent: "all"
