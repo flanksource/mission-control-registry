@@ -24,6 +24,7 @@ function testChart() {
     if [ -d "test" ]; then
         cd test
         task test
+        kubectl describe pod -n default mssql-0
         cd ..
     fi
 }
