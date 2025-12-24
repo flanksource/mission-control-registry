@@ -15,13 +15,6 @@ spec:
     sidebar: true
     {{- end }}
   panels:
-    - name: Job History
-      type: timeseries
-      timeseries:
-        style: points
-        timeKey: created_at
-        valueKey: count
-      query: SELECT * FROM job_runs;
     - name: Check Runs
       description: Check runs in the 1hr
       type: timeseries
@@ -31,23 +24,10 @@ spec:
       query: >
         SELECT
           time_bucket,
-          CASE WHEN status = TRUE THEN "pass" ELSE "fail" END AS status,
+          CASE WHEN status = TRUE THEN 'pass' ELSE 'fail' END AS status,
           total
         FROM check_runs;
   queries:
-    job_runs:
-      columns:
-        created_at: timestamp
-        notification_id: string
-        status: string
-        count: integer
-      sql:
-        connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
-        query: >
-          SELECT created_at, notification_id, status, COUNT(*) AS count 
-          FROM notification_send_history 
-          WHERE NOW() - created_at <= INTERVAL '30 DAYS'
-          GROUP BY created_at, notification_id, status
     check_runs:
       columns:
         time_bucket: timestamp

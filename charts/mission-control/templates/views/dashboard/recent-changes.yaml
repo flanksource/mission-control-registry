@@ -149,5 +149,5 @@ spec:
     recent_changes:
       changes:
         name: "*"
-        search: "severity!=info change_type!=diff created_at<now-12h"
+        search: "severity!=info change_type!=diff created_at >= now-12h"
 {{- end}}
