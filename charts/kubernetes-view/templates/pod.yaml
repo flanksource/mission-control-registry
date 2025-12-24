@@ -9,6 +9,8 @@ spec:
   display:
     title: Pod
     icon: pod
+    table:
+      size: 10
     plugins:
       - configTab:
           types:
@@ -31,16 +33,6 @@ spec:
           types:
             - Kubernetes::Pod
   panels:
-    - name: CPU Usage History
-      description: Last 1h
-      type: timeseries
-      timeseries:
-        legend:
-          enable: true
-        style: lines
-        timeKey: timestamp
-        valueKey: value
-      query: SELECT * FROM cpu_usage_history ORDER BY timestamp
     - name: Pod Info
       type: properties
       query: >
@@ -48,44 +40,57 @@ spec:
         UNION
         SELECT 'Container(' || json_extract(value, '$.name') || ')' AS label, json_extract(value, '$.image') AS value FROM pod, json_each(json_extract(pod.config, '$.spec.containers')) WHERE json_extract(value, '$.image') IS NOT NULL
         UNION
-        SELECT 'Node' AS label, COALESCE(json_extract(config, '$.spec.nodeName'), 'Not scheduled') AS value FROM pod
-    - name: Volumes Used
-      type: table
-      query: SELECT json_extract(value, '$.name') AS name FROM pod, json_each(json_extract(pod.config, '$.spec.volumes')) WHERE json_extract(value, '$.name') IS NOT NULL
-    - name: Memory Usage
-      type: gauge
-      query: >
-        SELECT memory.value / 1024 / 1024 AS value,
-        to_bytes(COALESCE(json_extract(pod.config, '$.spec.containers[0].resources.limits.memory'), '')) / 1024 / 1024 AS max 
-        FROM pod LEFT JOIN memory ON 
-          pod.name = memory.pod AND 
-          json_extract(pod.tags, '$.namespace') = memory.namespace 
-        LIMIT 1
-      gauge:
-        unit: MB
-        thresholds:
-          - percent: 0
-            color: '#8BC34A'
-          - percent: 75
-            color: '#F4B23C'
-          - percent: 90
-            color: '#F25C54'
-    - name: CPU Usage
-      type: gauge
-      query: >
-        SELECT cpu_usage.value AS value, to_millicores(COALESCE(json_extract(pod.config, '$.spec.containers[0].resources.limits.cpu'), '')) AS max 
-        FROM pod LEFT JOIN cpu_usage ON pod.name = cpu_usage.pod 
-        AND json_extract(pod.tags, '$.namespace') = cpu_usage.namespace 
-        LIMIT 1
-      gauge:
-        unit: millicore
-        thresholds:
-          - percent: 0
-            color: '#8BC34A'
-          - percent: 70
-            color: '#F4B23C'
-          - percent: 85
-            color: '#F25C54'
+        SELECT 'Node' AS name, COALESCE(json_extract(config, '$.spec.nodeName'), 'Not scheduled') AS value FROM pod
+    - name: CPU Usage History
+      description: Last 12h
+      type: timeseries
+      timeseries:
+        style: lines
+        timeKey: timestamp
+        valueKey: value
+      query: SELECT * FROM cpu_usage_history ORDER BY timestamp
+    - name: Memory Usage History
+      description: Last 12h
+      type: timeseries
+      timeseries:
+        style: area
+        timeKey: timestamp
+        valueKey: value
+      query: SELECT * FROM memory_usage_history ORDER BY timestamp
+    # - name: Memory Usage
+    #   type: gauge
+    #   query: >
+    #     SELECT memory.value / 1024 / 1024 AS value,
+    #     to_bytes(COALESCE(json_extract(pod.config, '$.spec.containers[0].resources.limits.memory'), '')) / 1024 / 1024 AS max 
+    #     FROM pod LEFT JOIN memory ON 
+    #       pod.name = memory.pod AND 
+    #       json_extract(pod.tags, '$.namespace') = memory.namespace 
+    #     LIMIT 1
+    #   gauge:
+    #     unit: MB
+    #     thresholds:
+    #       - percent: 0
+    #         color: '#8BC34A'
+    #       - percent: 75
+    #         color: '#F4B23C'
+    #       - percent: 90
+    #         color: '#F25C54'
+    # - name: CPU Usage
+    #   type: gauge
+    #   query: >
+    #     SELECT cpu_usage.value AS value, to_millicores(COALESCE(json_extract(pod.config, '$.spec.containers[0].resources.limits.cpu'), '')) AS max 
+    #     FROM pod LEFT JOIN cpu_usage ON pod.name = cpu_usage.pod 
+    #     AND json_extract(pod.tags, '$.namespace') = cpu_usage.namespace 
+    #     LIMIT 1
+    #   gauge:
+    #     unit: millicore
+    #     thresholds:
+    #       - percent: 0
+    #         color: '#8BC34A'
+    #       - percent: 70
+    #         color: '#F4B23C'
+    #       - percent: 85
+    #         color: '#F25C54'
   columns:
     - name: id
       type: string
@@ -120,7 +125,28 @@ spec:
             container!="",
             image!~".*pause.*"
           }[5m]) * 1000
-        labelKeys:
+        matchLabels:
+          - node
+          - container
+        range:
+          start: "now-12h"
+          end: "now"
+          step: "5m"
+    memory_usage_history:
+      columns:
+        node: string
+        container: string
+        timestamp: datetime
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: >
+          container_memory_working_set_bytes{
+            pod="$(.var.pod_name)",
+            container!="POD",
+            container!=""
+          } / 1024 / 1024
+        matchLabels:
           - node
           - container
         range:

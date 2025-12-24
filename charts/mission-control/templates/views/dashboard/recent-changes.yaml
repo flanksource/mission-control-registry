@@ -19,24 +19,32 @@ spec:
   panels:
     - name: Recent Changes
       type: number
-      description: Last 24 hours
-      query: SELECT count as value FROM changes_count_last_24h
-    - name: Changes by Type
-      description: Changes in the last 1hr
-      type: timeseries
-      timeseries:
-        style: points
-        timeKey: time_bucket
-        valueKey: changes
-      query: SELECT time_bucket, changes, change_type FROM changes_by_type_timeseries
+      description: Last 12h
+      query: SELECT count as value FROM changes_count_last_12h
+    # - name: Changes by Type
+    #   description: Changes in the last 1hr
+    #   type: timeseries
+    #   timeseries:
+    #     style: points
+    #     timeKey: time_bucket
+    #     valueKey: changes
+    #   query: SELECT time_bucket, changes, change_type FROM changes_by_type_timeseries
+    # - name: Changes by Config Type
+    #   description: Changes in the last 1hr
+    #   type: timeseries
+    #   timeseries:
+    #     style: points
+    #     timeKey: time_bucket
+    #     valueKey: changes
+    #   query: SELECT time_bucket, changes, config_type FROM changes_by_config_type_timeseries
     - name: Changes by Config Type
-      description: Changes in the last 1hr
+      description: Last 12h
       type: timeseries
       timeseries:
-        style: points
-        timeKey: time_bucket
-        valueKey: changes
-      query: SELECT time_bucket, changes, config_type FROM changes_by_config_type_timeseries
+        style: area
+        timeKey: timestamp
+        valueKey: value
+      query: SELECT * FROM changes_by_config_type_prometheus ORDER BY timestamp DESC
     - name: By Severity
       description: Recent Changes grouped by severity
       type: piechart
@@ -121,6 +129,20 @@ spec:
             AND type LIKE 'Kubernetes::%'
           GROUP BY time_bucket, config_type
           ORDER BY 1 DESC;
+    changes_by_config_type_prometheus:
+      columns:
+        config_type: string
+        timestamp: datetime
+        value: decimal
+      prometheus:
+        connection: {{ .Values.global.prometheus.connection }}
+        query: sum by(config_type) (increase(config_changes[5m])) > 0
+        matchLabels:
+          - config_type
+        range:
+          start: "now-12h"
+          end: "now"
+          step: "15s"
     changes_by_type_timeseries:
       columns:
         time_bucket: timestamp
@@ -140,12 +162,12 @@ spec:
             AND change_type != 'diff'
           GROUP BY time_bucket, change_type
           ORDER BY time_bucket DESC;
-    changes_count_last_24h:
+    changes_count_last_12h:
       columns:
         count: integer
       sql:
         connection: "connection://{{.Release.Namespace}}/{{ .Values.connectionName }}"
-        query: SELECT COUNT(*) AS count FROM config_changes WHERE NOW() - created_at <= INTERVAL '24 hours';
+        query: SELECT COUNT(*) AS count FROM config_changes WHERE NOW() - created_at <= INTERVAL '12 hours';
     recent_changes:
       changes:
         name: "*"
