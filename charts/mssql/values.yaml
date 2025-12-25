@@ -4,7 +4,7 @@ id: mssql
 
 # -- Connection name for a connection:// reference (created externally)
 # Use either connectionName OR url, not both
-connectionName: sql-server
+# connectionName: ""
 
 # -- Direct connection string to the MSSQL server
 # Example: "sqlserver://sa:YourStrong@Passw0rd@localhost:1433"

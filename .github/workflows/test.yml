@@ -47,10 +47,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Free up disk space
+        run: |
+          initial_space=$(df / | grep / | awk '{print $4}')
+          docker system prune -af
+          rm -rf /usr/share/dotnet
+          rm -rf /opt/ghc
+          rm -rf /usr/local/share/boost
+          rm -rf $AGENT_TOOLSDIRECTORY
+          rm -rf /opt/hostedtoolcache
+          # Remove Android SDK directories (common locations)
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/android
+          sudo rm -rf /usr/local/android-sdk
+          sudo rm -rf /home/runner/Android
+
+          final_space=$(df / | grep / | awk '{print $4}')
+          difference=$((final_space - initial_space))
+          echo "Disk space difference (in KB): $difference"
+
       - name: Set up Helm
-        uses: azure/setup-helm@v1
+        uses: azure/setup-helm@v4
         with:
-          version: v3.12.0
+          version: v4.0.4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: v1.25.x
 
       - name: Create kind cluster
         uses: helm/kind-action@v1.10.0

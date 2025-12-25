@@ -71,7 +71,7 @@ spec:
 {{- if .Values.scrape.jobs }}
     - type: MSSQL::AgentJob
       {{ include "mssql.connection" . | indent 6 | trim }}
-      id: $.id
+      id: $.name
       name: $.name
       transform:
         expr: |
@@ -103,14 +103,16 @@ spec:
     - driver: mssql
       {{ include "mssql.connection" . | indent 6 | trim }}
       type: MSSQL::AgentJob
-      id: $.job_id
+      id: $.id
       transform:
         expr: |
           [{
-            'id':  config.job_id,
+            'id': config.job_name,
             'changes': [{
-              'name': config.job_name,
-              'id': config.external_change_id,
+              'config_type': 'MSSQL::AgentJob',
+              'external_id': config.job_name,
+              'scraper_id': 'all',
+              'external_change_id': config.external_change_id,
               'created_at': config.created_at,
               'change_type': config.change_type,
               'summary': config.message,

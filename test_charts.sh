@@ -1,7 +1,10 @@
 #!/bin/bash
+set -e
 helm repo add flanksource https://flanksource.github.io/charts
 helm repo update
 helm install --devel mission-control-crds flanksource/mission-control-crds --wait
+
+sudo snap install task --classic
 
 function testChart() {
     cd $1
@@ -16,6 +19,13 @@ function testChart() {
     if grep "unknown field" stdout.log; then
         echo "Unknown field detected"
         exit 1
+    fi
+
+    # If chart has a test folder, run `task test`
+    if [ -d "test" ]; then
+        cd test
+        task test
+        cd ..
     fi
 }
 

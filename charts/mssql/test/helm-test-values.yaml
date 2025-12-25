@@ -1,0 +1,2 @@
+connectionName: ""
+url: sqlserver://sa:Your_password123@10.244.0.13:1433?database=master;encrypt=disable;TrustServerCertificate=true

@@ -121,9 +121,5 @@
         }
       }
     }
-  },
-  "oneOf": [
-    { "required": ["connectionName"] },
-    { "required": ["url"] }
-  ]
+  }
 }

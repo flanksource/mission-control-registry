@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mssql
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: mssql
+  serviceName: mssql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mssql
+    spec:
+      volumes:
+        - name: mssql-config-volume
+          configMap:
+            name: mssql
+            items:
+              - key: mssql.conf
+                path: mssql.conf
+
+      containers:
+        - name: mssql
+          image: mcr.microsoft.com/mssql/server:2022-latest
+          volumeMounts:
+            - name: mssql-config-volume
+              mountPath: /etc/opt/mssql
+          ports:
+            - containerPort: 1433
+              name: db
+          env:
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: SA_PASSWORD
+              value: "Your_password123"
+            - name: MSSQL_PID
+              value: "Developer"
+            - name: MSSQL_ENABLE_HADR
+              value: "true"
+            - name: MSSQL_AGENT_ENABLED
+              value: "true"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: mssql
+  namespace: default
+data:
+  mssql.conf: |
+    [EULA]
+    accepteula = Y
+    accepteulaml = Y
+
+    [coredump]
+    captureminiandfull = true
+    coredumptype = full
+
+    [hadr]
+    hadrenabled = 1
+
+    [language]
+    lcid = 1033
