@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 helm repo add flanksource https://flanksource.github.io/charts
 helm repo update
 helm install --devel mission-control-crds flanksource/mission-control-crds --wait
@@ -23,8 +24,7 @@ function testChart() {
     # If chart has a test folder, run `task test`
     if [ -d "test" ]; then
         cd test
-        task test || true
-        kubectl describe pod -n default mssql-0
+        task test
         cd ..
     fi
 }
