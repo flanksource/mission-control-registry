@@ -71,7 +71,7 @@ spec:
 {{- if .Values.scrape.jobs }}
     - type: MSSQL::AgentJob
       {{ include "mssql.connection" . | indent 6 | trim }}
-      id: $.name
+      id: $.id
       name: $.name
       transform:
         expr: |
@@ -107,10 +107,10 @@ spec:
       transform:
         expr: |
           [{
-            'id': config.job_name,
+            'id': config.job_id,
             'changes': [{
               'config_type': 'MSSQL::AgentJob',
-              'external_id': config.job_name,
+              'external_id': config.job_id,
               'scraper_id': 'all',
               'external_change_id': config.external_change_id,
               'created_at': config.created_at,
