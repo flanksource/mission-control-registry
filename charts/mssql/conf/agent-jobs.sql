@@ -111,6 +111,3 @@ LEFT JOIN JobStepsAgg jst ON js.job_id = jst.job_id;
 
 -- Clean up temp table
 DROP TABLE #JobSteps;
-
-
-

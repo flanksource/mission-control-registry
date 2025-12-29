@@ -1,3 +1,16 @@
+-- Check if setup has already been run
+IF EXISTS (SELECT 1 FROM sys.databases WHERE name = 'TestDB')
+BEGIN
+    DECLARE @setupExists INT = 0;
+    EXEC sp_executesql N'SELECT @exists = 1 FROM TestDB.dbo.sysobjects WHERE name = ''_SetupComplete'' AND xtype = ''U''',
+        N'@exists INT OUTPUT', @setupExists OUTPUT;
+    IF @setupExists = 1
+    BEGIN
+        PRINT 'Setup already complete, skipping.';
+        RETURN;
+    END;
+END;
+
 -- Create TestDB if it doesn't exist
 IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'TestDB')
 BEGIN
@@ -112,5 +125,9 @@ EXEC msdb.dbo.sp_add_jobserver
 
 -- Start the job immediately
 EXEC msdb.dbo.sp_start_job @job_name = @jobName;
+
+-- Mark setup as complete
+EXEC('CREATE TABLE TestDB.dbo._SetupComplete (CompletedAt DATETIME DEFAULT GETDATE())');
+EXEC('INSERT INTO TestDB.dbo._SetupComplete DEFAULT VALUES');
 
 PRINT 'Job created and started successfully!';
