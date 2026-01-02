@@ -90,19 +90,6 @@ transform:
       - change_type in ['AttachNetworkInterface', 'CreateNetworkInterface', 'DeregisterInstancesFromLoadBalancer', 'RegisterInstancesWithLoadBalancer','DetachLoadBalancerFromSubnets']
       - change_type == 'diff' &&  summary in ['AvailableIpAddressCount', 'ApproximateNumberOfMessages', 'RunningTasksCount', 'PendingTasksCount','ApproximateNumberOfMessagesNotVisible']
   relationship:
-    - filter: config_type == 'AWS::EKS::Cluster'
-      expr: |
-        [
-          {"type": "Kubernetes::Cluster", "labels": {"account": labels['account'], "eks-cluster-name": labels["alpha.eksctl.io/cluster-name"]}},
-          {"type": "Kubernetes::Node", "labels": {"account": labels['account'], "alpha.eksctl.io/cluster-name": labels["alpha.eksctl.io/cluster-name"]}}
-        ].toJSON()
-
-
-    - filter: config_type == 'AWS::EC2:Instance'
-      expr: |
-        [{"type": "Kubernetes::Node", "labels": {"alpha.eksctl.io/instance-id": config["instance_id"]}}].toJSON()
-
-
     - filter: config_type == 'AWS::IAM::Role'
       expr: |
         [{"type": "Kubernetes::Node", "labels": {"aws/iam-role": config["Arn"]}}].toJSON()
