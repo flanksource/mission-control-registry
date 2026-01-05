@@ -63,14 +63,27 @@ IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'TestUser')
 IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'AdminUser')
     CREATE LOGIN AdminUser WITH PASSWORD = 'TestPassword123!';
 
+-- Create additional server logins for testing
+IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'ReportUser')
+    CREATE LOGIN ReportUser WITH PASSWORD = 'TestPassword123!';
+IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'AppServiceUser')
+    CREATE LOGIN AppServiceUser WITH PASSWORD = 'TestPassword123!';
+
 -- Create database users mapped to logins
 EXEC TestDB.dbo.sp_executesql N'
     IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''TestUser'')
         CREATE USER TestUser FOR LOGIN TestUser;
     IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''AdminUser'')
         CREATE USER AdminUser FOR LOGIN AdminUser;
+    IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''ReportUser'')
+        CREATE USER ReportUser FOR LOGIN ReportUser;
+    IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''AppServiceUser'')
+        CREATE USER AppServiceUser FOR LOGIN AppServiceUser;
     EXEC sp_addrolemember ''db_datareader'', ''TestUser'';
     EXEC sp_addrolemember ''db_datawriter'', ''AdminUser'';
+    EXEC sp_addrolemember ''db_datareader'', ''ReportUser'';
+    EXEC sp_addrolemember ''db_datareader'', ''AppServiceUser'';
+    EXEC sp_addrolemember ''db_datawriter'', ''AppServiceUser'';
 ';
 
 -- Job creation in msdb
