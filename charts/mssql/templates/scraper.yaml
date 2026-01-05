@@ -73,13 +73,13 @@ spec:
       id: $.id
       name: $.name
       transform:
-        relationship:
-          - filter: config_type == 'MSSQL::User'
-            parent: true
-            type:
-              value: 'MSSQL::Database'
-            id:
-              expr: config.database_id
+#       relationship:
+#         - filter: config_type == 'MSSQL::User'
+#           parent: true
+#           type:
+#             value: 'MSSQL::Database'
+#           id:
+#             expr: config.database_id
         expr: |
           [{
             'id': config.id,
