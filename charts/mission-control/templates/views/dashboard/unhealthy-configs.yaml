@@ -14,18 +14,8 @@ spec:
     sidebar: true
     {{- end }}
     table:
-      size: 10
-      sort: -created
+      sort: -updated
   panels:
-    - name: By Health
-      description: Configs grouped by health status
-      type: piechart
-      piechart:
-        showLabels: true
-        colors:
-          unhealthy: "#F04E6E"
-          warning: "#F4B23C"
-      query: SELECT COUNT(*) AS count, health FROM configs GROUP BY health
     - name: By Type
       description: Unhealthy configs grouped by type
       type: piechart
@@ -67,7 +57,7 @@ spec:
       configs:
         agent: "all"
         health: "unhealthy,warning"
-        limit: 10
+        limit: 200
   mapping:
     updated: row.updated_at
     created: row.created_at
