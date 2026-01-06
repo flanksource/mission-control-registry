@@ -4,7 +4,6 @@
   "properties": {
     "createPullRequest": {
       "default": true,
-      "description": "yaml-language-server: $schema=values.schema.json",
       "required": [],
       "title": "createPullRequest",
       "type": "boolean"
@@ -150,6 +149,41 @@
       ],
       "title": "playbooks",
       "type": "object"
+    },
+    "rbac": {
+      "additionalProperties": false,
+      "properties": {
+        "clusterRoleName": {
+          "default": "playbooks-flux",
+          "description": "name of the ClusterRole to create",
+          "required": [],
+          "title": "clusterRoleName",
+          "type": "string"
+        },
+        "create": {
+          "default": false,
+          "description": "create a ClusterRole with the necessary permissions for flux CLI actions",
+          "required": [],
+          "title": "create",
+          "type": "boolean"
+        },
+        "serviceAccount": {
+          "default": "mission-control-sa",
+          "description": "serviceAccount to bind the ClusterRole to",
+          "required": [],
+          "title": "serviceAccount",
+          "type": "string"
+        },
+        "serviceAccountNamespace": {
+          "default": "mission-control",
+          "description": "namespace of the serviceAccount",
+          "required": [],
+          "title": "serviceAccountNamespace",
+          "type": "string"
+        }
+      },
+      "required": [],
+      "title": "rbac"
     }
   },
   "required": [

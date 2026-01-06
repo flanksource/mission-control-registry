@@ -17,13 +17,10 @@ README.md: .bin/helm-docs
 	.bin/helm-docs   -t README.md.tpl
 
 .bin/helm-docs:
-	test -s $(LOCALBIN)/helm-docs  || \
-	GOBIN=$(LOCALBIN) go install github.com/norwoodj/helm-docs/cmd/helm-docs@latest
+	deps install --bin-dir $(LOCALBIN) norwoodj/helm-docs@v1.14.2
 
 .bin/helm-schema:
-	test -s $(LOCALBIN)/helm-schema  || \
-	GOBIN=$(LOCALBIN) go install github.com/dadav/helm-schema/cmd/helm-schema@latest
-
+	deps install --bin-dir $(LOCALBIN) dadav/helm-schema@0.18.1
 
 .PHONY: lint
 lint: chart

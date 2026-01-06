@@ -49,6 +49,16 @@ connectionName: my-sql-server
 url: "sqlserver://user:password@hostname:1433"
 ```
 
+# Permissions
+The scraper needs the following permission to fully list agent jobs
+```sql
+ USE msdb;
+EXEC sp_addrolemember
+  @rolename = 'SQLAgentOperatorRole',
+  @membername = 'LOGIN NAME';
+```
+
+
 ### Values
 
 | Parameter | Description | Default |
