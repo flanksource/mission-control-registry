@@ -86,6 +86,22 @@ EXEC TestDB.dbo.sp_executesql N'
     EXEC sp_addrolemember ''db_datawriter'', ''AppServiceUser'';
 ';
 
+-- Create database-level users (without server logins)
+EXEC TestDB.dbo.sp_executesql N'
+    IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''DbOnlyReader'')
+        CREATE USER DbOnlyReader WITHOUT LOGIN;
+    IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''DbOnlyWriter'')
+        CREATE USER DbOnlyWriter WITHOUT LOGIN;
+    IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''DbOnlyAdmin'')
+        CREATE USER DbOnlyAdmin WITHOUT LOGIN;
+    IF NOT EXISTS (SELECT 1 FROM sys.database_principals WHERE name = ''DbOnlyGuest'')
+        CREATE USER DbOnlyGuest WITHOUT LOGIN;
+    EXEC sp_addrolemember ''db_datareader'', ''DbOnlyReader'';
+    EXEC sp_addrolemember ''db_datareader'', ''DbOnlyWriter'';
+    EXEC sp_addrolemember ''db_datawriter'', ''DbOnlyWriter'';
+    EXEC sp_addrolemember ''db_owner'', ''DbOnlyAdmin'';
+';
+
 -- Job creation in msdb
 DECLARE @jobName NVARCHAR(128) = 'SampleJob';
 DECLARE @scheduleName NVARCHAR(128) = 'SampleJob Schedule';
