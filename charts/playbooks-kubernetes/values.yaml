@@ -1,4 +1,34 @@
 # yaml-language-server: $schema=values.schema.json
+
+# @schema
+# required: false
+# @schema
+rbac:
+  # @schema
+  # type: boolean
+  # required: false
+  # @schema
+  # -- create a ClusterRole with the necessary permissions for kubectl/helm CLI actions
+  create: false
+  # @schema
+  # type: string
+  # required: false
+  # @schema
+  # -- name of the ClusterRole to create
+  clusterRoleName: playbooks-kubernetes
+  # @schema
+  # type: string
+  # required: false
+  # @schema
+  # -- serviceAccount to bind the ClusterRole to
+  serviceAccount: mission-control-sa
+  # @schema
+  # type: string
+  # required: false
+  # @schema
+  # -- namespace of the serviceAccount
+  serviceAccountNamespace: mission-control
+
 playbooks:
   # If this is set to false, no playbooks will be created
   enabled: true

@@ -1,0 +1,98 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.rbac.clusterRoleName | default "playbooks-kubernetes" }}
+  labels:
+    app.kubernetes.io/name: playbooks-kubernetes
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+rules:
+  # kubectl scale - Deployments, StatefulSets
+  - apiGroups: ["apps"]
+    resources: ["deployments", "deployments/scale", "statefulsets", "statefulsets/scale", "daemonsets", "replicasets"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+
+  # kubectl rollout restart - Deployments, StatefulSets, DaemonSets
+  - apiGroups: ["apps"]
+    resources: ["deployments", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch", "patch"]
+
+  # kubectl delete, kubectl get, kubectl logs - Pods
+  - apiGroups: [""]
+    resources: ["pods", "pods/log"]
+    verbs: ["get", "list", "watch", "delete"]
+
+  # kubectl get events
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["get", "list", "watch"]
+
+  # kubectl drain/cordon/uncordon - Nodes
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch", "patch", "update"]
+
+  # kubectl drain - evict pods
+  - apiGroups: [""]
+    resources: ["pods/eviction"]
+    verbs: ["create"]
+
+  # kubectl set resources, kubectl set image - Deployments, StatefulSets, DaemonSets
+  # (covered by apps apiGroup above)
+
+  # kubectl create deployment, kubectl annotate
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["create"]
+
+  # kubectl delete - Jobs, CronJobs
+  - apiGroups: ["batch"]
+    resources: ["jobs", "cronjobs"]
+    verbs: ["get", "list", "watch", "delete"]
+
+  # kubectl delete - ConfigMaps
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "delete"]
+
+  # kubectl get/create in namespaces (for deploy helm chart)
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+
+  # helm operations - requires access to secrets for release storage
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # helm operations - services, serviceaccounts
+  - apiGroups: [""]
+    resources: ["services", "serviceaccounts"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # helm operations - RBAC resources
+  - apiGroups: ["rbac.authorization.k8s.io"]
+    resources: ["roles", "rolebindings", "clusterroles", "clusterrolebindings"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # helm operations - ingresses
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "networkpolicies"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.rbac.clusterRoleName | default "playbooks-kubernetes" }}
+  labels:
+    app.kubernetes.io/name: playbooks-kubernetes
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Values.rbac.clusterRoleName | default "playbooks-kubernetes" }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ .Values.rbac.serviceAccount | default "mission-control-sa" }}
+    namespace: {{ .Values.rbac.serviceAccountNamespace | default "mission-control" }}
+{{- end }}
