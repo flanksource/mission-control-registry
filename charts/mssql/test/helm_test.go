@@ -81,6 +81,40 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			}
 		})
 
+		It("Creates MSSQL::Logon config items", func() {
+			logons, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::Logon"}})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(logons).NotTo(BeEmpty(), "Expected at least one MSSQL::Logon config item")
+
+			expectedLogons := []string{"TestUser", "AdminUser", "ReportUser", "AppServiceUser"}
+			foundLogons := make(map[string]bool)
+			for _, l := range logons {
+				By("Found logon: " + l.Name)
+				foundLogons[l.Name] = true
+			}
+
+			for _, expected := range expectedLogons {
+				Expect(foundLogons).To(HaveKey(expected), "Expected to find logon: "+expected)
+			}
+		})
+
+		It("Creates MSSQL::User config items", func() {
+			users, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::User"}})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(users).NotTo(BeEmpty(), "Expected at least one MSSQL::User config item")
+
+			expectedUsers := []string{"DbOnlyReader", "DbOnlyWriter", "DbOnlyAdmin", "DbOnlyGuest"}
+			foundUsers := make(map[string]bool)
+			for _, u := range users {
+				By("Found user: " + u.Name)
+				foundUsers[u.Name] = true
+			}
+
+			for _, expected := range expectedUsers {
+				Expect(foundUsers).To(HaveKey(expected), "Expected to find user: "+expected)
+			}
+		})
+
 		It("Creates changes after running agent job", func() {
 			agentJobs, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::AgentJob"}})
 			Expect(err).NotTo(HaveOccurred())

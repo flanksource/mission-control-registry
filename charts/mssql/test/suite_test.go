@@ -181,6 +181,9 @@ func setupSqlServer() (*sql.DB, string, error) {
 		return nil, "", fmt.Errorf("SQL Server pod did not become ready in time: %v", err)
 	}
 
+	// There is a time lag between sql server being ready in kubernetes vs being ready to take requests
+	time.Sleep(30 * time.Second)
+
 	pod, err := k8s.CoreV1().Pods(mssqlNs).Get(ctx, "mssql-0", v1.GetOptions{})
 	Expect(err).NotTo(HaveOccurred(), "Failed to get SQL Server pod: %s", err)
 	Expect(pod).NotTo(BeNil(), "Expected SQL Server pod to be found")

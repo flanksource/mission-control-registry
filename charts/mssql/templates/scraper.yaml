@@ -68,6 +68,59 @@ spec:
       query: |
         DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
 {{ .Files.Get "conf/database-info.sql" | indent 8 }}
+    - type: MSSQL::Logon
+      {{ include "mssql.connection" . | indent 6 | trim }}
+      id: $.id
+      name: $.name
+      transform:
+        relationship:
+          - filter: config_type == 'MSSQL::Logon'
+            parent: true
+            type:
+              value: 'MSSQL::Server'
+            name:
+              expr: '"{{ .Values.id }}"'
+        expr: |
+          [{
+            'id': config.id,
+            'name': config.name,
+            'database': config.database,
+            'database_id': config.database_id,
+            'login': config.login,
+            'type': config.type,
+            'is_contained': config.is_contained,
+            'authentication_type': config.authentication_type,
+            'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : []
+          }].toJSON()
+      query: |
+        DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
+{{ .Files.Get "conf/logon-users.sql" | indent 8 }}
+    - type: MSSQL::User
+      {{ include "mssql.connection" . | indent 6 | trim }}
+      id: $.id
+      name: $.name
+      transform:
+        relationship:
+          - filter: config_type == 'MSSQL::User'
+            parent: true
+            type:
+              value: 'MSSQL::Database'
+            external_id:
+              expr: config.database_id
+        expr: |
+          [{
+            'id': config.id,
+            'name': config.name,
+            'database': config.database,
+            'database_id': config.database_id,
+            'type': config.type,
+            'create_date': config.create_date,
+            'modify_date': config.modify_date,
+            'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : []
+          }].toJSON()
+      query: |
+        DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
+{{ .Files.Get "conf/database-users.sql" | indent 8 }}
 {{- if .Values.scrape.jobs }}
     - type: MSSQL::AgentJob
       {{ include "mssql.connection" . | indent 6 | trim }}
@@ -115,7 +168,8 @@ spec:
               'external_change_id': config.external_change_id,
               'created_at': config.created_at,
               'change_type': config.change_type,
-              'summary': config.message,
+              'summary': (config.status == 'Failed' ? 'Failed ' : '') + config.message,
+              'severity': config.status == 'Failed' ? 'medium' : 'info',
               'details': {'message': config.message}
             }]
           }].toJSON()

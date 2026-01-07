@@ -11,7 +11,8 @@ DECLARE @dbOutput TABLE (msg NVARCHAR(500))
 
 SET @serverName = @@SERVERNAME;
 
-SET @dbName = RIGHT(@dbName, CHARINDEX('\', REVERSE(@dbName)) - 1)
+IF CHARINDEX('\', @dbName) > 0
+  SET @dbName = RIGHT(@dbName, CHARINDEX('\', REVERSE(@dbName)) - 1)
 
 DECLARE @sql NVARCHAR(MAX);
 DECLARE @dbRoles TABLE (dbRole NVARCHAR(100))
