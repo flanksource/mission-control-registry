@@ -110,6 +110,7 @@ spec:
     application: row.name
     namespace: row.tags.namespace
     chart: row.config.spec.chart.spec.chart
-    version: row.config.status.lastAttemptedRevision
+    version: >
+      has(row.config.status.lastAttemptedRevision) ? row.config.status.lastAttemptedRevision : "unknown"
     lastUpdated: row.updated_at
 {{- end }}
