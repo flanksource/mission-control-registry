@@ -25,6 +25,8 @@ spec:
       dependsOn:
         - cluster
       valueFrom:
+        labelTemplate: '$(.config.name)'
+        valueTemplate: '$(.config.id)'
         config:
           agent: "all"
           tagSelector: "cluster=$(.var.cluster)"
@@ -49,7 +51,7 @@ spec:
       description: Managed resources grouped by type
       type: piechart
       query: |
-        SELECT 
+        SELECT
           COUNT(*) AS count,
           REPLACE(type, 'Kubernetes::', '') AS type
         FROM resources
@@ -98,10 +100,9 @@ spec:
         position: body
   queries:
     resources:
-      configs:
-        agent: "all"
-        tagSelector: "cluster=$(.var.cluster)"
-        labelSelector: "app.kubernetes.io/instance=$(.var.release)"
+      relatedConfigs:
+        id: $(.var.release)
+        outgoing: '3'
   mapping:
     name: row.name
     type: >
