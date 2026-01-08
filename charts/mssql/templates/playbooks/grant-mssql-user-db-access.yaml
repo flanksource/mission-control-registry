@@ -17,6 +17,11 @@ spec:
               - MSSQL::Database
     - name: user
       label: Existing database User
+      type: config
+      properties:
+        filter:
+          - types:
+              - MSSQL::Logon
     - name: access
       label: Access Type
       type: list

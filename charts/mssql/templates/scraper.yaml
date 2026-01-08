@@ -84,12 +84,9 @@ spec:
           [{
             'id': config.id,
             'name': config.name,
-            'database': config.database,
-            'database_id': config.database_id,
-            'login': config.login,
+            'default_database': config.default_database_name,
             'type': config.type,
-            'is_contained': config.is_contained,
-            'authentication_type': config.authentication_type,
+            'is_disabled': config.is_disabled,
             'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : []
           }].toJSON()
       query: |

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 	"time"
 
@@ -96,6 +97,21 @@ var _ = BeforeSuite(func() {
 	k8s, err = ctx.LocalKubernetes(kubeconfig)
 	Expect(err).NotTo(HaveOccurred())
 
+	// Setup SQL Server parallely along with mc chart
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		db, connectionString, err = setupSqlServer()
+		Expect(err).NotTo(HaveOccurred())
+
+		dbName := ""
+		if err := db.QueryRow("SELECT DB_NAME()").Scan(&dbName); err != nil {
+			Expect(err).NotTo(HaveOccurred(), "Failed to query database name")
+		}
+		Expect(dbName).To(Equal("master"), "Expected database name to be 'master'")
+		wg.Done()
+	}()
+
 	By("Installing Mission Control")
 	mcChart = helm.NewHelmChart(ctx, "flanksource/mission-control").
 		Repository("flanksource", "https://flanksource.github.io/charts").
@@ -150,15 +166,7 @@ var _ = BeforeSuite(func() {
 		ConfigDB: http.NewClient().BaseURL(fmt.Sprintf("http://localhost:%d", configDBLocalPort)).Auth("admin@local", adminPassword),
 	}
 
-	db, connectionString, err = setupSqlServer()
-	Expect(err).NotTo(HaveOccurred())
-
-	dbName := ""
-	if err := db.QueryRow("SELECT DB_NAME()").Scan(&dbName); err != nil {
-		Expect(err).NotTo(HaveOccurred(), "Failed to query database name")
-	}
-	Expect(dbName).To(Equal("master"), "Expected database name to be 'master'")
-
+	wg.Wait()
 })
 
 var _ = AfterSuite(func() {
