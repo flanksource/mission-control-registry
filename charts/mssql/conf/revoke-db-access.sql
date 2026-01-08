@@ -1,5 +1,5 @@
 DECLARE @dbName NVARCHAR(128) = '{{`{{(json ((.params.database).config )).id}}`}}';
-DECLARE @dbUser NVARCHAR(128) = '{{`{{.params.user}}`}}';
+DECLARE @dbUser NVARCHAR(128) = '{{`{{(json ((.params.user).config )).name}}`}}';
 DECLARE @dbRole NVARCHAR(128) = '';
 DECLARE @accessType NVARCHAR(128) = '{{`{{.params.access}}`}}';
 DECLARE @serverName NVARCHAR(128);
