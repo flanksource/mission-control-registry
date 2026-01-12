@@ -25,8 +25,8 @@ spec:
       dependsOn:
         - cluster
       valueFrom:
-        labelTemplate: '$(.config.name)'
-        valueTemplate: '$(.config.id)'
+        label: 'config.name'
+        value: 'config.id'
         config:
           agent: "all"
           tagSelector: "cluster=$(.var.cluster)"
@@ -100,9 +100,8 @@ spec:
         position: body
   queries:
     resources:
-      relatedConfigs:
-        id: $(.var.release)
-        outgoing: '3'
+      configs:
+        search: related="$(.var.release),direction=outgoing,depth=5"
   mapping:
     name: row.name
     type: >
