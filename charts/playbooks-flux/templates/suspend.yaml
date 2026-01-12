@@ -19,10 +19,10 @@ spec:
     -  {{` "{{- if .agent }}{{.agent.id}}{{ else }}local{{ end }}" `}}
 
   actions:
-    - name: flux suspend
+    - name: Suspend
       exec:
         connections:
           fromConfigItem: '$(.config.id)'
         script: |
-          flux suspend -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower) $(.config.name)
+          kubectl patch -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower)/$(.config.name) --type=merge -p '{"spec":{"suspend":true}}'
 {{- end}}
