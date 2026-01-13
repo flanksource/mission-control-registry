@@ -22,7 +22,7 @@ spec:
   actions:
     - name: Run SQL
       sql:
-        {{ include "mssql.connection" . }}
+        {{ include "mssql.connection-playbook" . }}
         driver: mssql
         query: |
           -- Executed by Mission Control

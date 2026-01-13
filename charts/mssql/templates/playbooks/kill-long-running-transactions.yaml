@@ -35,14 +35,14 @@ spec:
   actions:
     - name: List Long Running Transactions
       sql:
-        {{ include "mssql.connection" . }}
+        {{ include "mssql.connection-playbook" . }}
         driver: mssql
         query: |
 {{ .Files.Get "conf/list-long-running-transactions.sql" | indent 10 }}
     - name: Kill Long Running Transactions
       if: params.kill == 'true'
       sql:
-        {{ include "mssql.connection" . }}
+        {{ include "mssql.connection-playbook" . }}
         driver: mssql
         query: |
 {{ .Files.Get "conf/kill-long-running-transactions.sql" | indent 10 }}

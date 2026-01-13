@@ -57,7 +57,7 @@ spec:
     - name: Assign Database User Roles
       if: "always()"
       sql:
-        {{ include "mssql.connection" . }}
+        {{ include "mssql.connection-playbook" . }}
         driver: mssql
         query: |
 {{ .Files.Get "conf/grant-db-access.sql" | indent 10 }}
@@ -65,7 +65,7 @@ spec:
       if: getAction('Assign Database User Roles').status != 'failed' && params.delay != "0"
       delay: ".params.delay"
       sql:
-        {{ include "mssql.connection" . }}
+        {{ include "mssql.connection-playbook" . }}
         driver: mssql
         query: |
 {{ .Files.Get "conf/revoke-db-access.sql" | indent 10 }}

@@ -61,6 +61,15 @@ connection: connection://{{ .Release.Namespace }}/{{ .Values.connectionName }}
 {{- end -}}
 {{- end }}
 
+{{- define "mssql.connection-playbook" -}}
+{{- if .Values.url -}}
+url: {{ .Values.url }}
+{{- else -}}
+connection: connection://{{ .Release.Namespace }}/{{ .Values.connectionName }}
+{{- end -}}
+{{- end }}
+
+
 {{/*
 Playbook approvers - renders approval block if approvers are configured
 */}}
