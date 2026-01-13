@@ -15,7 +15,7 @@ spec:
 
     - name: Execute T-SQL Steps
       sql:
-        {{ include "mssql.connection" . }}
+        {{ include "mssql.connection-playbook" . }}
         driver: mssql
         query: "$(.config.config.sql)"
 {{- end }}
