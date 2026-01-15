@@ -126,6 +126,7 @@ var _ = BeforeSuite(func() {
 					"host": "mission-control.cluster.local",
 				},
 			},
+			"image":        map[string]any{"tag": "v0.0.1523"},
 			"authProvider": "basic",
 			"htpasswd": map[string]any{
 				"create": true,
@@ -134,6 +135,7 @@ var _ = BeforeSuite(func() {
 			"kratos":         map[string]any{"enabled": false},
 			"ingress":        map[string]any{"enabled": false},
 			"config-db": map[string]any{
+				"image":    map[string]any{"tag": "v0.0.1154"},
 				"logLevel": "-vvv",
 				"properties": map[string]any{
 					"log.exclusions": true,

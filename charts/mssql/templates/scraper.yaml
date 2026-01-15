@@ -5,6 +5,7 @@ metadata:
   name: {{ .Values.id }}-scraper
 spec:
   schedule: '{{ .Values.scrape.schedule }}'
+  full: true
   sql:
     - type: MSSQL::Server
       {{ include "mssql.connection" . | indent 6 | trim }}
@@ -87,6 +88,8 @@ spec:
             'default_database': config.default_database_name,
             'type': config.type,
             'is_disabled': config.is_disabled,
+            'create_date': config.create_date,
+            'modify_date': config.modify_date,
             'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : []
           }].toJSON()
       query: |
@@ -113,7 +116,16 @@ spec:
             'type': config.type,
             'create_date': config.create_date,
             'modify_date': config.modify_date,
-            'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : []
+            'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : [],
+            'external_users': [{
+              'name': config.name,
+              'user_type': config.type,
+              'aliases': [config.id],
+            }],
+            'config_access': [{
+              'external_config_id': {'config_type': 'MSSQL::Database', 'external_id': config.database_id},
+              'external_user_aliases': [config.id],
+            }],
           }].toJSON()
       query: |
         DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
@@ -141,6 +153,7 @@ spec:
 {{ .Files.Get "conf/agent-jobs.sql" | indent 8 }}
 {{- end }}
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/refs/heads/main/schema/openapi/scrape_config.schema.json
 apiVersion: configs.flanksource.com/v1
 kind: ScrapeConfig
 metadata:

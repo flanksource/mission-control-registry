@@ -49,6 +49,7 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			resp, err := mcInstance.GetScraper(string(mainScraper.GetUID())).Run()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(resp.Errors).To(BeEmpty(), "Expected no errors from scraper run")
+			logger.Infof(clicky.MustFormat(resp.Summary))
 			By(clicky.MustFormat(resp.Summary))
 		})
 
@@ -60,10 +61,11 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			resp, err := mcInstance.GetScraper(string(incrementalScraper.GetUID())).Run()
 			Expect(err).NotTo(HaveOccurred())
 			Expect(resp.Errors).To(BeEmpty(), "Expected no errors from scraper run")
+			logger.Infof(clicky.MustFormat(resp.Summary))
 			By(clicky.MustFormat(resp.Summary))
 		})
 
-		It("Creates MSSQL:Server config items", func() {
+		It("Creates MSSQL::Server config items", func() {
 			servers, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::Server"}})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(servers).NotTo(BeEmpty(), "Expected at least one MSSQL::Server config item")
@@ -72,7 +74,7 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			}
 		})
 
-		It("Creates MSSQL:Database config items", func() {
+		It("Creates MSSQL::Database config items", func() {
 			databases, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::Database"}})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(databases).NotTo(BeEmpty(), "Expected at least one MSSQL::Database config item")
