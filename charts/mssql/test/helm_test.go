@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"io"
+
 	"github.com/flanksource/clicky"
 	"github.com/flanksource/commons-test/helm"
 	"github.com/flanksource/commons-test/mission_control"
@@ -129,6 +132,59 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			resp, err := mcInstance.SearchCatalogChanges(req)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(resp.Changes).NotTo(BeEmpty(), "Expected at least one change for MSSQL::AgentJob")
+		})
+
+		It("Creates config_access entries with correct user and role mappings", func() {
+			type configAccessEntry struct {
+				ConfigID       struct{ Name, Type string } `json:"config_id"`
+				ExternalUserID struct{ Name string }       `json:"external_user_id"`
+				ExternalRoleID struct{ Name string }       `json:"external_role_id"`
+			}
+
+			resp, err := postgrestClient.R(ctx).
+				Get("/config_access?select=config_id(name,type),external_user_id(name),external_role_id(name)&deleted_at=is.null")
+			Expect(err).NotTo(HaveOccurred())
+
+			body, err := io.ReadAll(resp.Body)
+			Expect(err).NotTo(HaveOccurred())
+			defer resp.Body.Close()
+
+			Expect(resp.IsOK()).To(BeTrue(), "Expected 200 OK from PostgREST, got: %d %s", resp.StatusCode, string(body))
+
+			var entries []configAccessEntry
+			err = json.Unmarshal(body, &entries)
+			Expect(err).NotTo(HaveOccurred())
+
+			type expectedMapping struct {
+				ConfigName string
+				ConfigType string
+				UserName   string
+				RoleName   string
+			}
+
+			expected := []expectedMapping{
+				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "db_ssisltduser"},
+				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "db_ssisoperator"},
+				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "dc_admin"},
+				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "dc_operator"},
+				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "SQLAgentUserRole"},
+				{"TestDB", "MSSQL::Database", "DbOnlyAdmin", "db_owner"},
+				{"TestDB", "MSSQL::Database", "DbOnlyReader", "db_datareader"},
+				{"TestDB", "MSSQL::Database", "DbOnlyWriter", "db_datareader"},
+				{"TestDB", "MSSQL::Database", "DbOnlyWriter", "db_datawriter"},
+			}
+
+			actualMappings := make(map[string]bool)
+			for _, entry := range entries {
+				key := entry.ConfigID.Name + "|" + entry.ConfigID.Type + "|" + entry.ExternalUserID.Name + "|" + entry.ExternalRoleID.Name
+				actualMappings[key] = true
+				By("Found config_access: " + key)
+			}
+
+			for _, exp := range expected {
+				key := exp.ConfigName + "|" + exp.ConfigType + "|" + exp.UserName + "|" + exp.RoleName
+				Expect(actualMappings).To(HaveKey(key), "Expected config_access entry: %s", key)
+			}
 		})
 	})
 })

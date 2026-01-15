@@ -64,7 +64,8 @@ func TestHelm(t *testing.T) {
 var mcInstance *mission_control.MissionControl
 var mcChart *helm.HelmChart
 
-var mcStopChan, configDBStopChan, mssqlStopChan chan struct{}
+var mcStopChan, configDBStopChan, mssqlStopChan, postgrestStopChan chan struct{}
+var postgrestClient *http.Client
 var _ = BeforeSuite(func() {
 
 	// Get environment variables or use defaults
@@ -126,7 +127,7 @@ var _ = BeforeSuite(func() {
 					"host": "mission-control.cluster.local",
 				},
 			},
-			"image":        map[string]any{"tag": "v0.0.1523"},
+			"image":        map[string]any{"tag": "v0.0.1525"},
 			"authProvider": "basic",
 			"htpasswd": map[string]any{
 				"create": true,
@@ -135,7 +136,8 @@ var _ = BeforeSuite(func() {
 			"kratos":         map[string]any{"enabled": false},
 			"ingress":        map[string]any{"enabled": false},
 			"config-db": map[string]any{
-				"image":    map[string]any{"tag": "v0.0.1154"},
+				"image": map[string]any{"tag": "v0.0.1158"},
+				//"image":    map[string]any{"tag": "v0.0.1130"},
 				"logLevel": "-vvv",
 				"properties": map[string]any{
 					"log.exclusions": true,
@@ -160,6 +162,12 @@ var _ = BeforeSuite(func() {
 	configDBLocalPort, configDBStopChan, err = k8stest.PortForwardPod(ctx, k8s, kubeconfig, namespace, "app.kubernetes.io/name=config-db", 8080)
 	Expect(err).NotTo(HaveOccurred(), "Failed to port forward to Config DB pod")
 
+	// Port forward to postgrest pod
+	var postgrestLocalPort int
+	postgrestLocalPort, postgrestStopChan, err = k8stest.PortForwardPod(ctx, k8s, kubeconfig, namespace, "app=postgrest", 3000)
+	Expect(err).NotTo(HaveOccurred(), "Failed to port forward to PostgREST pod")
+	postgrestClient = http.NewClient().BaseURL(fmt.Sprintf("http://localhost:%d", postgrestLocalPort))
+
 	// Initialize Mission Control client, get credentianls and serviceIP from deployed chart.
 	mcInstance = &mission_control.MissionControl{
 		HTTP:     http.NewClient().BaseURL(fmt.Sprintf("http://localhost:%d", mcLocalPort)).Auth("admin@local", adminPassword),
@@ -177,6 +185,9 @@ var _ = AfterSuite(func() {
 	}
 	if configDBStopChan != nil {
 		close(configDBStopChan)
+	}
+	if postgrestStopChan != nil {
+		close(postgrestStopChan)
 	}
 })
 
