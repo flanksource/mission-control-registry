@@ -58,6 +58,7 @@ spec:
         agent: "all"
         health: "unhealthy,warning"
         limit: 200
+        search: "type!=MissionControl::Canary type!=MissionControl::ScrapeConfig"
   mapping:
     updated: row.updated_at
     created: row.created_at

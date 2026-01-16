@@ -84,5 +84,6 @@ spec:
             created_at as age
           FROM notification_send_history_summary
           WHERE NOW() - created_at < INTERVAL '123333 hours'
+            AND status NOT IN ('skipped', 'silenced', 'inhibited', 'repeat-interval')
           ORDER BY created_at DESC
 {{- end}}
