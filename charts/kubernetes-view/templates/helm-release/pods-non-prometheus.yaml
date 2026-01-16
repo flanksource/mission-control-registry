@@ -1,0 +1,127 @@
+{{- if and .Values.views.enabled .Values.views.helmRelease.enabled .Values.views.helmRelease.pods.enabled (not .Values.global.prometheus.connection) }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: helm-release-pods
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Helm Release Pods
+    icon: pod
+    table:
+      sort: name
+      size: 10
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+    - key: release
+      label: Helm Release
+      dependsOn:
+        - cluster
+      valueFrom:
+        config:
+          agent: "all"
+          tagSelector: "cluster=$(.var.cluster)"
+          types:
+            - Kubernetes::HelmRelease
+  panels:
+    - name: Pod Health
+      description: Pods grouped by health
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          healthy: "#28C19B"
+          unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM pod GROUP BY health
+  columns:
+    - name: namespace
+      type: string
+      card:
+        position: subtitle
+      icon: "'namespace'"
+      primaryKey: true
+      filter:
+        type: multiselect
+    - name: name
+      type: config_item
+      primaryKey: true
+      card:
+        position: title
+    - name: tags
+      type: labels
+      card:
+        position: body
+    - name: status
+      type: status
+      icon: row.health
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: health
+      type: health
+      hidden: true
+      card:
+        useForAccent: true
+      filter:
+        type: multiselect
+    - name: created
+      type: datetime
+      card:
+        position: body
+    - name: updated
+      type: datetime
+      card:
+        position: body
+    - name: image
+      type: string
+      hidden: true
+      card:
+        position: body
+    - name: node
+      type: string
+      hidden: true
+      filter:
+        type: multiselect
+      card:
+        position: body
+  merge: |
+    SELECT
+      pod.id,
+      pod.name,
+      json_extract(pod.tags, '$.namespace') AS namespace,
+      json_extract(pod.tags, '$.cluster') AS cluster,
+      pod.status,
+      pod.health,
+      pod.tags,
+      pod.config,
+      pod.__grants,
+      pod.created_at,
+      pod.updated_at
+    FROM pod
+    ORDER BY namespace, name
+  queries:
+    pod:
+      configs:
+        agent: "all"
+        tagSelector: "cluster=$(.var.cluster)"
+        labelSelector: "app.kubernetes.io/instance=$(.var.release)"
+        types:
+          - Kubernetes::Pod
+  mapping:
+    created: row.created_at
+    updated: row.updated_at
+    image: >
+      has(row.config) ? row.config.JSON().spec.containers[0].image : "N/A"
+    node: >
+      has(row.config) ? (has(row.config.JSON().spec.nodeName) ? row.config.JSON().spec.nodeName : "N/A"): "N/A"
+{{- end }}
