@@ -1,0 +1,75 @@
+{{- if and .Values.views.enabled .Values.views.pod.enabled (not .Values.global.prometheus.connection) }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: pod
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Pod
+    icon: pod
+    table:
+      size: 10
+    plugins:
+      - configTab:
+          types:
+            - Kubernetes::Pod
+        variables:
+          cluster: '$(.config.tags.cluster)'
+          pod_name: '$(.config.name)'
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+    - key: pod_name
+      label: Pod
+      valueFrom:
+        config:
+          types:
+            - Kubernetes::Pod
+  panels:
+    - name: Pod Info
+      type: properties
+      query: >
+        SELECT 'Status' AS label, status AS value FROM pod
+        UNION
+        SELECT 'Container(' || json_extract(value, '$.name') || ')' AS label, json_extract(value, '$.image') AS value FROM pod, json_each(json_extract(pod.config, '$.spec.containers')) WHERE json_extract(value, '$.image') IS NOT NULL
+        UNION
+        SELECT 'Node' AS name, COALESCE(json_extract(config, '$.spec.nodeName'), 'Not scheduled') AS value FROM pod
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: string
+    - name: created_at
+      type: datetime
+  mapping:
+    created_at: row.created_at
+    name: row.change_type
+  merge:
+    SELECT
+      events.id,
+      events.change_type,
+      events.created_at
+    FROM events
+    ORDER BY created_at DESC
+  queries:
+    pod:
+      configs:
+        agent: "all"
+        tagSelector: "cluster=$(.var.cluster)"
+        name: $(.var.pod_name)
+        types:
+          - Kubernetes::Pod
+    events:
+      changes:
+        tagSelector: "cluster=$(.var.cluster)"
+        name: $(.var.pod_name)
+{{- end }}

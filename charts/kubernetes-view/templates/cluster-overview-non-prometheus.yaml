@@ -1,0 +1,69 @@
+{{- if and .Values.views.enabled .Values.views.clusterOverview.enabled (not .Values.global.prometheus.connection) }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: cluster-overview
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  cache:
+    refreshTimeout: 30s
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+  display:
+    title: Cluster
+    icon: kubernetes::cluster
+    {{- if .Values.views.clusterOverview.sidebar }}
+    sidebar: true
+    {{- end }}
+    table:
+      sort: name
+      size: 10
+    plugins:
+      - configTab:
+          types:
+            - Kubernetes::Cluster
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: config_item
+      width: "4"
+      card:
+        position: title
+      url:
+        view:
+          filter:
+            viewvar__namespace: row.name
+            viewvar__cluster: row.cluster
+          name: >
+            'namespace'
+    - name: created_at
+      type: datetime
+      width: "2"
+      card:
+        position: footer
+  merge: |
+    SELECT
+      namespaces.id,
+      namespaces.name,
+      json_extract(namespaces.tags, '$.cluster') AS cluster,
+      namespaces.created_at
+    FROM namespaces
+    ORDER BY name
+  queries:
+    namespaces:
+      configs:
+        tagSelector: "cluster=$(.var.cluster)"
+        agent: "all"
+        types:
+          - Kubernetes::Namespace
+{{- end }}

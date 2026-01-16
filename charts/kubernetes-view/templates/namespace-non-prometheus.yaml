@@ -1,0 +1,136 @@
+{{- if and .Values.views.enabled .Values.views.namespace.enabled (not .Values.global.prometheus.connection) }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: namespace
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Namespace
+    icon: namespace
+    {{- if .Values.views.pods.sidebar }}
+    sidebar: true
+    {{- end }}
+    plugins:
+      - configTab:
+          types:
+            - Kubernetes::Namespace
+        variables:
+          cluster: '$(.config.tags.cluster)'
+          namespace: '$(.config.name)'
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+    - key: namespace
+      label: Namespace
+      dependsOn:
+        - cluster
+      valueFrom:
+        config:
+          agent: "all"
+          tagSelector: "cluster=$(.var.cluster)"
+          types:
+            - Kubernetes::Namespace
+  panels:
+    - name: Total Pods
+      description: Total Pods in the namespace
+      type: number
+      query: SELECT COUNT(*) AS value FROM pod
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: config_item
+      card:
+        position: title
+      url:
+        config: row.id
+    - name: status
+      type: status
+      icon: row.health
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: health
+      type: health
+      hidden: true
+      card:
+        useForAccent: true
+      filter:
+        type: multiselect
+    - name: updated
+      type: datetime
+      card:
+        position: footer
+    - name: created
+      type: datetime
+      card:
+        position: footer
+    - name: image
+      type: string
+      hidden: true
+      card:
+        position: body
+    - name: node
+      type: string
+      hidden: true
+      card:
+        position: body
+  sections:
+    {{- if .Values.views.namespace.deployments.enabled }}
+    - title: Deployments
+      icon: kubernetes::deployment
+      viewRef:
+        namespace: {{.Release.Namespace}}
+        name: namespace-deployments
+    {{- end }}
+    {{- if .Values.views.namespace.helmReleases.enabled }}
+    - title: Helm Releases
+      icon: helm
+      viewRef:
+        namespace: {{.Release.Namespace}}
+        name: namespace-helmreleases
+    {{- end }}
+    {{- if .Values.views.namespace.ingress.enabled }}
+    - title: Ingresses
+      icon: ingress
+      viewRef:
+        namespace: {{.Release.Namespace}}
+        name: namespace-ingresses
+    {{- end }}
+  merge: |
+    SELECT
+      pod.id,
+      pod.name,
+      json_extract(pod.tags, '$.namespace') AS namespace,
+      pod.status,
+      pod.health,
+      pod.config,
+      pod.created_at,
+      pod.updated_at
+    FROM pod
+    ORDER BY namespace, name
+  queries:
+    pod: # all pods in the namespace
+      configs:
+        tagSelector: "cluster=$(.var.cluster),namespace=$(.var.namespace)"
+        agent: "all"
+        types:
+          - Kubernetes::Pod
+  mapping:
+    created: row.created_at
+    updated: row.updated_at
+    image: >
+      has(row.config) ? row.config.JSON().spec.containers[0].image : "N/A"
+    node: >
+      has(row.config) ? (has(row.config.JSON().spec.nodeName) ? row.config.JSON().spec.nodeName : "N/A"): "N/A"
+{{- end }}

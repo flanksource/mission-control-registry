@@ -1,0 +1,148 @@
+{{- if and .Values.views.enabled .Values.views.pods.enabled (not .Values.global.prometheus.connection) }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: pods
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Pods
+    icon: pod
+    {{- if .Values.views.pods.sidebar }}
+    sidebar: true
+    {{- end }}
+    table:
+      sort: name
+      size: 10
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+  panels:
+    - name: Health
+      description: Pods grouped by health
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          healthy: "#28C19B"
+          unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM pod GROUP BY health
+    - name: Status
+      description: Pods grouped by status
+      type: piechart
+      piechart:
+        colors:
+          Completed: "#8BC34A"
+          Running: "#28C19B"
+          Failed: "#F25C54"
+          Pending: "#F4B23C"
+          Terminated: "#666666"
+          TerminatingStalled: "#F04E6E"
+          Unscheduled: "#FFA726"
+        showLabels: true
+      query: SELECT COUNT(*) AS count, status FROM pod GROUP BY status
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: namespace
+      type: string
+      card:
+        position: subtitle
+      icon: "'namespace'"
+      filter:
+        type: multiselect
+      url:
+        view:
+          filter:
+            viewvar__namespace: row.namespace
+            viewvar__cluster: row.cluster
+          name: >
+            'namespace'
+      width: "2"
+    - name: name
+      type: config_item
+      card:
+        position: title
+      width: "3"
+    - name: tags
+      type: labels
+      card:
+        position: body
+      width: "3"
+    - name: status
+      type: status
+      icon: row.health
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+      width: "2"
+    - name: health
+      type: health
+      hidden: true
+      card:
+        useForAccent: true
+      filter:
+        type: multiselect
+    - name: created
+      type: datetime
+      card:
+        position: body
+      width: "2"
+    - name: updated
+      type: datetime
+      card:
+        position: body
+      width: "2"
+    - name: image
+      type: string
+      hidden: true
+      card:
+        position: body
+    - name: node
+      type: string
+      hidden: true
+      filter:
+        type: multiselect
+      card:
+        position: body
+  merge: |
+    SELECT
+      pod.id,
+      pod.name,
+      json_extract(pod.tags, '$.namespace') AS namespace,
+      json_extract(pod.tags, '$.cluster') AS cluster,
+      pod.status,
+      pod.health,
+      pod.tags,
+      pod.config,
+      pod.__grants,
+      pod.created_at,
+      pod.updated_at
+    FROM pod
+    ORDER BY namespace, name
+  queries:
+    pod:
+      configs:
+        agent: "all"
+        tagSelector: "cluster=$(.var.cluster)"
+        types:
+          - Kubernetes::Pod
+  mapping:
+    created: row.created_at
+    updated: row.updated_at
+    image: >
+      has(row.config) ? row.config.JSON().spec.containers[0].image : "N/A"
+    node: >
+      has(row.config) ? (has(row.config.JSON().spec.nodeName) ? row.config.JSON().spec.nodeName : "N/A"): "N/A"
+{{- end }}
