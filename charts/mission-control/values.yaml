@@ -241,13 +241,3 @@ views:
     # default: false
     # @schema
     sidebar: false
-# username:
-#   valueFrom:
-#     secretKeyRef:
-#       key: ''
-#       name: ''
-# password:
-#   valueFrom:
-#     secretKeyRef:
-#       key: ''
-#       name: ''
