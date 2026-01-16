@@ -1,0 +1,116 @@
+{{- if and .Values.views.enabled .Values.views.nodes.enabled (not .Values.global.prometheus.connection) }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: nodes
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  cache:
+    refreshTimeout: 30s
+  display:
+    title: Nodes
+    icon: kubernetes::node
+    table:
+      sort: name
+      size: 10
+    {{- if .Values.views.nodes.sidebar }}
+    sidebar: true
+    {{- end }}
+    plugins:
+      - configTab:
+          types:
+            - Kubernetes::Node
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+  panels:
+    - name: Health
+      description: Nodes grouped by health
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          healthy: "#28C19B"
+          unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM nodes GROUP BY health
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: config_item
+      card:
+        position: title
+      url:
+        config: row.id
+      width: "3"
+    - name: cluster
+      type: string
+      icon: "'kubernetes::cluster'"
+      width: "2"
+    - name: role
+      type: string
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+      width: "2"
+    - name: status
+      type: status
+      icon: row.health
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+      width: "2"
+    - name: health
+      type: health
+      hidden: true
+      card:
+        useForAccent: true
+      filter:
+        type: multiselect
+      width: "1"
+    - name: zone
+      type: string
+      width: "2"
+      card:
+        position: body
+      description: Availability zone
+      filter:
+        type: multiselect
+    - name: created_at
+      type: datetime
+      width: "2"
+      card:
+        position: footer
+  merge: |
+    SELECT
+      MIN(nodes.id) AS id,
+      nodes.name,
+      json_extract(nodes.tags, '$.cluster') AS cluster,
+      MIN(nodes.status) AS status,
+      MIN(nodes.health) AS health,
+      MIN(nodes.created_at) AS created_at,
+      CASE WHEN json_extract(nodes.labels, '$."node-role.kubernetes.io/control-plane"') IS NOT NULL THEN 'control-plane' ELSE 'worker' END AS role,
+      json_extract(nodes.labels, '$."topology.kubernetes.io/zone"') AS zone
+    FROM nodes
+    GROUP BY nodes.name, json_extract(nodes.tags, '$.cluster')
+    ORDER BY name
+  queries:
+    nodes:
+      configs:
+        tagSelector: "cluster=$(.var.cluster)"
+        agent: "all"
+        types:
+          - Kubernetes::Node
+{{- end }}
