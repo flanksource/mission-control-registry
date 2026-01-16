@@ -5,6 +5,7 @@ metadata:
   name: {{ .Values.id }}-scraper
 spec:
   schedule: '{{ .Values.scrape.schedule }}'
+  full: true
   sql:
     - type: MSSQL::Server
       {{ include "mssql.connection" . | indent 6 | trim }}
@@ -13,21 +14,23 @@ spec:
       transform:
         expr: |
           [{
-            'ServerName': config.ServerName,
-            'BuildClrVersion': config.BuildClrVersion,
-            'Collation': config.Collation,
-            'Edition': config.Edition,
-            'EngineEdition': config.EngineEdition,
-            'InstanceName': config.InstanceName,
-            'IsClustered': config.IsClustered,
-            'IsHadrEnabled': config.IsHadrEnabled,
-            'MachineName': config.MachineName,
-            'ProductVersion': config.ProductVersion,
-            'ProductLevel': config.ProductLevel,
-            'ProductMajorVersion': config.ProductMajorVersion,
-            'ProductMinorVersion': config.ProductMinorVersion,
-            'ContainedUsers': config.ContainedUsers,
-            'audits': has(config.audits) && config.audits != null ? config.audits.JSONArray() : []
+            'config': {
+              'ServerName': config.ServerName,
+              'BuildClrVersion': config.BuildClrVersion,
+              'Collation': config.Collation,
+              'Edition': config.Edition,
+              'EngineEdition': config.EngineEdition,
+              'InstanceName': config.InstanceName,
+              'IsClustered': config.IsClustered,
+              'IsHadrEnabled': config.IsHadrEnabled,
+              'MachineName': config.MachineName,
+              'ProductVersion': config.ProductVersion,
+              'ProductLevel': config.ProductLevel,
+              'ProductMajorVersion': config.ProductMajorVersion,
+              'ProductMinorVersion': config.ProductMinorVersion,
+              'ContainedUsers': config.ContainedUsers,
+              'audits': has(config.audits) && config.audits != null ? config.audits.JSONArray() : [],
+            },
           }].toJSON()
       query: |
 {{ .Files.Get "conf/server-info.sql" | indent 8 }}
@@ -47,23 +50,25 @@ spec:
           [{
             'id': config.id,
             'name': config.name,
-            'status': config.status,
-            'iscontained': config.iscontained,
-            'recovery_model': config.recovery_model,
-            'compatibility_level': config.compatibility_level,
-            'collation': config.collation,
-            'is_auto_close_on': config.is_auto_close_on,
-            'is_auto_shrink_on': config.is_auto_shrink_on,
-            'is_auto_create_stats_on': config.is_auto_create_stats_on,
-            'is_auto_update_stats_on': config.is_auto_update_stats_on,
-            'is_read_only': config.is_read_only,
-            'is_encrypted': config.is_encrypted,
-            'snapshot_isolation': config.snapshot_isolation,
-            'is_read_committed_snapshot_on': config.is_read_committed_snapshot_on,
-            'page_verify': config.page_verify,
-            'files': has(config.files) && config.files != null ? config.files.JSONArray() : [],
-            'users': has(config.users) && config.users != null ? config.users.JSONArray() : [],
-            'audits': has(config.audits) && config.audits != null ? config.audits.JSONArray() : []
+            'config': {
+              'status': config.status,
+              'iscontained': config.iscontained,
+              'recovery_model': config.recovery_model,
+              'compatibility_level': config.compatibility_level,
+              'collation': config.collation,
+              'is_auto_close_on': config.is_auto_close_on,
+              'is_auto_shrink_on': config.is_auto_shrink_on,
+              'is_auto_create_stats_on': config.is_auto_create_stats_on,
+              'is_auto_update_stats_on': config.is_auto_update_stats_on,
+              'is_read_only': config.is_read_only,
+              'is_encrypted': config.is_encrypted,
+              'snapshot_isolation': config.snapshot_isolation,
+              'is_read_committed_snapshot_on': config.is_read_committed_snapshot_on,
+              'page_verify': config.page_verify,
+              'files': has(config.files) && config.files != null ? config.files.JSONArray() : [],
+              'users': has(config.users) && config.users != null ? config.users.JSONArray() : [],
+              'audits': has(config.audits) && config.audits != null ? config.audits.JSONArray() : [],
+            }
           }].toJSON()
       query: |
         DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
@@ -84,63 +89,56 @@ spec:
           [{
             'id': config.id,
             'name': config.name,
-            'default_database': config.default_database_name,
-            'type': config.type,
-            'is_disabled': config.is_disabled,
-            'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : []
+            'config': {
+              'default_database': config.default_database_name,
+              'type': config.type,
+              'is_disabled': config.is_disabled,
+              'create_date': config.create_date,
+              'modify_date': config.modify_date,
+              'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : [],
+            },
+            'external_roles': has(config.roles) && config.roles != null ? config.roles.JSONArray().map(r, {'name': r.role, 'aliases': ['role/{{ .Values.id }}/' + r.role]}) : [],
+            'external_users': [{
+              'name': config.name,
+              'user_type': config.type,
+              'aliases': [config.id],
+            }],
+            'config_access': has(config.roles) && config.roles != null ? config.roles.JSONArray().map(r, {
+              'external_config_id': {'config_type': 'MSSQL::Server', 'external_id': '{{.Values.id}}'},
+              'external_user_aliases': [config.id],
+              'external_role_aliases': ['role/{{ .Values.id }}/' + r.role],
+            }) : [],
           }].toJSON()
       query: |
         DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
 {{ .Files.Get "conf/logon-users.sql" | indent 8 }}
-    - type: MSSQL::User
-      {{ include "mssql.connection" . | indent 6 | trim }}
-      id: $.id
-      name: $.name
-      transform:
-        relationship:
-          - filter: config_type == 'MSSQL::User'
-            parent: true
-            type:
-              value: 'MSSQL::Database'
-            external_id:
-              expr: config.database_id
-        expr: |
-          [{
-            'id': config.id,
-            'name': config.name,
-            'database': config.database,
-            'database_id': config.database_id,
-            'type': config.type,
-            'create_date': config.create_date,
-            'modify_date': config.modify_date,
-            'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : []
-          }].toJSON()
-      query: |
-        DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
-{{ .Files.Get "conf/database-users.sql" | indent 8 }}
 {{- if .Values.scrape.jobs }}
     - type: MSSQL::AgentJob
       {{ include "mssql.connection" . | indent 6 | trim }}
       id: $.id
       name: $.name
+      health: $.health
       transform:
         expr: |
           [{
             'id': config.job_id,
             'name': config.job_name,
             'updated_at': config.run_datetime,
-            'health': config.status == 'Succeeded' ? 'Healthy' : 'Unhealthy',
-            'last_run': {
-              'status': config.status,
-              'date': config.run_datetime,
-              'duration': config.duration_seconds,
+            'config': {
+              'sql': config.sql,
+              'last_run': {
+                'status': config.status,
+                'date': config.run_datetime,
+                'duration': config.duration_seconds,
+              },
             },
-            'sql': config.sql
+            'health': config.status == 'Succeeded' ? 'Healthy' : 'Unhealthy',
           }].toJSON()
       query: |
 {{ .Files.Get "conf/agent-jobs.sql" | indent 8 }}
 {{- end }}
 ---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/refs/heads/main/schema/openapi/scrape_config.schema.json
 apiVersion: configs.flanksource.com/v1
 kind: ScrapeConfig
 metadata:
