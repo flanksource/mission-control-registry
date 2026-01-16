@@ -1,6 +1,6 @@
 # mission-control-kubernetes-view
 
-![Version: 0.1.36-beta.1](https://img.shields.io/badge/Version-0.1.36--beta.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
+![Version: 0.1.37-beta.3](https://img.shields.io/badge/Version-0.1.37--beta.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.0.0](https://img.shields.io/badge/AppVersion-1.0.0-informational?style=flat-square)
 
 A Helm chart for Kubernetes views in Flanksource Mission Control
 
