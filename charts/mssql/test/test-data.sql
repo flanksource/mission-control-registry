@@ -63,6 +63,11 @@ IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'TestUser')
 IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'AdminUser')
     CREATE LOGIN AdminUser WITH PASSWORD = 'TestPassword123!';
 
+-- Assign server roles to logins
+ALTER SERVER ROLE dbcreator ADD MEMBER TestUser;
+ALTER SERVER ROLE processadmin ADD MEMBER TestUser;
+ALTER SERVER ROLE sysadmin ADD MEMBER AdminUser;
+
 -- Create additional server logins for testing
 IF NOT EXISTS (SELECT 1 FROM sys.server_principals WHERE name = 'ReportUser')
     CREATE LOGIN ReportUser WITH PASSWORD = 'TestPassword123!';

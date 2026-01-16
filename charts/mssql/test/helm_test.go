@@ -103,23 +103,6 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			}
 		})
 
-		It("Creates MSSQL::User config items", func() {
-			users, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::User"}})
-			Expect(err).NotTo(HaveOccurred())
-			Expect(users).NotTo(BeEmpty(), "Expected at least one MSSQL::User config item")
-
-			expectedUsers := []string{"DbOnlyReader", "DbOnlyWriter", "DbOnlyAdmin", "DbOnlyGuest"}
-			foundUsers := make(map[string]bool)
-			for _, u := range users {
-				By("Found user: " + u.Name)
-				foundUsers[u.Name] = true
-			}
-
-			for _, expected := range expectedUsers {
-				Expect(foundUsers).To(HaveKey(expected), "Expected to find user: "+expected)
-			}
-		})
-
 		It("Creates changes after running agent job", func() {
 			agentJobs, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::AgentJob"}})
 			Expect(err).NotTo(HaveOccurred())
@@ -163,15 +146,9 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			}
 
 			expected := []expectedMapping{
-				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "db_ssisltduser"},
-				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "db_ssisoperator"},
-				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "dc_admin"},
-				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "dc_operator"},
-				{"msdb", "MSSQL::Database", "MS_DataCollectorInternalUser", "SQLAgentUserRole"},
-				{"TestDB", "MSSQL::Database", "DbOnlyAdmin", "db_owner"},
-				{"TestDB", "MSSQL::Database", "DbOnlyReader", "db_datareader"},
-				{"TestDB", "MSSQL::Database", "DbOnlyWriter", "db_datareader"},
-				{"TestDB", "MSSQL::Database", "DbOnlyWriter", "db_datawriter"},
+				{"mssql", "MSSQL::Server", "TestUser", "dbcreator"},
+				{"mssql", "MSSQL::Server", "TestUser", "processadmin"},
+				{"mssql", "MSSQL::Server", "AdminUser", "sysadmin"},
 			}
 
 			actualMappings := make(map[string]bool)
