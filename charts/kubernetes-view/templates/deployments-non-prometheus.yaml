@@ -1,0 +1,131 @@
+{{- if and .Values.views.enabled .Values.views.deployments.enabled (not .Values.global.prometheus.connection) }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: deployments
+  labels:
+    {{- include "kubernetes-view.labels" . | nindent 4 }}
+spec:
+  display:
+    title: Deployments
+    table:
+      sort: name
+      size: 10
+    icon: kubernetes::deployment
+    {{- if .Values.views.deployments.sidebar }}
+    sidebar: true
+    {{- end }}
+  templating:
+    - key: cluster
+      label: Cluster
+      valueFrom:
+        config:
+          agent: "all"
+          types:
+            - Kubernetes::Cluster
+  panels:
+    - name: Health
+      description: Deployments grouped by health
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          healthy: "#28C19B"
+          unhealthy: "#F04E6E"
+          unknown: "#666666"
+          warning: "#F4B23C"
+      query: SELECT COUNT(*) AS count, health FROM deployments GROUP BY health
+    - name: Status
+      description: Deployments grouped by status
+      type: piechart
+      query: SELECT COUNT(*) AS count, status FROM deployments GROUP BY status
+  columns:
+    - name: id
+      type: string
+      description: The id of the deployment.
+      primaryKey: true
+      hidden: true
+    - name: name
+      type: config_item
+      description: The deployment name.
+      card:
+        position: title
+      width: "3"
+    - name: namespace
+      type: string
+      description: The namespace name.
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+      url:
+        config: f("name=$(.namespace) tags.cluster=$(.cluster) type=Kubernetes::Namespace", row)
+      width: "2"
+    - name: readyReplicas
+      type: string
+      description: The number of ready replicas.
+      card:
+        position: body
+      width: "1"
+    - name: replicas
+      type: string
+      description: The desired number of replicas.
+      card:
+        position: body
+      width: "1"
+    - name: status
+      type: status
+      icon: row.health
+      description: The status of the deployment.
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+      width: "1"
+    - name: health
+      type: health
+      hidden: true
+      description: The health of the deployment.
+      card:
+        useForAccent: true
+      filter:
+        type: multiselect
+    - name: createdAt
+      type: datetime
+      description: The creation timestamp.
+      card:
+        position: body
+      width: "2"
+    - name: lastUpdated
+      type: datetime
+      description: The last updated time.
+      card:
+        position: body
+      width: "2"
+  queries:
+    deployments:
+      configs:
+        tagSelector: "cluster=$(.var.cluster)"
+        agent: "all"
+        types:
+          - Kubernetes::Deployment
+  merge: |
+    SELECT
+      deployments.id,
+      deployments.name,
+      json_extract(deployments.tags, '$.namespace') AS namespace,
+      json_extract(deployments.tags, '$.cluster') AS cluster,
+      deployments.status,
+      deployments.health,
+      deployments.created_at,
+      deployments.updated_at,
+      CAST(CASE
+        WHEN json_extract(deployments.config, '$.status.readyReplicas') IS NULL THEN 0
+        ELSE CAST(json_extract(deployments.config, '$.status.readyReplicas') AS INTEGER)
+      END AS TEXT) AS readyReplicas,
+      CAST(json_extract(deployments.config, '$.spec.replicas') AS TEXT) AS replicas
+    FROM deployments
+  mapping:
+    createdAt: row.created_at
+    lastUpdated: row.updated_at
+{{- end }}
