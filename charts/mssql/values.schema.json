@@ -7,14 +7,25 @@
       "description": "Playbook approvers configuration",
       "properties": {
         "people": {
-          "default": "",
-          "description": "List of people who can approve playbook executions",
+          "description": "List of people who can approve playbook executions\npeople:\n- admin",
+          "items": {
+            "required": []
+          },
           "title": "people",
-          "type": "null"
+          "type": "array"
+        },
+        "teams": {
+          "description": "List of teams who can approve playbook executions\nteams:\n  - dba-team",
+          "items": {
+            "required": []
+          },
+          "title": "teams",
+          "type": "array"
         }
       },
       "required": [
-        "people"
+        "people",
+        "teams"
       ],
       "title": "approvers",
       "type": "object"

@@ -57,8 +57,10 @@ rds:
 # -- Playbook approvers configuration
 approvers:
   # -- List of people who can approve playbook executions
-  people:
+  # people:
   # - admin
+  people: []
   # -- List of teams who can approve playbook executions
   # teams:
   #   - dba-team
+  teams: []
