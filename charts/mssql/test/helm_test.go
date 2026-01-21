@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"io"
+	"time"
 
 	"github.com/flanksource/clicky"
 	"github.com/flanksource/commons-test/helm"
@@ -11,6 +12,8 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
+
+var mssqlServerConfigID string
 
 // Helm tests using fluent interface from commons
 var _ = Describe("MSSQL Bundle", Ordered, func() {
@@ -73,6 +76,7 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			servers, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Types: []string{"MSSQL::Server"}})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(servers).NotTo(BeEmpty(), "Expected at least one MSSQL::Server config item")
+			mssqlServerConfigID = servers[0].ID
 			for _, s := range servers {
 				By("Found server: " + s.Name)
 			}
@@ -164,5 +168,49 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 				Expect(actualMappings).To(HaveKey(key), "Expected config_access entry: %s", key)
 			}
 		})
+
+		It("Should run the create login user playbook", func() {
+			pb, err := k8s.Get(ctx, "Playbook", "mission-control", "create-mssql-login-user")
+			Expect(err).NotTo(HaveOccurred())
+
+			rb, _ := json.Marshal(map[string]any{
+				"id":        pb.GetUID(),
+				"config_id": mssqlServerConfigID,
+				"params": map[string]any{
+					"username": "NewCreatedLogin",
+					"email":    "no-reply@example.com",
+				},
+			})
+
+			r, err := mcInstance.HTTP.R(ctx).Header("Content-Type", "application/json").Post("/playbook/run", rb)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(r.IsOK()).To(BeTrue())
+
+			// Playbook run event is generated, its picked from queue and then processed
+			time.Sleep(30 * time.Second)
+
+			mainScraper, err := k8s.Get(ctx, "ScrapeConfig", "mission-control", "mssql-scraper")
+			Expect(err).NotTo(HaveOccurred())
+			Expect(mainScraper).NotTo(BeNil())
+
+			resp, err := mcInstance.GetScraper(string(mainScraper.GetUID())).Run()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(resp.Errors).To(BeEmpty(), "Expected no errors from scraper run")
+
+			logons, err := mcInstance.QueryCatalog(mission_control.ResourceSelector{Name: "NewCreatedLogin", Types: []string{"MSSQL::Logon"}})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(logons).NotTo(BeEmpty(), "Expected at least one MSSQL::Logon config item")
+
+			expectedLogons := []string{"NewCreatedLogin"}
+			foundLogons := make(map[string]bool)
+			for _, l := range logons {
+				foundLogons[l.Name] = true
+			}
+			for _, expected := range expectedLogons {
+				Expect(foundLogons).To(HaveKey(expected), "Expected to find logon: "+expected)
+			}
+		})
+
 	})
 })
