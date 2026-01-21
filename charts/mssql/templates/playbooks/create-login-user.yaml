@@ -22,7 +22,7 @@ spec:
       type: text
     - name: password
       label: Password (leave empty for randomly generated one)
-      type: text
+      type: secret
       default: '$(random.AlphaNum 12 )'
   {{ include "mssql.approvers" . | indent 2 | trim }}
   actions:
