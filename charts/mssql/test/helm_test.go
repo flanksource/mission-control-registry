@@ -211,6 +211,5 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 				Expect(foundLogons).To(HaveKey(expected), "Expected to find logon: "+expected)
 			}
 		})
-
 	})
 })

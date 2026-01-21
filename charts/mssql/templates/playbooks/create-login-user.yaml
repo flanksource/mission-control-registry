@@ -37,11 +37,10 @@ spec:
     - name: Send Credentials Email
       notification:
         connection: {{ .Values.playbooks.createUser.emailConnection }}
-        title: "MSSQL Login Credentials for $(params.server)"
+        title: "MSSQL Login Credentials for $(.config.name)"
         message: |
           Your MSSQL login has been created.
 
-          Server: $(.config.config.some)
           Username: $(.params.username)
           Password: $(.params.password)
         properties:
