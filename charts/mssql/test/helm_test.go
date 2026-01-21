@@ -35,9 +35,10 @@ var _ = Describe("MSSQL Bundle", Ordered, func() {
 			mssqlChart = helm.NewHelmChart(ctx, "..").
 				Release("mssql-bundle").
 				Namespace("mission-control").
-				ForceConflicts().
-				SetValue("connectionName", "").
-				SetValue("url", connectionString)
+				SetValue("url", connectionString).
+				SetValue("playbooks.createUser.enabled", true).
+				SetValue("playbooks.createUser.emailConnection", "connection://default/email").
+				ForceConflicts()
 			Expect(mssqlChart.InstallOrUpgrade()).NotTo(HaveOccurred())
 			status, err := mssqlChart.GetStatus()
 			Expect(err).NotTo(HaveOccurred())

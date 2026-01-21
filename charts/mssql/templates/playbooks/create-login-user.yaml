@@ -1,0 +1,49 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.createUser.enabled }}
+{{- if not .Values.playbooks.createUser.emailConnection }}
+{{- fail "playbooks.createUser.emailConnection is required when playbooks.createUser.enabled is true" }}
+{{- end }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: create-mssql-login-user
+spec:
+  title: "Create MSSQL Login User"
+  icon: mssql
+  description: Create a new SQL Server login with a randomly generated password and send credentials via email
+  configs:
+    - types:
+        - MSSQL::Server
+  parameters:
+    - name: username
+      label: Username
+      type: text
+    - name: email
+      label: Email
+      type: text
+    - name: password
+      label: Password (leave empty for randomly generated one)
+      type: text
+      default: '$(random.AlphaNum 12 )'
+  {{ include "mssql.approvers" . | indent 2 | trim }}
+  actions:
+    - name: Create Login
+      sql:
+        {{ include "mssql.connection-playbook" . }}
+        driver: mssql
+        query: |
+          DECLARE @username NVARCHAR(128) = '$(.params.username)';
+          DECLARE @password nvarchar(128) = '$(.params.password)';
+{{ .Files.Get "conf/create-login-user.sql" | indent 10 }}
+    - name: Send Credentials Email
+      notification:
+        connection: {{ .Values.playbooks.createUser.emailConnection }}
+        title: "MSSQL Login Credentials for $(params.server)"
+        message: |
+          Your MSSQL login has been created.
+
+          Server: $(.config.config.some)
+          Username: $(.params.username)
+          Password: $(.params.password)
+        properties:
+          to: "$(.params.email)"
+{{- end }}

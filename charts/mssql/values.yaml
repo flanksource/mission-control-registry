@@ -1,14 +1,15 @@
+# yaml-language-server: $schema=values.schema.json
 # -- Logical ID of the database instance used to create an idempotent config-db ID
 # that is consistent across restarts and db failovers
 id: mssql
 
 # -- Connection name for a connection:// reference (created externally)
 # Use either connectionName OR url, not both
-# connectionName: ""
+connectionName: ""
 
 # -- Direct connection string to the MSSQL server
 # Example: "sqlserver://sa:YourStrong@Passw0rd@localhost:1433"
-# url: ""
+url: ""
 
 # -- Playbook configuration
 playbooks:
@@ -22,6 +23,13 @@ playbooks:
   grantAccess: true
   # -- Enable "Kill Long Running Transactions" playbook
   killLongRunningTransactions: true
+  # -- Create Login User playbook configuration
+  createUser:
+    # -- Enable "Create Login User" playbook for creating new SQL logins
+    enabled: false
+    # -- Email connection reference for sending credentials (required when enabled)
+    # Example: "connection://default/smtp" or "connection://notifications/email"
+    emailConnection: ""
 
 # -- Health check canary configuration
 canary:
