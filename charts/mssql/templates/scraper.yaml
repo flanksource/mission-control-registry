@@ -204,6 +204,7 @@ spec:
             'name': config.database_name,
             'changes': [{
               'id': '{{ .Values.id }}' + '/' + config.task_id,
+              'scraper_id': 'all',
               'change_type': config.change_type,
               'summary': config.summary,
               'details': {'message': config.details},
