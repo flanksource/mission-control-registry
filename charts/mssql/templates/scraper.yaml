@@ -203,7 +203,7 @@ spec:
             'id': '{{ .Values.id }}' + '/' + config.database_name.lowerAscii(),
             'name': config.database_name,
             'changes': [{
-              'external_change_id': '{{ .Values.id }}' + '/' + config.task_id,
+              'id': '{{ .Values.id }}' + '/' + config.task_id,
               'scraper_id': 'all',
               'change_type': config.change_type,
               'summary': config.summary,
