@@ -95,19 +95,41 @@ spec:
               'is_disabled': config.is_disabled,
               'create_date': config.create_date,
               'modify_date': config.modify_date,
-              'roles': has(config.roles) && config.roles != null ? config.roles.JSONArray() : [],
+              'server_roles': has(config.server_roles) && config.server_roles != null ? config.server_roles.JSONArray() : [],
+              'member_of_groups': has(config.member_of_groups) && config.member_of_groups != null ? config.member_of_groups.JSONArray() : [],
+              'database_roles': has(config.database_roles) && config.database_roles != null ? config.database_roles.JSONArray() : [],
             },
-            'external_roles': has(config.roles) && config.roles != null ? config.roles.JSONArray().map(r, {'name': r.role, 'aliases': ['role/{{ .Values.id }}/' + r.role]}) : [],
+            'external_roles': (
+              (has(config.server_roles) && config.server_roles != null ?
+                config.server_roles.JSONArray().map(r, {'name': r.role, 'type': r.membership_type, 'aliases': [ r.role]}) : []) +
+              (has(config.database_roles) && config.database_roles != null ?
+                config.database_roles.JSONArray().map(dr, {'name': dr.role_name, 'database': dr.database_name, 'aliases': [ dr.role_name]}) : [])
+            ),
             'external_users': [{
               'name': config.name,
               'user_type': config.type,
               'aliases': [config.id],
             }],
-            'config_access': has(config.roles) && config.roles != null ? config.roles.JSONArray().map(r, {
-              'external_config_id': {'config_type': 'MSSQL::Server', 'external_id': '{{.Values.id}}'},
-              'external_user_aliases': [config.id],
-              'external_role_aliases': ['role/{{ .Values.id }}/' + r.role],
-            }) : [],
+            'config_access': (
+              (has(config.server_roles) && config.server_roles != null ?
+                config.server_roles.JSONArray().map(r, {
+                  'external_config_id': {'config_type': 'MSSQL::Server', 'external_id': '{{.Values.id}}'},
+                  'external_user_aliases': [config.id],
+                  'external_role_aliases': [ r.role],
+                }) : []) +
+              (has(config.member_of_groups) && config.member_of_groups != null ?
+                config.member_of_groups.JSONArray().map(g, {
+                  'external_config_id': {'config_type': 'MSSQL::Server', 'external_id': '{{.Values.id}}'},
+                  'external_user_aliases': [config.id],
+                  'external_role_aliases': ['group/{{ .Values.id }}/' + g.parent_group],
+                }) : []) +
+              (has(config.database_roles) && config.database_roles != null ?
+                config.database_roles.JSONArray().map(dr, {
+                  'external_config_id': {'config_type': 'MSSQL::Database', 'external_id': '{{.Values.id}}/' + dr.database_name},
+                  'external_user_aliases': [config.id],
+                  'external_role_aliases': [dr.role_name],
+                }) : [])
+            ),
           }].toJSON()
       query: |
         DECLARE @configId nvarchar(200) = '{{ .Values.id }}'
