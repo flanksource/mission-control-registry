@@ -15,7 +15,6 @@ spec:
     {{- end }}
     card:
       columns: 2
-      default: true
   templating:
     - key: cluster
       label: Cluster
