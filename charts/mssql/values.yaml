@@ -23,7 +23,7 @@ playbooks:
   grantAccess: true
   # -- Enable "Kill Long Running Transactions" playbook
   killLongRunningTransactions: true
-  # -- Create Login User playbook configuration
+  # -- Create Login User playbook configuration (This needs KMS connection --secret-keeper-connection
   createUser:
     # -- Enable "Create Login User" playbook for creating new SQL logins
     enabled: false

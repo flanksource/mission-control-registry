@@ -78,7 +78,7 @@
       "properties": {
         "createUser": {
           "additionalProperties": false,
-          "description": "Create Login User playbook configuration",
+          "description": "Create Login User playbook configuration (This needs KMS connection --secret-keeper-connection",
           "properties": {
             "emailConnection": {
               "default": "",
