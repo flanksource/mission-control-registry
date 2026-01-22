@@ -36,7 +36,7 @@ spec:
           author: '$(.user.name)'
           email: '$(.user.email)'
           message: $(.params.commit_message | strings.ReplaceAll "<replicas>" .params.replicas)
-        {{ include "git-pr" (list . "$(.params.commit_message | strings.ReplaceAll \"<new_image>\" .params.image)" ) | nindent 8}}
+        {{ include "git-pr" (list . "$(.params.commit_message | strings.ReplaceAll \"<replicas>\" .params.replicas)" ) | nindent 8}}
         patches:
           - path: '$(.git.git.file)'
             yq: |

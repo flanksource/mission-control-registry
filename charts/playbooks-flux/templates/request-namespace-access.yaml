@@ -88,7 +88,7 @@ spec:
         {{ include "git-pr" (list . "expire $(.params.user) $(.params.role.name) on $(.config.name)" ) | nindent 8}}
         patches:
           - path: $(.git.kustomize.file)
-            yq: .resources -= "del(.resources[] | select(. == "rolebinding-$(.config.name).yaml"))'"
+            yq: 'del(.resources[] | select(. == "rolebinding-$(.config.name)-$(run.id).yaml"))'
         files:
           - path: '$(.git.kustomize.path)/rolebinding-$(.config.name)-$(run.id).yaml'
             content: '$delete'
