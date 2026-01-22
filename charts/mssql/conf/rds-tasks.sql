@@ -2,7 +2,7 @@ SELECT
  database_name,
   CAST(task_id AS VARCHAR(36)) as task_id,
   task_type as change_type,
-  CAST([% Complete] AS VARCHAR(10)) + '% - ' + ISNULL(task_info, '') as summary,
+  CAST(COALESCE([% Complete], 0) AS VARCHAR(10)) + '% - ' + ISNULL(task_info, '') as summary,
   CASE WHEN lifecycle IN ('ERROR') THEN 'high'
       WHEN lifecycle IN ('CANCELLED') THEN 'med'
       WHEN lifecycle IN ('SUCCESS') THEN 'low'
