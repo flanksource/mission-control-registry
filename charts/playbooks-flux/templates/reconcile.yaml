@@ -24,5 +24,5 @@ spec:
         connections:
           fromConfigItem: '$(.config.id)'
         script: |
-          kubectl annotate -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower) $(.config.name) reconcile.fluxcd.io/requestedAt="$(date -u +%Y-%m-%dT%H:%M:%SZ)" --overwrite
+          kubectl annotate -n $(.config.tags.namespace) $(.config.config_class | strings.ToLower) $(.config.name) reconcile.fluxcd.io/requestedAt='$( time.Now.Format "2006-01-02T15:04:05 ")' --overwrite
 {{- end}}

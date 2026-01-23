@@ -50,7 +50,7 @@ spec:
       gitops:
         repo:
           {{ include "git-origin" . | nindent 10}}
-          branch: update-image-$(random.Alpha 8)
+          branch: update-resources-$(random.Alpha 8)
         commit:
           author: '$(.user.name)'
           email: '$(.user.email)'
@@ -63,7 +63,7 @@ spec:
                 .kind=="$(.config.config | jq `.kind`)" and
                 .metadata.name=="$(.config.config | jq `.metadata.name`)"
               ).spec.template.spec.containers[0].resources |= {
-                "requests": {"cpu": "$(.params.cpu_request)", "memory": $(.params.memory_request)},
-                "limits": {"cpu": "$(.params.cpu_limit)", "memory": $(.params.memory_limit)}
+                "requests": {"cpu": "$(.params.cpu_request)", "memory": "$(.params.memory_request)"},
+                "limits": {"cpu": "$(.params.cpu_limit)", "memory": "$(.params.memory_limit)"}
               }
 {{ end }}
