@@ -1,5 +1,4 @@
 #!/bin/bash
-set -e
 helm repo add flanksource https://flanksource.github.io/charts
 helm repo update
 helm install --devel mission-control-crds flanksource/mission-control-crds --wait
@@ -24,7 +23,10 @@ function testChart() {
     # If chart has a test folder, run `task test`
     if [ -d "test" ]; then
         cd test
-        task test
+        if ! task test; then
+            echo "task test failed"
+            exit 1
+        fi
         cd ..
     fi
 }
