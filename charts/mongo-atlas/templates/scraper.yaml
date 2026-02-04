@@ -14,7 +14,7 @@ spec:
     - url: 'https://cloud.mongodb.com/api/atlas/v2/orgs'
       digest: true
       headers:
-        Accept:
+        - name: Accept
           value: 'application/vnd.atlas.2023-02-01+json'
       username:
         valueFrom:
@@ -37,7 +37,7 @@ spec:
     - url: 'https://cloud.mongodb.com/api/atlas/v2/groups'
       digest: true
       headers:
-        Accept:
+        - name: Accept
           value: 'application/vnd.atlas.2023-02-01+json'
       username:
         valueFrom:
@@ -61,7 +61,7 @@ spec:
     - url: "https://cloud.mongodb.com/api/atlas/v2/groups/{{.}}/clusters"
       digest: true
       headers:
-        Accept:
+        - name: Accept
           value: 'application/vnd.atlas.2023-02-01+json'
       username:
         valueFrom:
