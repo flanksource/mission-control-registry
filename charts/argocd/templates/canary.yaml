@@ -1,9 +1,9 @@
 {{- if .Values.canary.enabled }}
-{{- $baseURL := trimSuffix "/" .Values.argocd.baseURL }}
+{{- $baseURL := trimSuffix "/" (required "argocd.baseURL is required when canary.enabled=true" .Values.argocd.baseURL) }}
 apiVersion: canaries.flanksource.com/v1
 kind: Canary
 metadata:
-  name: {{ .Values.canary.name | default "argocd-health" }}
+  name: {{ printf "%s-health" (include "argocd.fullname" .) | trunc 63 | trimSuffix "-" }}
   labels:
     {{- include "argocd.labels" . | nindent 4 }}
 spec:

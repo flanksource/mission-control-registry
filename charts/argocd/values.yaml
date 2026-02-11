@@ -82,7 +82,7 @@ argocd:
 # -- Health check canary that verifies ArgoCD repositories and clusters via the API
 canary:
   # -- Enable ArgoCD health check canary
-  enabled: true
+  enabled: false
   # -- Cron schedule for health checks
   # @schema
   # default: "@every 5m"
