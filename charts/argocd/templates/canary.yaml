@@ -34,7 +34,7 @@ spec:
               'pass': r.connectionState.status == 'Successful',
               'message': r.connectionState.status == 'Successful'
                 ? r.repo + ' is healthy'
-                : r.repo + ' connection failed: ' + r.connectionState.message,
+                : r.repo + ' connection failed: ' + (has(r.connectionState.message) ? r.connectionState.message : 'unknown error'),
               'labels': {
                 'repo': r.repo,
                 'status': r.connectionState.status
@@ -68,7 +68,7 @@ spec:
               'pass': c.connectionState.status == 'Successful',
               'message': c.connectionState.status == 'Successful'
                 ? c.name + ' (' + c.server + ') is healthy'
-                : c.name + ' (' + c.server + ') connection failed: ' + c.connectionState.message,
+                : c.name + ' (' + c.server + ') connection failed: ' + (has(c.connectionState.message) ? c.connectionState.message : 'unknown error'),
               'labels': {
                 'cluster': c.name,
                 'server': c.server,

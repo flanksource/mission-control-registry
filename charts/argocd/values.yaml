@@ -73,7 +73,6 @@ argocd:
   #
   # The value must include the "Bearer " prefix.
   # @schema
-  # required: true
   # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
   # @schema
   token:
