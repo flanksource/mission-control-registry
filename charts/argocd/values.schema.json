@@ -3,17 +3,39 @@
   "additionalProperties": false,
   "properties": {
     "argocd": {
-      "additionalProperties": true,
-      "deprecated": true,
-      "description": "Deprecated: Use namespace instead",
+      "additionalProperties": false,
+      "description": "ArgoCD API configuration used by topology and canary checks",
       "properties": {
+        "baseURL": {
+          "default": "",
+          "description": "ArgoCD API base URL (e.g. https://argocd.example.com)",
+          "required": [],
+          "title": "baseURL",
+          "type": "string"
+        },
+        "connection": {
+          "default": "",
+          "description": "Optional connection reference for ArgoCD API checks (e.g. connection://http/argocd)",
+          "required": [],
+          "title": "connection",
+          "type": "string"
+        },
         "namespace": {
           "default": "argocd",
+          "deprecated": true,
+          "description": "Deprecated: Use namespace instead",
           "required": [],
           "title": "namespace"
+        },
+        "token": {
+          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "required": []
         }
       },
-      "required": [],
+      "required": [
+        "connection",
+        "baseURL"
+      ],
       "title": "argocd",
       "type": "object"
     },
@@ -69,22 +91,10 @@
           "description": "Cron schedule for health checks",
           "required": [],
           "title": "schedule"
-        },
-        "token": {
-          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
-          "required": []
-        },
-        "url": {
-          "default": "",
-          "description": "ArgoCD API server URL (e.g. https://argocd.example.com)",
-          "required": [],
-          "title": "url",
-          "type": "string"
         }
       },
       "required": [
         "enabled",
-        "url",
         "repositories",
         "clusters"
       ],

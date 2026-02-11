@@ -1,8 +1,9 @@
-canary:
-  enabled: true
-  url: https://cd.apps.argoproj.io
+argocd:
+  baseURL: https://cd.apps.argoproj.io
   token:
     value: ""
+canary:
+  enabled: true
   repositories:
     enabled: true
   clusters:

@@ -38,30 +38,24 @@ topology:
 # @schema
 namespace: argocd
 
-# -- Deprecated: Use namespace instead
+# -- ArgoCD API configuration used by topology and canary checks
 # @schema
 # type: object
-# additionalProperties: true
-# deprecated: true
+# additionalProperties: false
 # @schema
 argocd:
+  # -- Deprecated: Use namespace instead
   # @schema
   # default: argocd
+  # deprecated: true
   # @schema
   namespace: argocd
 
-# -- Health check canary that verifies ArgoCD repositories and clusters via the API
-canary:
-  # -- Enable ArgoCD health check canary
-  enabled: true
-  # -- Cron schedule for health checks
-  # @schema
-  # default: "@every 5m"
-  # @schema
-  schedule: "@every 5m"
+  # -- Optional connection reference for ArgoCD API checks (e.g. connection://http/argocd)
+  connection: ""
 
-  # -- ArgoCD API server URL (e.g. https://argocd.example.com)
-  url: ""
+  # -- ArgoCD API base URL (e.g. https://argocd.example.com)
+  baseURL: ""
 
   # -- Bearer token for ArgoCD API authentication.
   # This is an EnvVar object — either a static value or a reference to a Kubernetes secret.
@@ -84,6 +78,16 @@ canary:
   # @schema
   token:
     value: ""
+
+# -- Health check canary that verifies ArgoCD repositories and clusters via the API
+canary:
+  # -- Enable ArgoCD health check canary
+  enabled: true
+  # -- Cron schedule for health checks
+  # @schema
+  # default: "@every 5m"
+  # @schema
+  schedule: "@every 5m"
 
   # -- Repository health checks
   repositories:

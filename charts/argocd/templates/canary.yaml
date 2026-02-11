@@ -1,4 +1,5 @@
 {{- if .Values.canary.enabled }}
+{{- $baseURL := trimSuffix "/" .Values.argocd.baseURL }}
 apiVersion: canaries.flanksource.com/v1
 kind: Canary
 metadata:
@@ -10,14 +11,17 @@ spec:
   http:
     {{- if .Values.canary.repositories.enabled }}
     - name: argocd-repositories
-      url: {{ printf "%s/api/v1/repositories?forceRefresh=true" (trimSuffix "/" .Values.canary.url) }}
+      {{- if .Values.argocd.connection }}
+      connection: {{ .Values.argocd.connection | quote }}
+      {{- end }}
+      url: {{ printf "%s/api/v1/repositories?forceRefresh=true" $baseURL }}
       headers:
         - name: Authorization
-          {{- if .Values.canary.token.valueFrom }}
+          {{- if .Values.argocd.token.valueFrom }}
           valueFrom:
-            {{- .Values.canary.token.valueFrom | toYaml | nindent 12 }}
+            {{- .Values.argocd.token.valueFrom | toYaml | nindent 12 }}
           {{- else }}
-          value: {{ .Values.canary.token.value | quote }}
+          value: {{ .Values.argocd.token.value | quote }}
           {{- end }}
       responseCodes: [200]
       transformDeleteStrategy: OnTransformMarkHealthy
@@ -41,14 +45,17 @@ spec:
 
     {{- if .Values.canary.clusters.enabled }}
     - name: argocd-clusters
-      url: {{ printf "%s/api/v1/clusters" (trimSuffix "/" .Values.canary.url) }}
+      {{- if .Values.argocd.connection }}
+      connection: {{ .Values.argocd.connection | quote }}
+      {{- end }}
+      url: {{ printf "%s/api/v1/clusters" $baseURL }}
       headers:
         - name: Authorization
-          {{- if .Values.canary.token.valueFrom }}
+          {{- if .Values.argocd.token.valueFrom }}
           valueFrom:
-            {{- .Values.canary.token.valueFrom | toYaml | nindent 12 }}
+            {{- .Values.argocd.token.valueFrom | toYaml | nindent 12 }}
           {{- else }}
-          value: {{ .Values.canary.token.value | quote }}
+          value: {{ .Values.argocd.token.value | quote }}
           {{- end }}
       responseCodes: [200]
       transformDeleteStrategy: OnTransformMarkHealthy
