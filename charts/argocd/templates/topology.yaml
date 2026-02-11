@@ -1,7 +1,8 @@
+{{- if .Values.topology.enabled }}
 apiVersion: canaries.flanksource.com/v1
 kind: Topology
 metadata:
-  name: {{ .Values.topologyName }}
+  name: {{ .Values.topologyName | default .Values.topology.name }}
 spec:
   icon: argo
   type: Topology
@@ -12,7 +13,7 @@ spec:
       selectors:
         - types:
             - Kubernetes::Pod
-          labelSelector: 'namespace={{.Values.argocd.namespace}}'
+          labelSelector: 'namespace={{ .Values.argocd.namespace | default .Values.namespace }}'
     - name: Application
       icon: argo
       components:
@@ -77,3 +78,4 @@ spec:
                       {'name': 'Source Repos', 'text': r.config.spec.sourceRepos.toJSON()},
                     ],
                   }).toJSON()
+{{- end }}

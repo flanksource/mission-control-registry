@@ -1,0 +1,11 @@
+canary:
+  enabled: true
+  url: https://cd.apps.argoproj.io
+  token:
+    value: ""
+  repositories:
+    enabled: true
+  clusters:
+    enabled: true
+topology:
+  enabled: true

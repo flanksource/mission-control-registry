@@ -3,11 +3,12 @@
   "additionalProperties": false,
   "properties": {
     "argocd": {
-      "additionalProperties": false,
+      "additionalProperties": true,
+      "deprecated": true,
+      "description": "Deprecated: Use namespace instead",
       "properties": {
         "namespace": {
           "default": "argocd",
-          "description": "The namespace that Argo is installed in",
           "required": [],
           "title": "namespace"
         }
@@ -16,20 +17,142 @@
       "title": "argocd",
       "type": "object"
     },
+    "canary": {
+      "additionalProperties": false,
+      "description": "Health check canary that verifies ArgoCD repositories and clusters via the API",
+      "properties": {
+        "clusters": {
+          "additionalProperties": false,
+          "description": "Cluster health checks",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Enable cluster health checking",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "clusters",
+          "type": "object"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Enable ArgoCD health check canary",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "repositories": {
+          "additionalProperties": false,
+          "description": "Repository health checks",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Enable repository health checking",
+              "required": [],
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "repositories",
+          "type": "object"
+        },
+        "schedule": {
+          "default": "@every 5m",
+          "description": "Cron schedule for health checks",
+          "required": [],
+          "title": "schedule"
+        },
+        "token": {
+          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "required": []
+        },
+        "url": {
+          "default": "",
+          "description": "ArgoCD API server URL (e.g. https://argocd.example.com)",
+          "required": [],
+          "title": "url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "enabled",
+        "url",
+        "repositories",
+        "clusters"
+      ],
+      "title": "canary",
+      "type": "object"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride"
+    },
     "global": {
       "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
       "required": [],
       "title": "global",
       "type": "object"
     },
+    "labels": {
+      "additionalProperties": true,
+      "required": [],
+      "title": "labels",
+      "type": "object"
+    },
+    "nameOverride": {
+      "default": "argocd",
+      "required": [],
+      "title": "nameOverride"
+    },
+    "namespace": {
+      "default": "argocd",
+      "description": "ArgoCD namespace where the ArgoCD pods are running",
+      "required": [],
+      "title": "namespace"
+    },
+    "topology": {
+      "additionalProperties": false,
+      "description": "Topology for visualizing ArgoCD components in the dashboard",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Enable ArgoCD topology",
+          "required": [],
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "name": {
+          "default": "argocd",
+          "required": [],
+          "title": "name"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "topology",
+      "type": "object"
+    },
     "topologyName": {
       "default": "argocd",
+      "deprecated": true,
+      "description": "Deprecated: Use topology.name instead",
       "required": [],
       "title": "topologyName"
     }
   },
   "required": [
-    "argocd"
+    "topology",
+    "canary"
   ],
   "type": "object"
 }

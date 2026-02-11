@@ -3,10 +3,94 @@
 # @schema
 # default: argocd
 # @schema
+nameOverride: ""
+
+# @schema
+# default: ""
+# @schema
+fullnameOverride: ""
+
+# @schema
+# type: object
+# additionalProperties: true
+# @schema
+labels: {}
+
+# -- Deprecated: Use topology.name instead
+# @schema
+# default: argocd
+# deprecated: true
+# @schema
 topologyName: argocd
+
+# -- Topology for visualizing ArgoCD components in the dashboard
+topology:
+  # -- Enable ArgoCD topology
+  enabled: false
+  # @schema
+  # default: argocd
+  # @schema
+  name: argocd
+
+# -- ArgoCD namespace where the ArgoCD pods are running
+# @schema
+# default: argocd
+# @schema
+namespace: argocd
+
+# -- Deprecated: Use namespace instead
+# @schema
+# type: object
+# additionalProperties: true
+# deprecated: true
+# @schema
 argocd:
   # @schema
-  # description: The namespace that Argo is installed in
   # default: argocd
   # @schema
   namespace: argocd
+
+# -- Health check canary that verifies ArgoCD repositories and clusters via the API
+canary:
+  # -- Enable ArgoCD health check canary
+  enabled: true
+  # -- Cron schedule for health checks
+  # @schema
+  # default: "@every 5m"
+  # @schema
+  schedule: "@every 5m"
+
+  # -- ArgoCD API server URL (e.g. https://argocd.example.com)
+  url: ""
+
+  # -- Bearer token for ArgoCD API authentication.
+  # This is an EnvVar object — either a static value or a reference to a Kubernetes secret.
+  #
+  # Static value:
+  #   token:
+  #     value: "Bearer eyJhbGciOiJIUzI1NiIs..."
+  #
+  # From a Kubernetes secret:
+  #   token:
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: argocd-credentials
+  #         key: token
+  #
+  # The value must include the "Bearer " prefix.
+  # @schema
+  # required: true
+  # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
+  # @schema
+  token:
+    value: ""
+
+  # -- Repository health checks
+  repositories:
+    # -- Enable repository health checking
+    enabled: true
+
+  # -- Cluster health checks
+  clusters:
+    # -- Enable cluster health checking
+    enabled: true
