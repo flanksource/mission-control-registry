@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=values.schema.json
 # -- Logical ID of the database instance used to create an idempotent config-db ID
 # that is consistent across restarts and db failovers
 id: mssql
@@ -22,6 +23,8 @@ playbooks:
   grantAccess: true
   # -- Enable "Kill Long Running Transactions" playbook
   killLongRunningTransactions: true
+  # -- Enable "Restore Tables from Backup" playbook (requires backups.enabled)
+  restoreTables: false
 
 # -- Health check canary configuration
 canary:
@@ -54,3 +57,17 @@ approvers:
   # -- List of teams who can approve playbook executions
   # teams:
   #   - dba-team
+
+# -- Backup scraper configuration for discovering .bak files in S3
+backups:
+  # -- Enable backup scraper
+  enabled: false
+  # -- Cron schedule for backup scraping
+  schedule: "@every 4h"
+  # -- Regex with named capture group 'database' to extract DB name from .bak filename
+  # Default: everything before the first underscore
+  databaseRegex: '^(?P<database>.*)_\d*T\d*\.bak$'
+  # -- S3 URIs to scan for .bak files (s3://bucket/prefix format)
+  s3: []
+  # - s3://bucket-name/backups/prefix1/
+  # - s3://bucket-name/backups/prefix2/

@@ -1,0 +1,35 @@
+{{- if .Values.backups.enabled }}
+apiVersion: configs.flanksource.com/v1
+kind: ScrapeConfig
+metadata:
+  name: {{ .Values.id }}-backup-artifact-scraper
+spec:
+  schedule: '{{ .Values.backups.schedule }}'
+  full: true
+  exec:
+    - type: MSSQL::DatabaseBackup
+      id: $.id
+      name: $.name
+      items: $.items
+      labels:
+        database: $.labels.database
+      createFields:
+        - last_modified
+      transform:
+        relationship:
+          - filter: config_type == 'MSSQL::DatabaseBackup'
+            parent: true
+            type:
+              value: 'MSSQL::Database'
+            name:
+              expr: config.database
+      env:
+        - name: CONFIG_ID
+          value: '{{ .Values.id }}'
+        - name: DATABASE_REGEX
+          value: '{{ .Values.backups.databaseRegex }}'
+        - name: S3_PREFIXES
+          value: '{{ join "," .Values.backups.s3 }}'
+      script: |
+{{  (.Files.Get "conf/s3-bucket-scraper.py")  | indent 10 }}
+{{- end }}

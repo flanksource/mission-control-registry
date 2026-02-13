@@ -43,6 +43,11 @@
           "type": "boolean",
           "description": "Enable Kill Long Running Transactions playbook",
           "default": true
+        },
+        "restoreTables": {
+          "type": "boolean",
+          "description": "Enable Restore Tables from Backup playbook (requires backups.enabled)",
+          "default": false
         }
       }
     },
@@ -114,6 +119,35 @@
         "teams": {
           "type": ["array", "null"],
           "description": "List of teams who can approve playbook executions (optional)",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
+    },
+    "backups": {
+      "type": "object",
+      "description": "Backup scraper configuration for discovering .bak files in S3",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable backup scraper",
+          "default": false
+        },
+        "schedule": {
+          "type": "string",
+          "description": "Cron schedule for backup scraping",
+          "default": "@every 1h"
+        },
+        "databaseRegex": {
+          "type": "string",
+          "description": "Regex with named capture group 'database' to extract DB name from .bak filename",
+          "default": "^(?P<database>.*)_\\d*T\\d*\\.bak$"
+        },
+        "s3": {
+          "type": "array",
+          "description": "S3 URIs to scan for .bak files (s3://bucket/prefix format)",
           "items": {
             "type": "string"
           },
