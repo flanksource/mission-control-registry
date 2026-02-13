@@ -8,3 +8,28 @@ canary:
     enabled: true
   clusters:
     enabled: true
+  deployment:
+    enabled: true
+    schedule: "@every 30m"
+    waitTimeout: "5m"
+    resources:
+      - apiVersion: argoproj.io/v1alpha1
+        kind: Application
+        metadata:
+          name: canary-deploy-test
+          namespace: argocd
+          finalizers:
+            - resources-finalizer.argocd.argoproj.io
+        spec:
+          project: default
+          source:
+            repoURL: https://github.com/argoproj/argocd-example-apps
+            path: guestbook
+            targetRevision: HEAD
+          destination:
+            server: https://kubernetes.default.svc
+            namespace: canary-test
+          syncPolicy:
+            automated:
+              prune: true
+              selfHeal: true

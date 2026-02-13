@@ -33,13 +33,13 @@ spec:
             json.items.map(r, {
               'name': 'argocd-repo/' + r.repo,
               'icon': 'git',
-              'pass': r.connectionState.status == 'Successful',
-              'message': r.connectionState.status == 'Successful'
+              'pass': has(r.connectionState) && r.connectionState.status == 'Successful',
+              'message': has(r.connectionState) && r.connectionState.status == 'Successful'
                 ? r.repo + ' is healthy'
-                : r.repo + ' connection failed: ' + (has(r.connectionState.message) ? r.connectionState.message : 'unknown error'),
+                : r.repo + ' connection failed: ' + (has(r.connectionState) && has(r.connectionState.message) ? r.connectionState.message : 'unknown error'),
               'labels': {
                 'repo': r.repo,
-                'status': r.connectionState.status
+                'status': has(r.connectionState) ? r.connectionState.status : 'Unknown'
               }
             }).toJSON()
           : [].toJSON()
@@ -69,14 +69,14 @@ spec:
             json.items.map(c, {
               'name': 'argocd-cluster/' + c.name,
               'icon': 'kubernetes',
-              'pass': c.connectionState.status == 'Successful',
-              'message': c.connectionState.status == 'Successful'
+              'pass': has(c.connectionState) && c.connectionState.status == 'Successful',
+              'message': has(c.connectionState) && c.connectionState.status == 'Successful'
                 ? c.name + ' (' + c.server + ') is healthy'
-                : c.name + ' (' + c.server + ') connection failed: ' + (has(c.connectionState.message) ? c.connectionState.message : 'unknown error'),
+                : c.name + ' (' + c.server + ') connection failed: ' + (has(c.connectionState) && has(c.connectionState.message) ? c.connectionState.message : 'unknown error'),
               'labels': {
                 'cluster': c.name,
                 'server': c.server,
-                'status': c.connectionState.status
+                'status': has(c.connectionState) ? c.connectionState.status : 'Unknown'
               }
             }).toJSON()
           : [].toJSON()
