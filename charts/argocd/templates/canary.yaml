@@ -78,3 +78,26 @@ spec:
           : [].toJSON()
     {{- end }}
 {{- end }}
+{{- if and .Values.canary.enabled .Values.canary.deployment.enabled .Values.canary.deployment.resources }}
+{{- $deployment := .Values.canary.deployment }}
+---
+apiVersion: canaries.flanksource.com/v1
+kind: Canary
+metadata:
+  name: {{ printf "%s-deployment" (include "argocd.fullname" .) | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- include "argocd.labels" . | nindent 4 }}
+spec:
+  schedule: {{ $deployment.schedule | quote }}
+  kubernetesResource:
+    - name: argocd-deployment
+      description: Verify ArgoCD can deploy resources end-to-end
+      clearResources: true
+      resources:
+        {{- $deployment.resources | toYaml | nindent 8 }}
+      waitFor:
+        timeout: {{ $deployment.waitTimeout }}
+        expr: |
+          dyn(resources).all(r, k8s.isReady(r))
+        delete: true
+{{- end }}

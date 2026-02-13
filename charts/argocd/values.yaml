@@ -88,3 +88,54 @@ canary:
   clusters:
     # -- Enable cluster health checking
     enabled: true
+
+  # -- Deployment health check: creates resources (e.g. an ArgoCD Application),
+  # waits for them to become healthy, then tears them down.
+  # Provide your own Kubernetes resources (typically an ArgoCD Application manifest).
+  #
+  # Example:
+  #   deployment:
+  #     enabled: true
+  #     resources:
+  #       - apiVersion: argoproj.io/v1alpha1
+  #         kind: Application
+  #         metadata:
+  #           name: canary-deploy-test
+  #           namespace: argocd
+  #           finalizers:
+  #             - resources-finalizer.argocd.argoproj.io
+  #         spec:
+  #           project: default
+  #           source:
+  #             repoURL: https://github.com/argoproj/argocd-example-apps
+  #             path: guestbook
+  #             targetRevision: HEAD
+  #           destination:
+  #             server: https://kubernetes.default.svc
+  #             namespace: canary-test
+  #           syncPolicy:
+  #             automated:
+  #               prune: true
+  #               selfHeal: true
+  deployment:
+    # -- Enable deployment health checking
+    enabled: false
+    # -- Cron schedule for the deployment check
+    # @schema
+    # default: "@every 30m"
+    # @schema
+    schedule: "@every 30m"
+    # -- Timeout for waiting for resources to become healthy
+    # @schema
+    # default: "5m"
+    # @schema
+    waitTimeout: "5m"
+    # -- Kubernetes resources to create for the deployment check.
+    # These are created each run, verified healthy, then deleted.
+    # @schema
+    # type: array
+    # items:
+    #   type: object
+    #   additionalProperties: true
+    # @schema
+    resources: []

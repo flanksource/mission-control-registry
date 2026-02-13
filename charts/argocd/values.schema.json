@@ -58,6 +58,45 @@
           "title": "clusters",
           "type": "object"
         },
+        "deployment": {
+          "additionalProperties": false,
+          "description": "Deployment health check: creates resources (e.g. an ArgoCD Application),\nwaits for them to become healthy, then tears them down.\nProvide your own Kubernetes resources (typically an ArgoCD Application manifest).\n\nExample:\n  deployment:\n    enabled: true\n    resources:\n      - apiVersion: argoproj.io/v1alpha1\n        kind: Application\n        metadata:\n          name: canary-deploy-test\n          namespace: argocd\n          finalizers:\n            - resources-finalizer.argocd.argoproj.io\n        spec:\n          project: default\n          source:\n            repoURL: https://github.com/argoproj/argocd-example-apps\n            path: guestbook\n            targetRevision: HEAD\n          destination:\n            server: https://kubernetes.default.svc\n            namespace: canary-test\n          syncPolicy:\n            automated:\n              prune: true\n              selfHeal: true",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Enable deployment health checking",
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "resources": {
+              "description": "Kubernetes resources to create for the deployment check.\nThese are created each run, verified healthy, then deleted.",
+              "items": {
+                "additionalProperties": true,
+                "required": [],
+                "type": "object"
+              },
+              "title": "resources",
+              "type": "array"
+            },
+            "schedule": {
+              "default": "@every 30m",
+              "description": "Cron schedule for the deployment check",
+              "required": [],
+              "title": "schedule"
+            },
+            "waitTimeout": {
+              "default": "5m",
+              "description": "Timeout for waiting for resources to become healthy",
+              "required": [],
+              "title": "waitTimeout"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "deployment",
+          "type": "object"
+        },
         "enabled": {
           "default": false,
           "description": "Enable ArgoCD health check canary",
@@ -91,7 +130,8 @@
       "required": [
         "enabled",
         "repositories",
-        "clusters"
+        "clusters",
+        "deployment"
       ],
       "title": "canary",
       "type": "object"
