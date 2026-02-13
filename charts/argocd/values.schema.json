@@ -4,19 +4,17 @@
   "properties": {
     "argocd": {
       "additionalProperties": false,
-      "description": "ArgoCD API configuration used by topology and canary checks",
+      "description": "ArgoCD API configuration used by canary checks",
       "properties": {
         "baseURL": {
           "default": "",
           "description": "ArgoCD API base URL (e.g. https://argocd.example.com)",
-          "required": [],
           "title": "baseURL",
           "type": "string"
         },
         "connection": {
           "default": "",
           "description": "Optional connection reference for ArgoCD API checks (e.g. connection://http/argocd)",
-          "required": [],
           "title": "connection",
           "type": "string"
         },
@@ -50,7 +48,6 @@
             "enabled": {
               "default": true,
               "description": "Enable cluster health checking",
-              "required": [],
               "title": "enabled",
               "type": "boolean"
             }
@@ -64,7 +61,6 @@
         "enabled": {
           "default": false,
           "description": "Enable ArgoCD health check canary",
-          "required": [],
           "title": "enabled",
           "type": "boolean"
         },
@@ -75,7 +71,6 @@
             "enabled": {
               "default": true,
               "description": "Enable repository health checking",
-              "required": [],
               "title": "enabled",
               "type": "boolean"
             }
@@ -129,39 +124,15 @@
       "required": [],
       "title": "namespace"
     },
-    "topology": {
-      "additionalProperties": false,
-      "description": "Topology for visualizing ArgoCD components in the dashboard",
-      "properties": {
-        "enabled": {
-          "default": false,
-          "description": "Enable ArgoCD topology",
-          "required": [],
-          "title": "enabled",
-          "type": "boolean"
-        },
-        "name": {
-          "default": "argocd",
-          "required": [],
-          "title": "name"
-        }
-      },
-      "required": [
-        "enabled"
-      ],
-      "title": "topology",
-      "type": "object"
-    },
     "topologyName": {
       "default": "argocd",
       "deprecated": true,
-      "description": "Deprecated: Use topology.name instead",
+      "description": "Deprecated: no longer used (topology removed)",
       "required": [],
       "title": "topologyName"
     }
   },
   "required": [
-    "topology",
     "canary"
   ],
   "type": "object"

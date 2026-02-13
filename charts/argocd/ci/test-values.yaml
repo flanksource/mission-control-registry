@@ -8,5 +8,3 @@ canary:
     enabled: true
   clusters:
     enabled: true
-topology:
-  enabled: true

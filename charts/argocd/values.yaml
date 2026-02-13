@@ -16,21 +16,12 @@ fullnameOverride: ""
 # @schema
 labels: {}
 
-# -- Deprecated: Use topology.name instead
+# -- Deprecated: no longer used (topology removed)
 # @schema
 # default: argocd
 # deprecated: true
 # @schema
 topologyName: argocd
-
-# -- Topology for visualizing ArgoCD components in the dashboard
-topology:
-  # -- Enable ArgoCD topology
-  enabled: false
-  # @schema
-  # default: argocd
-  # @schema
-  name: argocd
 
 # -- ArgoCD namespace where the ArgoCD pods are running
 # @schema
@@ -38,7 +29,7 @@ topology:
 # @schema
 namespace: argocd
 
-# -- ArgoCD API configuration used by topology and canary checks
+# -- ArgoCD API configuration used by canary checks
 # @schema
 # type: object
 # additionalProperties: false

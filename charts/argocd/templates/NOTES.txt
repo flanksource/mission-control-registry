@@ -1,9 +1,5 @@
 ArgoCD integration installed.
 
-{{- if .Values.topology.enabled }}
-✓ Topology "{{ .Values.topology.name }}" created
-{{- end }}
-
 {{- if .Values.canary.enabled }}
 ✓ Health check canary created
   {{- if .Values.canary.repositories.enabled }}
