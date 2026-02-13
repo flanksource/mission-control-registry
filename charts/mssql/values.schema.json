@@ -14,13 +14,30 @@
           "title": "people",
           "type": "array"
         },
-        "teams": {
-          "description": "List of teams who can approve playbook executions\nteams:\n  - dba-team",
-          "items": {
-            "required": []
-          },
-          "title": "teams",
-          "type": "array"
+        "runSql": {
+          "type": "boolean",
+          "description": "Enable Run SQL playbook for executing arbitrary SQL",
+          "default": true
+        },
+        "runAgentJob": {
+          "type": "boolean",
+          "description": "Enable Run Agent Job Now playbook for executing T-SQL steps from agent jobs",
+          "default": true
+        },
+        "grantAccess": {
+          "type": "boolean",
+          "description": "Enable Grant DB Access playbook for granting temporary database access",
+          "default": true
+        },
+        "killLongRunningTransactions": {
+          "type": "boolean",
+          "description": "Enable Kill Long Running Transactions playbook",
+          "default": true
+        },
+        "restoreTables": {
+          "type": "boolean",
+          "description": "Enable Restore Tables from Backup playbook (requires backups.enabled)",
+          "default": false
         }
       },
       "required": [
@@ -187,21 +204,36 @@
           "title": "schedule",
           "type": "string"
         }
-      },
-      "required": [
-        "schedule",
-        "incrementalSchedule",
-        "databases",
-        "jobs"
-      ],
-      "title": "scrape",
-      "type": "object"
+      }
     },
-    "url": {
-      "default": "",
-      "description": "Direct connection string to the MSSQL server\nExample: \"sqlserver://sa:YourStrong",
-      "title": "url",
-      "type": "string"
+    "backups": {
+      "type": "object",
+      "description": "Backup scraper configuration for discovering .bak files in S3",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable backup scraper",
+          "default": false
+        },
+        "schedule": {
+          "type": "string",
+          "description": "Cron schedule for backup scraping",
+          "default": "@every 1h"
+        },
+        "databaseRegex": {
+          "type": "string",
+          "description": "Regex with named capture group 'database' to extract DB name from .bak filename",
+          "default": "^(?P<database>.*)_\\d*T\\d*\\.bak$"
+        },
+        "s3": {
+          "type": "array",
+          "description": "S3 URIs to scan for .bak files (s3://bucket/prefix format)",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      }
     }
   },
   "required": [
