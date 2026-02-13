@@ -4,17 +4,141 @@
   "properties": {
     "argocd": {
       "additionalProperties": false,
+      "description": "ArgoCD API configuration used by canary checks",
       "properties": {
+        "baseURL": {
+          "default": "",
+          "description": "ArgoCD API base URL (e.g. https://argocd.example.com)",
+          "title": "baseURL",
+          "type": "string"
+        },
+        "connection": {
+          "default": "",
+          "description": "Optional connection reference for ArgoCD API checks (e.g. connection://http/argocd)",
+          "required": [],
+          "title": "connection"
+        },
         "namespace": {
           "default": "argocd",
-          "description": "The namespace that Argo is installed in",
+          "deprecated": true,
+          "description": "Deprecated: Use namespace instead",
           "required": [],
           "title": "namespace"
+        },
+        "token": {
+          "$ref": "https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar",
+          "required": []
         }
       },
-      "required": [],
+      "required": [
+        "baseURL"
+      ],
       "title": "argocd",
       "type": "object"
+    },
+    "canary": {
+      "additionalProperties": false,
+      "description": "Health check canary that verifies ArgoCD repositories and clusters via the API",
+      "properties": {
+        "clusters": {
+          "additionalProperties": false,
+          "description": "Cluster health checks",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Enable cluster health checking",
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "clusters",
+          "type": "object"
+        },
+        "deployment": {
+          "additionalProperties": false,
+          "description": "Deployment health check: creates resources (e.g. an ArgoCD Application),\nwaits for them to become healthy, then tears them down.\nProvide your own Kubernetes resources (typically an ArgoCD Application manifest).\n\nExample:\n  deployment:\n    enabled: true\n    resources:\n      - apiVersion: argoproj.io/v1alpha1\n        kind: Application\n        metadata:\n          name: canary-deploy-test\n          namespace: argocd\n          finalizers:\n            - resources-finalizer.argocd.argoproj.io\n        spec:\n          project: default\n          source:\n            repoURL: https://github.com/argoproj/argocd-example-apps\n            path: guestbook\n            targetRevision: HEAD\n          destination:\n            server: https://kubernetes.default.svc\n            namespace: canary-test\n          syncPolicy:\n            automated:\n              prune: true\n              selfHeal: true",
+          "properties": {
+            "enabled": {
+              "default": false,
+              "description": "Enable deployment health checking",
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "resources": {
+              "description": "Kubernetes resources to create for the deployment check.\nThese are created each run, verified healthy, then deleted.",
+              "items": {
+                "additionalProperties": true,
+                "required": [],
+                "type": "object"
+              },
+              "title": "resources",
+              "type": "array"
+            },
+            "schedule": {
+              "default": "@every 30m",
+              "description": "Cron schedule for the deployment check",
+              "required": [],
+              "title": "schedule"
+            },
+            "waitTimeout": {
+              "default": "5m",
+              "description": "Timeout for waiting for resources to become healthy",
+              "required": [],
+              "title": "waitTimeout"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "deployment",
+          "type": "object"
+        },
+        "enabled": {
+          "default": false,
+          "description": "Enable ArgoCD health check canary",
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "repositories": {
+          "additionalProperties": false,
+          "description": "Repository health checks",
+          "properties": {
+            "enabled": {
+              "default": true,
+              "description": "Enable repository health checking",
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "enabled"
+          ],
+          "title": "repositories",
+          "type": "object"
+        },
+        "schedule": {
+          "default": "@every 5m",
+          "description": "Cron schedule for health checks",
+          "required": [],
+          "title": "schedule"
+        }
+      },
+      "required": [
+        "enabled",
+        "repositories",
+        "clusters",
+        "deployment"
+      ],
+      "title": "canary",
+      "type": "object"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride"
     },
     "global": {
       "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
@@ -22,14 +146,33 @@
       "title": "global",
       "type": "object"
     },
+    "labels": {
+      "additionalProperties": true,
+      "required": [],
+      "title": "labels",
+      "type": "object"
+    },
+    "nameOverride": {
+      "default": "argocd",
+      "required": [],
+      "title": "nameOverride"
+    },
+    "namespace": {
+      "default": "argocd",
+      "description": "ArgoCD namespace where the ArgoCD pods are running",
+      "required": [],
+      "title": "namespace"
+    },
     "topologyName": {
       "default": "argocd",
+      "deprecated": true,
+      "description": "Deprecated: no longer used (topology removed)",
       "required": [],
       "title": "topologyName"
     }
   },
   "required": [
-    "argocd"
+    "canary"
   ],
   "type": "object"
 }
