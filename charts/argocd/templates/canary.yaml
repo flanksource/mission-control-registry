@@ -1,4 +1,4 @@
-{{- if .Values.canary.enabled }}
+{{- if and .Values.canary.enabled (or .Values.canary.repositories.enabled .Values.canary.clusters.enabled) }}
 {{- $baseURL := trimSuffix "/" (required "argocd.baseURL is required when canary.enabled=true" .Values.argocd.baseURL) }}
 apiVersion: canaries.flanksource.com/v1
 kind: Canary
