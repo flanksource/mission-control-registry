@@ -1,18 +1,30 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "additionalProperties": false,
+  "type": "object",
   "properties": {
-    "approvers": {
-      "additionalProperties": false,
-      "description": "Playbook approvers configuration",
+    "id": {
+      "type": "string",
+      "description": "Logical ID of the database instance used to create an idempotent config-db ID that is consistent across restarts and db failovers",
+      "default": "mssql"
+    },
+    "connectionName": {
+      "type": "string",
+      "description": "Connection name for a connection:// reference (created externally). Use either connectionName OR url, not both",
+      "default": ""
+    },
+    "url": {
+      "type": "string",
+      "description": "Direct connection string to the MSSQL server (e.g., sqlserver://sa:password@localhost:1433)",
+      "default": ""
+    },
+    "playbooks": {
+      "type": "object",
+      "description": "Playbook configuration",
       "properties": {
-        "people": {
-          "description": "List of people who can approve playbook executions\npeople:\n- admin",
-          "items": {
-            "required": []
-          },
-          "title": "people",
-          "type": "array"
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable all playbooks",
+          "default": true
         },
         "runSql": {
           "type": "boolean",
@@ -38,171 +50,93 @@
           "type": "boolean",
           "description": "Enable Restore Tables from Backup playbook (requires backups.enabled)",
           "default": false
+        },
+        "createUser": {
+          "type": "object",
+          "description": "Create Login User playbook configuration (requires KMS connection --secret-keeper-connection)",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable Create Login User playbook for creating new SQL logins",
+              "default": false
+            },
+            "emailConnection": {
+              "type": "string",
+              "description": "Email connection reference for sending credentials (required when enabled)",
+              "default": ""
+            }
+          }
         }
-      },
-      "required": [
-        "people",
-        "teams"
-      ],
-      "title": "approvers",
-      "type": "object"
+      }
     },
     "canary": {
-      "additionalProperties": false,
+      "type": "object",
       "description": "Health check canary configuration",
       "properties": {
-        "enabled": {
-          "default": true,
-          "description": "Enable health check canary",
-          "title": "enabled",
-          "type": "boolean"
-        },
         "schedule": {
-          "default": "@every 5m",
+          "type": "string",
           "description": "Cron schedule for health checks",
-          "title": "schedule",
-          "type": "string"
-        }
-      },
-      "required": [
-        "schedule",
-        "enabled"
-      ],
-      "title": "canary",
-      "type": "object"
-    },
-    "connectionName": {
-      "default": "",
-      "description": "Connection name for a connection:// reference (created externally)\nUse either connectionName OR url, not both",
-      "title": "connectionName",
-      "type": "string"
-    },
-    "global": {
-      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
-      "required": [],
-      "title": "global",
-      "type": "object"
-    },
-    "id": {
-      "default": "mssql",
-      "description": "yaml-language-server: $schema=values.schema.json\nLogical ID of the database instance used to create an idempotent config-db ID\nthat is consistent across restarts and db failovers",
-      "title": "id",
-      "type": "string"
-    },
-    "playbooks": {
-      "additionalProperties": false,
-      "description": "Playbook configuration",
-      "properties": {
-        "createUser": {
-          "additionalProperties": false,
-          "description": "Create Login User playbook configuration (This needs KMS connection --secret-keeper-connection",
-          "properties": {
-            "emailConnection": {
-              "default": "",
-              "description": "Email connection reference for sending credentials (required when enabled)\nExample: \"connection://default/smtp\" or \"connection://notifications/email\"",
-              "title": "emailConnection",
-              "type": "string"
-            },
-            "enabled": {
-              "default": false,
-              "description": "Enable \"Create Login User\" playbook for creating new SQL logins",
-              "title": "enabled",
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "enabled",
-            "emailConnection"
-          ],
-          "title": "createUser",
-          "type": "object"
+          "default": "@every 5m"
         },
         "enabled": {
-          "default": true,
-          "description": "Enable all playbooks",
-          "title": "enabled",
-          "type": "boolean"
-        },
-        "grantAccess": {
-          "default": true,
-          "description": "Enable \"Grant DB Access\" playbook for granting temporary database access",
-          "title": "grantAccess",
-          "type": "boolean"
-        },
-        "killLongRunningTransactions": {
-          "default": true,
-          "description": "Enable \"Kill Long Running Transactions\" playbook",
-          "title": "killLongRunningTransactions",
-          "type": "boolean"
-        },
-        "runAgentJob": {
-          "default": true,
-          "description": "Enable \"Run Agent Job Now\" playbook for executing T-SQL steps from agent jobs",
-          "title": "runAgentJob",
-          "type": "boolean"
-        },
-        "runSql": {
-          "default": true,
-          "description": "Enable \"Run SQL\" playbook for executing arbitrary SQL",
-          "title": "runSql",
-          "type": "boolean"
+          "type": "boolean",
+          "description": "Enable health check canary",
+          "default": true
         }
-      },
-      "required": [
-        "enabled",
-        "runSql",
-        "runAgentJob",
-        "grantAccess",
-        "killLongRunningTransactions",
-        "createUser"
-      ],
-      "title": "playbooks",
-      "type": "object"
+      }
+    },
+    "scrape": {
+      "type": "object",
+      "description": "Scraper configuration for discovering MSSQL resources",
+      "properties": {
+        "schedule": {
+          "type": "string",
+          "description": "Cron schedule for full scrape",
+          "default": "@every 4h"
+        },
+        "incrementalSchedule": {
+          "type": "string",
+          "description": "Cron schedule for incremental scrape (changes only)",
+          "default": "@every 15m"
+        },
+        "databases": {
+          "type": "boolean",
+          "description": "Scrape database information",
+          "default": true
+        },
+        "jobs": {
+          "type": "boolean",
+          "description": "Scrape SQL Agent jobs and their history",
+          "default": true
+        }
+      }
     },
     "rds": {
-      "additionalProperties": false,
+      "type": "object",
       "description": "AWS RDS specific configuration",
       "properties": {
         "tasks": {
-          "default": false,
+          "type": "boolean",
           "description": "Enable RDS task scraping (for AWS RDS SQL Server instances)",
-          "title": "tasks",
-          "type": "boolean"
+          "default": false
         }
-      },
-      "required": [
-        "tasks"
-      ],
-      "title": "rds",
-      "type": "object"
+      }
     },
-    "scrape": {
-      "additionalProperties": false,
-      "description": "Scraper configuration for discovering MSSQL resources",
+    "approvers": {
+      "type": "object",
+      "description": "Playbook approvers configuration",
       "properties": {
-        "databases": {
-          "default": true,
-          "description": "Scrape database information",
-          "title": "databases",
-          "type": "boolean"
+        "people": {
+          "type": "array",
+          "description": "List of people who can approve playbook executions",
+          "items": { "type": "string" },
+          "default": []
         },
-        "incrementalSchedule": {
-          "default": "@every 15m",
-          "description": "Cron schedule for incremental scrape (changes only)",
-          "title": "incrementalSchedule",
-          "type": "string"
-        },
-        "jobs": {
-          "default": true,
-          "description": "Scrape SQL Agent jobs and their history",
-          "title": "jobs",
-          "type": "boolean"
-        },
-        "schedule": {
-          "default": "@every 4h",
-          "description": "Cron schedule for full scrape",
-          "title": "schedule",
-          "type": "string"
+        "teams": {
+          "type": "array",
+          "description": "List of teams who can approve playbook executions",
+          "items": { "type": "string" },
+          "default": []
         }
       }
     },
@@ -218,7 +152,7 @@
         "schedule": {
           "type": "string",
           "description": "Cron schedule for backup scraping",
-          "default": "@every 1h"
+          "default": "@every 4h"
         },
         "databaseRegex": {
           "type": "string",
@@ -228,23 +162,10 @@
         "s3": {
           "type": "array",
           "description": "S3 URIs to scan for .bak files (s3://bucket/prefix format)",
-          "items": {
-            "type": "string"
-          },
+          "items": { "type": "string" },
           "default": []
         }
       }
     }
-  },
-  "required": [
-    "id",
-    "connectionName",
-    "url",
-    "playbooks",
-    "canary",
-    "scrape",
-    "rds",
-    "approvers"
-  ],
-  "type": "object"
+  }
 }
