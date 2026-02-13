@@ -15,6 +15,7 @@ spec:
       connection: {{ .Values.argocd.connection | quote }}
       {{- end }}
       url: {{ printf "%s/api/v1/repositories?forceRefresh=true" $baseURL }}
+      {{- if or .Values.argocd.token.value .Values.argocd.token.valueFrom }}
       headers:
         - name: Authorization
           {{- if .Values.argocd.token.valueFrom }}
@@ -23,6 +24,7 @@ spec:
           {{- else }}
           value: {{ .Values.argocd.token.value | quote }}
           {{- end }}
+      {{- end }}
       responseCodes: [200]
       transformDeleteStrategy: OnTransformMarkHealthy
       transform:
@@ -49,6 +51,7 @@ spec:
       connection: {{ .Values.argocd.connection | quote }}
       {{- end }}
       url: {{ printf "%s/api/v1/clusters" $baseURL }}
+      {{- if or .Values.argocd.token.value .Values.argocd.token.valueFrom }}
       headers:
         - name: Authorization
           {{- if .Values.argocd.token.valueFrom }}
@@ -57,6 +60,7 @@ spec:
           {{- else }}
           value: {{ .Values.argocd.token.value | quote }}
           {{- end }}
+      {{- end }}
       responseCodes: [200]
       transformDeleteStrategy: OnTransformMarkHealthy
       transform:

@@ -43,6 +43,9 @@ argocd:
   namespace: argocd
 
   # -- Optional connection reference for ArgoCD API checks (e.g. connection://http/argocd)
+  # @schema
+  # required: false
+  # @schema
   connection: ""
 
   # -- ArgoCD API base URL (e.g. https://argocd.example.com)

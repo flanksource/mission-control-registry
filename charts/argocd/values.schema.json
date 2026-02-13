@@ -15,8 +15,8 @@
         "connection": {
           "default": "",
           "description": "Optional connection reference for ArgoCD API checks (e.g. connection://http/argocd)",
-          "title": "connection",
-          "type": "string"
+          "required": [],
+          "title": "connection"
         },
         "namespace": {
           "default": "argocd",
@@ -31,7 +31,6 @@
         }
       },
       "required": [
-        "connection",
         "baseURL"
       ],
       "title": "argocd",
