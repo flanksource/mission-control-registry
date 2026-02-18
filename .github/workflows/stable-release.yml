@@ -21,6 +21,7 @@ on:
           - playbooks-kubernetes
           - playbooks-ai
           - playbooks-flux
+          - misc-playbooks
           - helm
           - mssql
 

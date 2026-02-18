@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "enabled": {
+      "default": true,
+      "description": "Field that can be used as a condition when misc-playbooks is a dependency.\nThis definition is only here as a placeholder such that it is included in\nthe json schema.\nSee https://helm.sh/docs/chart_best_practices/dependencies/#conditions-and-tags\nfor more info.\n+docs:hidden",
+      "title": "enabled",
+      "type": "boolean"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "labels": {
+      "additionalProperties": true,
+      "required": [],
+      "title": "labels"
+    },
+    "nameOverride": {
+      "default": "",
+      "required": [],
+      "title": "nameOverride"
+    },
+    "playbooks": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "If this is set to false, no playbooks will be created",
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "kubectl": {
+          "default": true,
+          "description": "create a playbook to run arbitrary kubectl commands against a Kubernetes cluster",
+          "title": "kubectl",
+          "type": "boolean"
+        },
+        "webRequest": {
+          "default": true,
+          "description": "create a playbook to make arbitrary HTTP web requests",
+          "title": "webRequest",
+          "type": "boolean"
+        }
+      },
+      "required": [],
+      "title": "playbooks"
+    }
+  },
+  "required": [
+    "enabled"
+  ],
+  "type": "object"
+}

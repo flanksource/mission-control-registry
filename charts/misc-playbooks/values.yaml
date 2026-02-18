@@ -1,0 +1,50 @@
+# yaml-language-server: $schema=values.schema.json
+
+# Field that can be used as a condition when misc-playbooks is a dependency.
+# This definition is only here as a placeholder such that it is included in
+# the json schema.
+# See https://helm.sh/docs/chart_best_practices/dependencies/#conditions-and-tags
+# for more info.
+# +docs:hidden
+enabled: true
+
+# @schema
+# required: false
+# @schema
+# @ignored
+nameOverride: ""
+# @schema
+# required: false
+# @schema
+# @ignored
+fullnameOverride: ""
+# @schema
+# required: false
+# additionalProperties: true
+# @schema
+labels: {}
+
+# @schema
+# required: false
+# @schema
+playbooks:
+  # If this is set to false, no playbooks will be created
+  # @schema
+  # required: false
+  # type: boolean
+  # @schema
+  enabled: true
+
+  # @schema
+  # required: false
+  # type: boolean
+  # @schema
+  # -- create a playbook to run arbitrary kubectl commands against a Kubernetes cluster
+  kubectl: true
+
+  # @schema
+  # required: false
+  # type: boolean
+  # @schema
+  # -- create a playbook to make arbitrary HTTP web requests
+  webRequest: true
