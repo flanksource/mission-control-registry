@@ -33,6 +33,7 @@ jobs:
             playbooks-kubernetes: charts/playbooks-kubernetes/**
             playbooks-ai: charts/playbooks-ai/**
             playbooks-flux: charts/playbooks-flux/**
+            misc-playbooks: charts/misc-playbooks/**
             mssql: charts/mssql/**
             helm: charts/helm/**
 

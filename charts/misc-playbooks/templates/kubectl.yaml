@@ -1,0 +1,34 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.kubectl }}
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: kubectl
+spec:
+  title: Kubectl
+  description: |
+    Run arbitrary kubectl arguments against the selected Kubernetes cluster connection.
+    This playbook runs kubectl in a shell, so you can pipe the output and use any other CLI tools.
+    Parameter examples:
+      - get pods
+      - get deployments -A -l app=api -o wide
+      - get pods -A -o json | jq '.items[].metadata.name'
+  icon: k8s
+  configs:
+    - types:
+        - Kubernetes::*
+  parameters:
+    - name: command
+      label: Kubectl Command
+      type: code
+      required: true
+      properties:
+        language: shell
+  actions:
+    - name: Run kubectl command
+      exec:
+        script: kubectl $(.params.command)
+        connections:
+          fromConfigItem: "$(.config.id)"
+{{- end }}
