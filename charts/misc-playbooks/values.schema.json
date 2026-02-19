@@ -32,6 +32,12 @@
     "playbooks": {
       "additionalProperties": false,
       "properties": {
+        "curl": {
+          "default": true,
+          "description": "create a playbook to run arbitrary curl commands",
+          "title": "curl",
+          "type": "boolean"
+        },
         "enabled": {
           "default": true,
           "description": "If this is set to false, no playbooks will be created",
@@ -42,12 +48,6 @@
           "default": true,
           "description": "create a playbook to run arbitrary kubectl commands against a Kubernetes cluster",
           "title": "kubectl",
-          "type": "boolean"
-        },
-        "webRequest": {
-          "default": true,
-          "description": "create a playbook to make arbitrary HTTP web requests",
-          "title": "webRequest",
           "type": "boolean"
         }
       },

@@ -1,0 +1,31 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.curl }}
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: curl
+spec:
+  title: Curl
+  description: |
+    Run arbitrary curl arguments to make HTTP requests.
+    This playbook runs the curl command in a shell.
+    
+    Parameter examples:
+      - https://example.com
+      - -X POST https://httpbin.org/post -H 'Content-Type: application/json' --data '{"hello":"world"}'
+      - -s https://api.github.com/repos/flanksource/mission-control | jq '.full_name'
+  icon: http
+  category: Misc
+  parameters:
+    - name: command
+      label: Curl Arguments
+      type: code
+      required: true
+      properties:
+        language: shell
+  actions:
+    - name: Run curl command
+      exec:
+        script: curl $(.params.command)
+{{- end }}

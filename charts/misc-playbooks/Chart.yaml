@@ -1,6 +1,6 @@
 apiVersion: v2
 name: mission-control-misc-playbooks
-description: A Helm chart for miscellaneous Mission Control playbooks (kubectl, web requests)
+description: A Helm chart for miscellaneous Mission Control playbooks (kubectl, curl)
 icon: https://github.com/flanksource/docs/blob/main/docs/images/flanksource-icon.png?raw=true
 type: application
 version: 0.1.0
