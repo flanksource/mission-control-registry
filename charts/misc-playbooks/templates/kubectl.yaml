@@ -8,7 +8,7 @@ metadata:
 spec:
   title: Kubectl
   description: |
-    Run arbitrary kubectl arguments against the selected Kubernetes cluster connection.
+    Run arbitrary kubectl arguments against the selected Kubernetes cluster.
     This playbook runs kubectl in a shell, so you can pipe the output and use any other CLI tools.
     Parameter examples:
       - get pods
@@ -17,7 +17,7 @@ spec:
   icon: k8s
   configs:
     - types:
-        - Kubernetes::*
+        - Kubernetes::Cluster
   parameters:
     - name: command
       label: Kubectl Command
