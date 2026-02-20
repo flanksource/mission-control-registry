@@ -33,7 +33,7 @@
       "additionalProperties": false,
       "properties": {
         "curl": {
-          "default": true,
+          "default": false,
           "description": "create a playbook to run arbitrary curl commands",
           "title": "curl",
           "type": "boolean"
@@ -44,8 +44,14 @@
           "title": "enabled",
           "type": "boolean"
         },
-        "kubectl": {
+        "http": {
           "default": true,
+          "description": "create a playbook to make HTTP requests using the HTTP action",
+          "title": "http",
+          "type": "boolean"
+        },
+        "kubectl": {
+          "default": false,
           "description": "create a playbook to run arbitrary kubectl commands against a Kubernetes cluster",
           "title": "kubectl",
           "type": "boolean"
