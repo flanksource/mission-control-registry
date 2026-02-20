@@ -40,11 +40,18 @@ playbooks:
   # type: boolean
   # @schema
   # -- create a playbook to run arbitrary kubectl commands against a Kubernetes cluster
-  kubectl: true
+  kubectl: false
 
   # @schema
   # required: false
   # type: boolean
   # @schema
   # -- create a playbook to run arbitrary curl commands
-  curl: true
+  curl: false
+
+  # @schema
+  # required: false
+  # type: boolean
+  # @schema
+  # -- create a playbook to make HTTP requests using the HTTP action
+  http: true

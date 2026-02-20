@@ -1,0 +1,57 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.http }}
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: http
+spec:
+  title: HTTP Request
+  description: |
+    Make an HTTP request to a specified URL.
+  icon: http
+  category: Misc
+  parameters:
+    - name: url
+      label: URL
+      type: text
+      required: true
+    - name: method
+      label: Method
+      type: list
+      default: GET
+      properties:
+        options:
+          - label: GET
+            value: GET
+          - label: POST
+            value: POST
+          - label: PUT
+            value: PUT
+          - label: PATCH
+            value: PATCH
+          - label: DELETE
+            value: DELETE
+          - label: HEAD
+            value: HEAD
+    - name: contentType
+      label: Content Type
+      type: text
+      default: application/json
+    - name: body
+      label: Body
+      type: code
+      properties:
+        language: json
+  actions:
+    - name: HTTP Request
+      timeout: 30s
+      http:
+        url: .params.url
+        method: .params.method
+        headers:
+          - name: Content-Type
+            value: .params.contentType
+        body: .params.body
+        templateBody: true
+{{- end }}
