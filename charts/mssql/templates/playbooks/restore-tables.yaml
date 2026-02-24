@@ -1,0 +1,47 @@
+{{- if and .Values.playbooks.enabled .Values.playbooks.restoreTables }}
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: restore-tables-from-backup
+spec:
+  title: Restore Tables from Backup
+  icon: mssql
+  description: Restore specific tables from an S3 backup into an existing database via RDS native restore
+  configs:
+    - types:
+        - MSSQL::Database
+  parameters:
+    - name: backup
+      label: Backup
+      type: config
+      properties:
+        filter:
+          - types:
+              - MSSQL::DatabaseBackup
+            labels:
+              database: '$(.config.name)'
+    - name: tables
+      label: Tables (comma-separated)
+      type: text
+  actions:
+    - name: Restore Backup to Temp DB
+      sql:
+        {{ include "mssql.connection-playbook" . }}
+        driver: mssql
+        query: |
+{{ .Files.Get "conf/rds-restore-backup.sql" | indent 10 }}
+    - name: Copy Tables
+      if: getAction('Restore Backup to Temp DB').status != 'failed'
+      sql:
+        {{ include "mssql.connection-playbook" . }}
+        driver: mssql
+        query: |
+{{ .Files.Get "conf/copy-tables.sql" | indent 10 }}
+    - name: Drop Temp Database
+      if: "always()"
+      sql:
+        {{ include "mssql.connection-playbook" . }}
+        driver: mssql
+        query: |
+{{ .Files.Get "conf/drop-restore-db.sql" | indent 10 }}
+{{- end }}

@@ -1,4 +1,4 @@
-{{- if and .Values.playbooks.enabled .Values.playbooks.createUser.enabled }}
+{{- if and .Values.playbooks.enabled (dig "createUser" "enabled" false .Values.playbooks) }}
 {{- if not .Values.playbooks.createUser.emailConnection }}
 {{- fail "playbooks.createUser.emailConnection is required when playbooks.createUser.enabled is true" }}
 {{- end }}
