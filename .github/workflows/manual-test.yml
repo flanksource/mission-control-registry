@@ -1,0 +1,98 @@
+name: Manual Chart Test
+on:
+  workflow_dispatch:
+    inputs:
+      chart:
+        description: "Chart to test"
+        required: true
+        type: choice
+        options:
+          - argocd
+          - aws
+          - azure
+          - flux
+          - gcp
+          - kubernetes
+          - kubernetes-view
+          - mission-control
+          - mongo-atlas
+          - postgres
+          - prometheus
+          - playbooks-kubernetes
+          - playbooks-ai
+          - playbooks-flux
+          - misc-playbooks
+          - helm
+          - mssql
+      mission_control_version:
+        description: "Mission Control version to test against (e.g., v1.0.914, latest)"
+        required: false
+        default: "latest"
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Free up disk space
+        run: |
+          initial_space=$(df / | grep / | awk '{print $4}')
+          docker system prune -af
+          rm -rf /usr/share/dotnet
+          rm -rf /opt/ghc
+          rm -rf /usr/local/share/boost
+          rm -rf $AGENT_TOOLSDIRECTORY
+          rm -rf /opt/hostedtoolcache
+          # Remove Android SDK directories (common locations)
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/android
+          sudo rm -rf /usr/local/android-sdk
+          sudo rm -rf /home/runner/Android
+
+          final_space=$(df / | grep / | awk '{print $4}')
+          difference=$((final_space - initial_space))
+          echo "Disk space difference (in KB): $difference"
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v4.0.4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: v1.25.x
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+
+      - name: Set up chart-testing
+        uses: helm/chart-testing-action@v2.6.1
+
+      - name: Install mission-control-crds
+        run: |
+          helm repo add flanksource https://flanksource.github.io/charts
+          helm repo update
+
+          # Install mission-control-crds based on version input
+          if [ "${{ inputs.mission_control_version }}" = "latest" ]; then
+            echo "Installing latest mission-control-crds..."
+            helm install --devel mission-control-crds flanksource/mission-control-crds --wait
+          else
+            echo "Installing mission-control-crds version ${{ inputs.mission_control_version }}..."
+            helm install mission-control-crds flanksource/mission-control-crds --version ${{ inputs.mission_control_version }} --wait
+          fi
+
+      - name: Install task
+        run: sudo snap install task --classic
+
+      - name: Test chart
+        run: ./test_charts.sh ${{ inputs.chart }}
+
+      - name: Display test results
+        if: always()
+        run: |
+          echo "Chart test completed for ${{ inputs.chart }}"
+          echo "Mission Control version: ${{ inputs.mission_control_version }}"
