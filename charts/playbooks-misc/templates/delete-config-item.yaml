@@ -1,0 +1,58 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.deleteConfigItem .Values.connectionName }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: delete-config-item
+spec:
+  title: Delete Config Item
+  icon: trash
+  category: Mission Control
+  description: Soft or hard delete a config item and its associated data
+
+  configs:
+    - agent: all
+
+  parameters:
+    - name: mode
+      label: Delete Mode
+      type: list
+      properties:
+        options:
+          - label: Soft Delete
+            value: soft
+          - label: Hard Delete
+            value: hard
+
+  actions:
+    - name: Soft delete config item
+      if: .params.mode == 'soft'
+      sql:
+        connection: "connection://{{ .Values.connectionName }}"
+        driver: postgres
+        query: |
+          UPDATE config_items SET deleted_at = NOW(), updated_at = NOW()
+          WHERE id = '$(.config.id)' AND deleted_at IS NULL
+
+    - name: Clear foreign key references
+      if: .params.mode == 'hard'
+      sql:
+        connection: "connection://{{ .Values.connectionName }}"
+        driver: postgres
+        query: |
+          UPDATE components SET config_id = NULL WHERE config_id = '$(.config.id)';
+          UPDATE playbook_runs SET config_id = NULL WHERE config_id = '$(.config.id)';
+          UPDATE evidences SET config_id = NULL WHERE config_id = '$(.config.id)';
+          UPDATE config_items SET parent_id = NULL WHERE parent_id = '$(.config.id)';
+
+    - name: Hard delete config item
+      if: .params.mode == 'hard'
+      sql:
+        connection: "connection://{{ .Values.connectionName }}"
+        driver: postgres
+        query: |
+          DELETE FROM config_items WHERE id = '$(.config.id)'
+
+{{- end }}

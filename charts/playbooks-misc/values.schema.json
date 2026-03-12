@@ -1,0 +1,74 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "connectionName": {
+      "default": "mission-control-db",
+      "description": "yaml-language-server: $schema=values.schema.json",
+      "title": "connectionName",
+      "type": "string"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "title": "global",
+      "type": "object"
+    },
+    "playbooks": {
+      "additionalProperties": false,
+      "properties": {
+        "deleteConfigItem": {
+          "default": true,
+          "title": "deleteConfigItem",
+          "type": "boolean"
+        },
+        "deleteScrapedResources": {
+          "default": true,
+          "title": "deleteScrapedResources",
+          "type": "boolean"
+        },
+        "deleteScraper": {
+          "default": true,
+          "title": "deleteScraper",
+          "type": "boolean"
+        },
+        "enabled": {
+          "default": true,
+          "description": "If this is set to false, no playbooks will be created",
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "runScraper": {
+          "default": true,
+          "title": "runScraper",
+          "type": "boolean"
+        },
+        "smtpTest": {
+          "default": true,
+          "title": "smtpTest",
+          "type": "boolean"
+        },
+        "updateLoggingLevels": {
+          "default": true,
+          "title": "updateLoggingLevels",
+          "type": "boolean"
+        }
+      },
+      "title": "playbooks",
+      "type": "object",
+      "required": [
+        "enabled",
+        "smtpTest",
+        "deleteConfigItem",
+        "deleteScraper",
+        "deleteScrapedResources",
+        "updateLoggingLevels",
+        "runScraper"
+      ]
+    }
+  },
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "connectionName",
+    "playbooks"
+  ]
+}

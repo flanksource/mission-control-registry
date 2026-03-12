@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.deleteScrapedResources .Values.connectionName }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: delete-scraped-resources
+spec:
+  title: Delete Scraped Resources
+  icon: trash
+  category: Mission Control
+  description: Delete all config items belonging to a scraper without deleting the scraper itself
+
+  configs:
+    - types:
+        - MissionControl::ScrapeConfig
+
+  actions:
+    - name: Clear foreign key references on config items
+      sql:
+        connection: "connection://{{ .Values.connectionName }}"
+        driver: postgres
+        query: |
+          UPDATE components SET config_id = NULL WHERE config_id IN (SELECT id FROM config_items WHERE scraper_id = '$(.config.id)');
+          UPDATE playbook_runs SET config_id = NULL WHERE config_id IN (SELECT id FROM config_items WHERE scraper_id = '$(.config.id)');
+          UPDATE evidences SET config_id = NULL WHERE config_id IN (SELECT id FROM config_items WHERE scraper_id = '$(.config.id)');
+          UPDATE config_items SET parent_id = NULL WHERE parent_id IN (SELECT id FROM config_items WHERE scraper_id = '$(.config.id)');
+
+    - name: Delete config items
+      sql:
+        connection: "connection://{{ .Values.connectionName }}"
+        driver: postgres
+        query: |
+          DELETE FROM config_items WHERE scraper_id = '$(.config.id)'
+
+{{- end }}
