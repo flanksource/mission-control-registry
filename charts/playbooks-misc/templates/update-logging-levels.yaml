@@ -1,0 +1,110 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.updateLoggingLevels }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: update-logging-levels
+spec:
+  title: Update Logging Levels
+  icon: logs
+  category: Mission Control
+  description: Temporarily change logging level for Mission Control components
+
+  runsOn:
+    - local
+
+  parameters:
+    - name: service
+      label: Service
+      type: list
+      properties:
+        options:
+          - label: Mission Control
+            value: mission-control:8080
+          - label: Config DB
+            value: config-db:8080
+          - label: Canary Checker
+            value: canary-checker:8080
+
+    - name: logger
+      label: Logger
+      type: list
+      properties:
+        options:
+          - label: root
+            value: root
+          - label: db
+            value: db
+          - label: http
+            value: http
+          - label: jobs
+            value: jobs
+          - label: postq
+            value: postq
+          - label: operator
+            value: operator
+          - label: events
+            value: events
+          - label: notifications
+            value: notifications
+          - label: notification.debug.trace
+            value: notification.debug.trace
+          - label: auth
+            value: auth
+          - label: git
+            value: git
+          - label: view
+            value: view
+          - label: resourceSelector
+            value: resourceSelector
+          - label: controllers.canary
+            value: controllers.canary
+          - label: controllers.system
+            value: controllers.system
+          - label: pyroscope
+            value: pyroscope
+
+    - name: level
+      label: Level
+      type: list
+      properties:
+        options:
+          - label: trace
+            value: trace
+          - label: debug
+            value: debug
+          - label: info
+            value: info
+          - label: warn
+            value: warn
+          - label: error
+            value: error
+
+    - name: duration
+      label: Duration
+      type: list
+      properties:
+        options:
+          - label: 15 minutes
+            value: 15m
+          - label: 1 hour
+            value: 1h
+          - label: 4 hours
+            value: 4h
+          - label: 24 hours
+            value: 24h
+          - label: 30 days
+            value: 30d
+
+  actions:
+    - name: Update logging level
+      exec:
+        script: |
+          curl -s -X POST "http://$(.params.service)/debug/loggers" \
+            -d "logger=$(.params.logger)" \
+            -d "level=$(.params.level)" \
+            -d "duration=$(.params.duration)"
+
+{{- end }}

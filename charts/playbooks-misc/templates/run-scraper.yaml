@@ -1,0 +1,171 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/playbook.schema.json
+
+{{- if and .Values.playbooks.enabled .Values.playbooks.runScraper }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Playbook
+metadata:
+  name: run-scraper
+spec:
+  title: Run Scraper
+  icon: play
+  category: Mission Control
+  description: Manually trigger a config-db scraper run with configurable options
+
+  runsOn:
+    - local
+
+  configs:
+    - types:
+        - MissionControl::ScrapeConfig
+
+  parameters:
+    - name: mode
+      label: Mode
+      type: list
+      properties:
+        options:
+          - label: Full
+            value: full
+          - label: Incremental
+            value: incremental
+
+    - name: verbosity
+      label: Verbosity
+      type: list
+      properties:
+        options:
+          - label: Normal
+            value: "-v"
+          - label: Verbose
+            value: "-vv"
+          - label: Debug
+            value: "-vvv"
+
+    - name: dbLogLevel
+      label: DB Log Level
+      type: list
+      default: error
+      properties:
+        options:
+          - label: error
+            value: error
+          - label: info
+            value: info
+          - label: debug
+            value: debug
+          - label: trace
+            value: trace
+
+    - name: timeout
+      label: Timeout
+      type: list
+      default: 4h
+      properties:
+        options:
+          - label: 30m
+            value: 30m
+          - label: 1h
+            value: 1h
+          - label: 4h
+            value: 4h
+          - label: 8h
+            value: 8h
+
+    - name: logItems
+      label: Log Individual Items
+      type: checkbox
+
+    - name: disableDedup
+      label: Disable Change Dedup
+      type: checkbox
+
+    - name: disableDiff
+      label: Disable Diff Calculation
+      type: checkbox
+
+    - name: dedupWindow
+      label: Dedup Window
+      type: list
+      default: default
+      properties:
+        options:
+          - label: Default (1h)
+            value: default
+          - label: 5m
+            value: 5m
+          - label: 15m
+            value: 15m
+          - label: 4h
+            value: 4h
+
+    - name: slowDiffThreshold
+      label: Slow Diff Threshold
+      type: list
+      default: 1s
+      properties:
+        options:
+          - label: 500ms
+            value: 500ms
+          - label: 1s
+            value: 1s
+          - label: 5s
+            value: 5s
+          - label: 30s
+            value: 30s
+
+    - name: extraProperties
+      label: Extra Properties
+      type: text
+
+  actions:
+    - name: Run scraper
+      exec:
+        script: |
+          path="/tmp/scraper-run/$(.run.id)"
+          mkdir -p "$path"
+
+          cat <<'SCRAPER_EOF' > "$path/scraper.yaml"
+          $(.config.config | toYaml)
+          SCRAPER_EOF
+
+          export DB_URL=$(kubectl get secret incident-commander-postgres \
+            -n $(.config.tags.namespace) \
+            -o jsonpath='{.data.DB_URL}' | base64 -d)
+
+          FLAGS="--save"
+
+          if [ "$(.params.mode)" = "full" ]; then
+            FLAGS="$FLAGS --full"
+          fi
+
+          FLAGS="$FLAGS $(.params.verbosity)"
+          FLAGS="$FLAGS --db-log-level=$(.params.dbLogLevel)"
+          FLAGS="$FLAGS -P scraper.timeout=$(.params.timeout)"
+
+          if [ "$(.params.dedupWindow)" != "default" ]; then
+            FLAGS="$FLAGS -P changes.dedup.window=$(.params.dedupWindow)"
+          fi
+
+          FLAGS="$FLAGS -P scraper.log.slow_diff_threshold=$(.params.slowDiffThreshold)"
+
+          if [ "$(.params.logItems)" = "true" ]; then
+            FLAGS="$FLAGS -P scraper.log.items=true"
+          fi
+          if [ "$(.params.disableDedup)" = "true" ]; then
+            FLAGS="$FLAGS -P changes.dedup.disable=true"
+          fi
+          if [ "$(.params.disableDiff)" = "true" ]; then
+            FLAGS="$FLAGS -P scraper.diff.disable=true"
+          fi
+
+          echo "$(.params.extraProperties)" | while read -r line; do
+            [ -n "$line" ] && FLAGS="$FLAGS -P $line"
+          done
+
+          config-db run "$path/scraper.yaml" $FLAGS \
+            --html > "$path/output.html" 2> "$path/stderr.log"
+        artifacts:
+          - path: '/tmp/scraper-run/$(.run.id)/*'
+
+{{- end }}

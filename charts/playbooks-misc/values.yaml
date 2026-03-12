@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=values.schema.json
+connectionName: mission-control-db
+
+playbooks:
+  # If this is set to false, no playbooks will be created
+  enabled: true
+  smtpTest: true
+  deleteConfigItem: true
+  deleteScraper: true
+  deleteScrapedResources: true
+  updateLoggingLevels: true
+  runScraper: true
