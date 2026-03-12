@@ -114,6 +114,19 @@ spec:
           - label: 30s
             value: 30s
 
+    - name: format
+      label: Output Format
+      type: list
+      default: html
+      properties:
+        options:
+          - label: HTML
+            value: html
+          - label: JSON
+            value: json
+          - label: Text
+            value: text
+
     - name: extraProperties
       label: Extra Properties
       type: text
@@ -121,22 +134,19 @@ spec:
   actions:
     - name: Run scraper
       exec:
+        connections:
+          fromConfigItem: $(.config.id)
         script: |
-          path="/tmp/scraper-run/$(.run.id)"
-          mkdir -p "$path"
-
-          cat <<'SCRAPER_EOF' > "$path/scraper.yaml"
-          $(.config.config | toYaml)
-          SCRAPER_EOF
-
-          export DB_URL=$(kubectl get secret incident-commander-postgres \
-            -n $(.config.tags.namespace) \
-            -o jsonpath='{.data.DB_URL}' | base64 -d)
-
           FLAGS="--save"
 
           if [ "$(.params.mode)" = "full" ]; then
             FLAGS="$FLAGS --full"
+          fi
+
+          if [ "$(.params.format)" = "html" ]; then
+            FLAGS="$FLAGS --html"
+          elif [ "$(.params.format)" = "json" ]; then
+            FLAGS="$FLAGS --json"
           fi
 
           FLAGS="$FLAGS $(.params.verbosity)"
@@ -163,9 +173,13 @@ spec:
             [ -n "$line" ] && FLAGS="$FLAGS -P $line"
           done
 
-          config-db run "$path/scraper.yaml" $FLAGS \
-            --html > "$path/output.html" 2> "$path/stderr.log"
+          EXT=$(.params.format)
+          if [ "$EXT" = "text" ]; then EXT="txt"; fi
+
+          kubectl exec -i deploy/config-db -- sh -c "/app/config-db run - --namespace $(.config.tags.namespace) $FLAGS" <<"END" > /tmp/scraper-output.$EXT
+          $(.config.config | toYAML)
+          END
         artifacts:
-          - path: '/tmp/scraper-run/$(.run.id)/*'
+          - path: /tmp/scraper-output.*
 
 {{- end }}
