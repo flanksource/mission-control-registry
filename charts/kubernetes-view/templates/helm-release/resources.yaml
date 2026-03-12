@@ -102,6 +102,10 @@ spec:
     resources:
       configs:
         search: related="$(.var.release),direction=outgoing,depth=5"
+  merge: |
+    SELECT *
+    FROM resources
+    WHERE status != 'Scaled to Zero'
   mapping:
     name: row.name
     type: >
