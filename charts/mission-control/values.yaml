@@ -44,12 +44,6 @@ labels: {}
 
 # @schema
 # type: string
-# required: false
-# @schema
-topologyName: mission-control
-
-# @schema
-# type: string
 # required: true
 # @schema
 connectionName: mission-control-db
@@ -75,7 +69,9 @@ playbooks: true
 # @schema
 # type: object
 # required: false
+# deprecated: true
 # @schema
+# Deprecated: topology template has been removed
 pushLocation:
   # @schema
   # required: false
@@ -86,9 +82,19 @@ pushLocation:
 # @schema
 # type: object
 # required: false
+# deprecated: true
 # @schema
+# Deprecated: topology template has been removed
 topology:
-  enabled: true
+  enabled: false
+
+# @schema
+# type: string
+# required: false
+# deprecated: true
+# @schema
+# Deprecated: topology template has been removed
+topologyName: mission-control
 
 # @schema
 # type: object
