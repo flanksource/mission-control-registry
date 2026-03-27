@@ -23,13 +23,8 @@ playbooks:
   grantAccess: true
   # -- Enable "Kill Long Running Transactions" playbook
   killLongRunningTransactions: true
-  # -- Create Login User playbook configuration (This needs KMS connection --secret-keeper-connection
-  createUser:
-    # -- Enable "Create Login User" playbook for creating new SQL logins
-    enabled: false
-    # -- Email connection reference for sending credentials (required when enabled)
-    # Example: "connection://default/smtp" or "connection://notifications/email"
-    emailConnection: ""
+  # -- Enable "Restore Tables from Backup" playbook (requires backups.enabled)
+  restoreTables: false
 
 # -- Health check canary configuration
 canary:
@@ -63,4 +58,17 @@ approvers:
   # -- List of teams who can approve playbook executions
   # teams:
   #   - dba-team
-  teams: []
+
+# -- Backup scraper configuration for discovering .bak files in S3
+backups:
+  # -- Enable backup scraper
+  enabled: false
+  # -- Cron schedule for backup scraping
+  schedule: "@every 4h"
+  # -- Regex with named capture group 'database' to extract DB name from .bak filename
+  # Default: everything before the first underscore
+  databaseRegex: '^(?P<database>.*)_\d*T\d*\.bak$'
+  # -- S3 URIs to scan for .bak files (s3://bucket/prefix format)
+  s3: []
+  # - s3://bucket-name/backups/prefix1/
+  # - s3://bucket-name/backups/prefix2/
