@@ -1,4 +1,4 @@
-DECLARE @threshold_seconds INT = {{.params.threshold}};
+DECLARE @threshold_seconds INT = $(.params.threshold);
 DECLARE @session_id INT;
 DECLARE @killed_count INT = 0;
 

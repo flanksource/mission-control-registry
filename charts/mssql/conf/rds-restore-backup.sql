@@ -1,5 +1,5 @@
-DECLARE @targetDb NVARCHAR(128) = '{{.config.name}}';
-DECLARE @s3Key NVARCHAR(500) = '{{(json ((.params.backup).config)).config.s3_key}}';
+DECLARE @targetDb NVARCHAR(128) = '$(.config.name)';
+DECLARE @s3Key NVARCHAR(500) = '$(.params.backup.config.s3_key)';
 DECLARE @tempDb NVARCHAR(128) = @targetDb + '_restore_' + FORMAT(GETDATE(), 'yyyyMMdd_HHmmss');
 DECLARE @s3Arn NVARCHAR(500);
 DECLARE @taskId INT;
@@ -36,6 +36,10 @@ INSERT INTO @output VALUES ('RDS task ID: ' + CAST(@taskId AS NVARCHAR(20)));
 -- Poll for completion
 WHILE @pollCount < @maxPolls
 BEGIN
+  -- Reset before re-selecting to detect zero-row results (metadata purged)
+  SET @lifecycle = NULL;
+  SET @taskInfo = NULL;
+
   SELECT @lifecycle = lifecycle, @taskInfo = task_info
   FROM msdb.dbo.rds_fn_task_status(NULL, @taskId);
 
@@ -45,14 +49,28 @@ BEGIN
     BREAK;
   END
 
+  IF @lifecycle IS NULL
+  BEGIN
+    INSERT INTO @output VALUES ('WARNING: Task status no longer available for task ID ' + CAST(@taskId AS NVARCHAR(20)));
+    -- Task metadata was purged; treat as error
+    IF DB_ID(@tempDb) IS NOT NULL
+    BEGIN
+      EXEC('DROP DATABASE ' + QUOTENAME(@tempDb));
+      INSERT INTO @output VALUES ('Cleaned up temp database ' + QUOTENAME(@tempDb));
+    END
+    RAISERROR('RDS restore task metadata lost for task %d', 16, 1, @taskId);
+    SELECT * FROM @output;
+    RETURN;
+  END
+
   IF @lifecycle IN ('ERROR', 'CANCELLED')
   BEGIN
     INSERT INTO @output VALUES ('Restore failed: ' + ISNULL(@taskInfo, 'unknown error'));
     -- Clean up temp DB if it exists
     IF DB_ID(@tempDb) IS NOT NULL
     BEGIN
-      EXEC('DROP DATABASE [' + @tempDb + ']');
-      INSERT INTO @output VALUES ('Cleaned up temp database [' + @tempDb + ']');
+      EXEC('DROP DATABASE ' + QUOTENAME(@tempDb));
+      INSERT INTO @output VALUES ('Cleaned up temp database ' + QUOTENAME(@tempDb));
     END
     RAISERROR('RDS restore task failed: %s', 16, 1, @taskInfo);
     SELECT * FROM @output;
@@ -68,12 +86,13 @@ BEGIN
   INSERT INTO @output VALUES ('Restore timed out after 30 minutes');
   IF DB_ID(@tempDb) IS NOT NULL
   BEGIN
-    EXEC('DROP DATABASE [' + @tempDb + ']');
-    INSERT INTO @output VALUES ('Cleaned up temp database [' + @tempDb + ']');
+    EXEC('DROP DATABASE ' + QUOTENAME(@tempDb));
+    INSERT INTO @output VALUES ('Cleaned up temp database ' + QUOTENAME(@tempDb));
   END
   RAISERROR('RDS restore timed out after 30 minutes', 16, 1);
   SELECT * FROM @output;
   RETURN;
 END
 
-SELECT * FROM @output;
+-- Return the temp DB name so subsequent actions can reference it directly
+SELECT @tempDb AS tempDb;

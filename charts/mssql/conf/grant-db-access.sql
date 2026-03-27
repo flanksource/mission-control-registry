@@ -39,11 +39,11 @@ IF EXISTS (SELECT 1 FROM sys.database_role_members
   WHERE role_principal_id = (SELECT principal_id FROM sys.database_principals WHERE name = ''' + @dbRole + ''')
     AND member_principal_id = (SELECT principal_id FROM sys.database_principals WHERE name = ''' + @dbUser + '''))
 BEGIN
-  RAISERROR (''User ' + @dbUser + ' is already a member of ' + @dbRole + ' in database ' + @dbName + ' on server ' + @serverName + ''', 11, 1);
+  SELECT @retvalOUT = ''User ' + @dbUser + ' is already a member of ' + @dbRole + ' in database ' + @dbName + ' on server ' + @serverName + ''';
 END
 ELSE
 BEGIN
-  ALTER ROLE ' + @dbRole + ' ADD MEMBER [' + @dbUser + '];
+  ALTER ROLE [' + @dbRole + '] ADD MEMBER [' + @dbUser + '];
   SELECT @retvalOUT = ''User ' + @dbUser + ' assigned to ' + @dbRole + ' role in database ' + @dbName + ' on server ' + @serverName + ''';
 END;';
 
