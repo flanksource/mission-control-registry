@@ -6,15 +6,12 @@ metadata:
 spec:
   title: "Grant MSSQL Database User Access"
   icon: mssql
-  description: Grant an MSSQL user read or readwrite access to a database
+  configs:
+    - types:
+      - MSSQL::Database
+
+  description: Grant an MSSQL user a database role
   parameters:
-    - name: database
-      label: Database
-      type: config
-      properties:
-        filter:
-          - types:
-              - MSSQL::Database
     - name: user
       label: Existing database User
       type: config
@@ -22,15 +19,21 @@ spec:
         filter:
           - types:
               - MSSQL::Logon
-    - name: access
-      label: Access Type
+    - name: role
+      label: Database Role
       type: list
       properties:
         options:
-          - label: "ReadOnly"
-            value: "ReadOnly"
-          - label: "Read & Write"
-            value: "ReadWrite"
+          - label: "db_datareader"
+            value: "db_datareader"
+          - label: "db_datawriter"
+            value: "db_datawriter"
+          - label: "db_ddladmin"
+            value: "db_ddladmin"
+          - label: "db_backupoperator"
+            value: "db_backupoperator"
+          - label: "db_owner"
+            value: "db_owner"
     - name: delay
       label: Expires after
       type: list
