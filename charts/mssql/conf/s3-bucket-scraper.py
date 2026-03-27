@@ -8,8 +8,11 @@ import boto3
 import os
 
 CONFIG_ID = os.getenv('CONFIG_ID')
+if not CONFIG_ID:
+    sys.stderr.write('ERROR: CONFIG_ID environment variable is required but not set\n')
+    sys.exit(1)
 REGEX = re.compile(os.getenv('DATABASE_REGEX', r'^(?P<database>[^_]+)_\d*\.bak$'))
-S3_PREFIXES = os.getenv('S3_PREFIXES').split(',') if os.getenv('S3_PREFIXES') else []
+S3_PREFIXES = [p for p in os.getenv('S3_PREFIXES', '').split(',') if p]
 
 sys.stderr.write(f'CONFIG_ID: {CONFIG_ID}\n')
 sys.stderr.write(f'DATABASE_REGEX: {REGEX.pattern}\n')
@@ -20,8 +23,10 @@ items = []
 
 def human_size(size):
     if size > 1024 * 1024 * 1024:
-            return f'{size / (1024 * 1024 * 1024):.2f} GB'
-    return f'{size / (1024 * 1024):.0f} MB'
+        return f'{size / (1024 * 1024 * 1024):.2f} GB'
+    if size > 1024 * 1024:
+        return f'{size / (1024 * 1024):.0f} MB'
+    return f'{size / 1024:.1f} KB'
 
 for s3_uri in S3_PREFIXES:
     parsed = urlparse(s3_uri)
@@ -31,7 +36,6 @@ for s3_uri in S3_PREFIXES:
     for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
         for obj in page.get('Contents', []):
             key = obj['Key']
-            filename = key.rsplit('/', 1)[-1] if '/' in key else key
             filename = os.path.basename(key)
 
             if not filename.endswith('.bak'):
@@ -51,7 +55,7 @@ for s3_uri in S3_PREFIXES:
                     'size': obj['Size'],
                     'size_human': human_size(obj['Size']),
                     'etag': obj['ETag'].strip('"'),
-                    'storage_class': obj['StorageClass'],
+                    'storage_class': obj.get('StorageClass', 'STANDARD'),
                     'last_modified': obj['LastModified'].isoformat(),
                 },
             })

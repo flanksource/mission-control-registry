@@ -29,7 +29,7 @@ BEGIN
     WHERE role_principal_id = (SELECT principal_id FROM sys.database_principals WHERE name = ''' + @dbRole + ''')
       AND member_principal_id = (SELECT principal_id FROM sys.database_principals WHERE name = ''' + @dbUser + '''))
   BEGIN
-    ALTER ROLE ' + @dbRole + ' DROP MEMBER [' + @dbUser + '];
+    ALTER ROLE [' + @dbRole + '] DROP MEMBER [' + @dbUser + '];
     SELECT @retvalOUT = ''User ' + @dbUser + ' removed from ' + @dbRole + ' role in database ' + @dbName
       + ' on server ' + @serverName + ''';
   END

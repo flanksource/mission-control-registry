@@ -26,6 +26,14 @@ playbooks:
   # -- Enable "Restore Tables from Backup" playbook (requires backups.enabled)
   restoreTables: false
 
+  # -- Create Login User playbook configuration (This needs KMS connection --secret-keeper-connection
+  createUser:
+    # -- Enable "Create Login User" playbook for creating new SQL logins
+    enabled: false
+    # -- Email connection reference for sending credentials (required when enabled)
+    # Example: "connection://default/smtp" or "connection://notifications/email"
+    emailConnection: ""
+
 # -- Health check canary configuration
 canary:
   # -- Cron schedule for health checks
