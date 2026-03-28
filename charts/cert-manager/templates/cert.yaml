@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: test-certificate
+  namespace: mission-control # Change this to the namespace where you want the certificate
+spec:
+  secretName: test-certificate-secret # Kubernetes secret where the certificate will be stored
+  duration: 2160h # 90d, optional, specifies the duration of the certificate
+  renewBefore: 360h # 15d, optional, specifies how long before expiration to renew
+  commonName: "example.com" # Common Name of the certificate
+  dnsNames:
+    - "example.com" # List of Subject Alternative Names
+    - "www.example.com"
+  issuerRef:
+    name: letsencrypt-staging # The name of the ClusterIssuer or Issuer to use
+    kind: ClusterIssuer # Could be ClusterIssuer or Issuer depending on your setup
+    group: cert-manager.io
