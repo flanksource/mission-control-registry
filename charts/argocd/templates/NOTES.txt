@@ -1,1 +1,11 @@
-ArgoCD topology added
+ArgoCD integration installed.
+
+{{- if .Values.canary.enabled }}
+✓ Health check canary created
+  {{- if .Values.canary.repositories.enabled }}
+  - Repository checks enabled
+  {{- end }}
+  {{- if .Values.canary.clusters.enabled }}
+  - Cluster checks enabled
+  {{- end }}
+{{- end }}
