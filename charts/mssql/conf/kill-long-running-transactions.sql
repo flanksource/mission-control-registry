@@ -1,6 +1,7 @@
 DECLARE @threshold_seconds INT = CAST($(.params.threshold) AS INT);
 DECLARE @session_id INT;
 
+
 -- Snapshot of sessions about to be killed, returned at the end as the audit trail.
 DECLARE @victims TABLE (
     kind                VARCHAR(20),
@@ -72,7 +73,8 @@ FETCH NEXT FROM victim_cursor INTO @session_id;
 WHILE @@FETCH_STATUS = 0
 BEGIN
     BEGIN TRY
-        EXEC ('KILL ' + CAST(@session_id AS VARCHAR(10)));
+        DECLARE @kill_cmd NVARCHAR(50) = 'KILL ' + CAST(@session_id AS VARCHAR(10));
+        EXEC sp_executesql @kill_cmd;
         UPDATE @victims SET kill_status = 'killed' WHERE session_id = @session_id;
     END TRY
     BEGIN CATCH
