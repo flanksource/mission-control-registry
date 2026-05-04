@@ -55,7 +55,14 @@ spec:
       createFields:
         - $.created
       transform:
-        expr: dyn(config.results).map(config, config).toJSON()
+        expr: |
+          dyn(results).map(config,
+            config.keys().map(k,
+              k in ["labels", "tags"]
+                ? {k: dyn(config[k]).fold(item, acc, merge(acc, {item.key: item.value}))}
+                : {k: config[k]}
+            ).fold(m, acc, merge(acc, m))
+          ).toJSON()
 
     {{- range .Values.groupIDs }}
     - url: "https://cloud.mongodb.com/api/atlas/v2/groups/{{.}}/clusters"
