@@ -2,7 +2,7 @@ apiVersion: configs.flanksource.com/v1
 kind: ScrapeConfig
 metadata:
   name: {{ .Values.scraper.name }}
-labels:
+  labels:
   {{- include "mongo-atlas.labels" . | nindent 4 }}
 spec:
   schedule: {{ .Values.scraper.schedule | quote }}
