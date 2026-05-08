@@ -105,9 +105,27 @@ spec:
                 "external_id": r,
               }).toJSON()
         javascript: |+
+          function keyValueArrayToObject(items) {
+            if (!Array.isArray(items)) {
+              return items;
+            }
+
+            var result = {};
+            for (var i = 0; i < items.length; i++) {
+              var item = items[i];
+              if (item && item.key !== undefined) {
+                result[item.key] = item.value;
+              }
+            }
+            return result;
+          }
+
           var all = [];
           for (var i = 0; i < config.results.length; i++) {
             var cluster = config.results[i];
+
+            cluster.labels = keyValueArrayToObject(cluster.labels);
+            cluster.tags = keyValueArrayToObject(cluster.tags);
 
             if (cluster.clusterType == "REPLICASET") {
               cluster.configType = "Mongo::ReplicaSet";
