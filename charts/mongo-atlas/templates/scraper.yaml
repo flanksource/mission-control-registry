@@ -56,7 +56,7 @@ spec:
         - $.created
       transform:
         expr: |
-          dyn(results).map(config,
+          dyn(config.results).map(config,
             config.keys().map(k,
               k in ["labels", "tags"]
                 ? {k: dyn(config[k]).fold(item, acc, merge(acc, {item.key: item.value}))}
