@@ -56,6 +56,7 @@ spec:
         connection: '{{.Values.slack.connection}}'
         title: Recommended playbooks
         message: '$(getLastAction.result.recommendedPlaybooks)'
+{{- if or .Values.slack.connection .Values.global.llm_connection .Values.global.artifact_connection }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Permission
@@ -84,6 +85,7 @@ spec:
       - name: {{ $connection.name | quote }}
         namespace: {{ $connection.namespace | quote }}
       {{- end }}
+{{- end }}
 ---
 apiVersion: mission-control.flanksource.com/v1
 kind: Permission
