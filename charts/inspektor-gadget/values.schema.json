@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "inspektor-gadget": {
+      "additionalProperties": false,
+      "description": "Values for the upstream inspektor-gadget (gadget) chart. When `enabled` is\ntrue the gadget chart is installed and every value under `inspektor-gadget.*`\nis passed through to it.",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Install the upstream inspektor-gadget chart",
+          "title": "enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "inspektor-gadget",
+      "type": "object"
+    },
+    "plugin": {
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "default": "1.0.2",
+          "description": "Version of the inspektor-gadget mission-control plugin",
+          "title": "version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version"
+      ],
+      "title": "plugin",
+      "type": "object"
+    }
+  },
+  "required": [
+    "inspektor-gadget",
+    "plugin"
+  ],
+  "type": "object"
+}
