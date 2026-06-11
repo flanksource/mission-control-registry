@@ -1,0 +1,16 @@
+apiVersion: mission-control.flanksource.com/v1
+kind: Plugin
+metadata:
+  name: inspektor-gadget
+spec:
+  source: inspektor-gadget-mc-plugin
+  version: v{{ .Values.plugin.version }}
+  selector:
+    types:
+      - Kubernetes::Pod
+      - Kubernetes::Deployment
+      - Kubernetes::StatefulSet
+      - Kubernetes::DaemonSet
+      - Kubernetes::ReplicaSet
+      - Kubernetes::Job
+      - Kubernetes::CronJob

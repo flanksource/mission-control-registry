@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=values.schema.json
+
+# -- Values for the upstream inspektor-gadget (gadget) chart. When `enabled` is
+# true the gadget chart is installed and every value under `inspektor-gadget.*`
+# is passed through to it.
+inspektor-gadget:
+  # -- Install the upstream inspektor-gadget chart
+  enabled: false
+
+plugin:
+  # -- Version of the inspektor-gadget mission-control plugin
+  version: 1.0.2
