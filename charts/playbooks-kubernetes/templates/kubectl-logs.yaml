@@ -5,11 +5,11 @@ kind: Playbook
 metadata:
   name: kubernetes-logs
 spec:
+  description: Get logs using stern
   runsOn:
     -  {{` "{{- if .agent }}{{.agent.id}}{{else}}local{{end}}" `}}
   actions:
   - name: stern
-    description: Get logs using stern
     exec:
       {{- include "exec-action-connections" . | nindent 6}}
       script: |
