@@ -1,0 +1,5 @@
+# yaml-language-server: $schema=./values.schema.json
+nameOverride: ""
+fullnameOverride: ""
+labels: {}
+topologyName: cert-manager
