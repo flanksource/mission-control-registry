@@ -36,7 +36,7 @@
           "type": "array"
         },
         "maxAge": {
-          "default": "7d",
+          "default": "36h",
           "description": "Maximum lookback age when querying cloudtrail",
           "required": [],
           "title": "maxAge"
