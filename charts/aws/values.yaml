@@ -51,7 +51,7 @@ cloudtrail:
   # @schema
   # description: Maximum lookback age when querying cloudtrail
   # @schema
-  maxAge: 7d
+  maxAge: 36h
   # @schema
   # type: array
   # description: list of events to to exclude
