@@ -218,12 +218,28 @@ spec:
       MIN(nodes.status) AS status,
       MIN(nodes.health) AS health,
       MIN(nodes.created_at) AS created_at,
-      COALESCE(MAX(cpu_usage_by_node.value), 0) AS cpu,
-      COALESCE(MAX(memory_usage_by_node.value), 0) AS memory,
+      COALESCE(
+        MAX(cpu_usage_by_node.value),
+        CASE WHEN (SELECT COUNT(*) FROM nodes) = 1 THEN (SELECT MAX(value) FROM cpu_usage) END,
+        0
+      ) AS cpu,
+      COALESCE(
+        MAX(memory_usage_by_node.value),
+        CASE WHEN (SELECT COUNT(*) FROM nodes) = 1 THEN (SELECT MAX(value) FROM memory_usage) END,
+        0
+      ) AS memory,
       COALESCE(MAX(disk_usage_by_node.value), 0) AS disk,
       COALESCE(MAX(pods_count_by_node.value), 0) AS pods,
-      COALESCE(MAX(allocatable_cpu_by_node.value), 0) AS allocatable_cpu,
-      COALESCE(MAX(allocatable_memory_by_node.value), 0) AS allocatable_memory,
+      COALESCE(
+        MAX(allocatable_cpu_by_node.value),
+        CASE WHEN (SELECT COUNT(*) FROM nodes) = 1 THEN (SELECT MAX(value) FROM total_cpu) END,
+        0
+      ) AS allocatable_cpu,
+      COALESCE(
+        MAX(allocatable_memory_by_node.value),
+        CASE WHEN (SELECT COUNT(*) FROM nodes) = 1 THEN (SELECT MAX(value) FROM total_memory) END,
+        0
+      ) AS allocatable_memory,
       CASE WHEN json_extract(nodes.labels, '$."node-role.kubernetes.io/control-plane"') IS NOT NULL THEN 'control-plane' ELSE 'worker' END AS role,
       json_extract(nodes.labels, '$."topology.kubernetes.io/zone"') AS zone,
       COALESCE(MAX(node_uptime.value), 0) AS uptime,
@@ -256,7 +272,11 @@ spec:
           sum by (node) (
             rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m])
             * on(instance) group_left(node)
-            label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+            (
+              label_replace(node_uname_info{job="node-exporter"}, "node", "$1", "nodename", "(.+)")
+              or on(instance)
+              label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+            )
           ) * 1000
     memory_usage_by_node:
       columns:
@@ -268,7 +288,11 @@ spec:
           sum by (node) (
             (node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"})
             * on(instance) group_left(node)
-            label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+            (
+              label_replace(node_uname_info{job="node-exporter"}, "node", "$1", "nodename", "(.+)")
+              or on(instance)
+              label_replace(kube_node_info{}, "instance", "$1:9100", "internal_ip", "(.*)")
+            )
           )
     disk_usage_by_node:
       columns:
