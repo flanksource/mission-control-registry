@@ -33,7 +33,26 @@ spec:
     - name: Resources
       description: Count of resources grouped by type
       type: table
-      query: SELECT * FROM resource_count_by_type
+      query: |
+        SELECT
+          CASE type
+            WHEN 'Kubernetes::Node' THEN 'Nodes'
+            WHEN 'Kubernetes::Namespace' THEN 'Namespaces'
+            WHEN 'Kubernetes::Pod' THEN 'Running Pods'
+            WHEN 'Kubernetes::Deployment' THEN 'Deployments'
+            WHEN 'Kubernetes::StatefulSet' THEN 'StatefulSets'
+            WHEN 'Kubernetes::DaemonSet' THEN 'DaemonSets'
+            WHEN 'Kubernetes::PersistentVolume' THEN 'Persistent Volumes'
+            WHEN 'Kubernetes::PersistentVolumeClaim' THEN 'Persistent Volume Claims'
+            WHEN 'Kubernetes::Ingress' THEN 'Ingresses'
+            WHEN 'Kubernetes::CronJob' THEN 'CronJobs'
+          END AS resource_type,
+          COUNT(*) AS value
+        FROM resources
+        WHERE type != 'Kubernetes::Pod'
+          OR json_extract(config, '$.status.phase') = 'Running'
+        GROUP BY type
+        ORDER BY resource_type
     {{- if .Values.views.nodes.enabled }}
     - name: CPU Usage
       type: gauge
@@ -82,12 +101,19 @@ spec:
           - percent: 85
             color: '#F25C54'
     {{- end }}
+    {{- if .Values.views.pods.enabled }}
     - name: Pods Node Distribution
       description: Distribution of pods across nodes
       type: piechart
       piechart:
         showLabels: true
-      query: SELECT value as "count", node FROM pods_node_distribution
+      query: |
+        SELECT COUNT(*) AS count, node
+        FROM pod_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+          AND node IS NOT NULL
+        GROUP BY node
+    {{- end }}
     {{- if .Values.views.nodes.enabled }}
     - name: Memory Real Usage
       type: bargauge
@@ -114,13 +140,22 @@ spec:
           - percent: 80
             color: '#F25C54'
     {{- end }}
+    {{- if and .Values.views.pods.enabled .Values.views.nodes.enabled }}
     - name: Memory Requests
       type: bargauge
       query: |
-        SELECT 'Requests' as name, ROUND(value, 1) as value FROM memory_request
+        SELECT 'Requests' AS name, ROUND(SUM(memory_request), 1) AS value
+        FROM pod_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        HAVING COUNT(memory_request) > 0
       bargauge:
         group: "Memory"
-        max: "size(.dataset.total_machine_memory) > 0 ? .dataset.total_machine_memory[0].value : 0"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_memory))
+            .sum() : 0.0
         unit: bytes
         format: percentage
         thresholds:
@@ -135,10 +170,18 @@ spec:
     - name: Memory Limits
       type: bargauge
       query: |
-        SELECT 'Limits' as name, ROUND(value, 1) as value FROM memory_limit
+        SELECT 'Limits' AS name, ROUND(SUM(memory_limit), 1) AS value
+        FROM pod_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        HAVING COUNT(memory_limit) > 0
       bargauge:
         group: "Memory"
-        max: "size(.dataset.total_machine_memory) > 0 ? .dataset.total_machine_memory[0].value : 0"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_memory))
+            .sum() : 0.0
         unit: bytes
         format: multiplier
         thresholds:
@@ -149,7 +192,8 @@ spec:
           - percent: 100
             color: '#28C19B'
           - percent: 400
-            color: '#F25C54'  
+            color: '#F25C54'
+    {{- end }}
     {{- if .Values.views.nodes.enabled }}
     - name: CPU Real Usage
       type: bargauge
@@ -176,13 +220,22 @@ spec:
           - percent: 80
             color: '#F25C54'
     {{- end }}
+    {{- if and .Values.views.pods.enabled .Values.views.nodes.enabled }}
     - name: CPU Requests
       type: bargauge
       query: |
-        SELECT 'Requests' as name, ROUND(value, 1) as value FROM cpu_request
+        SELECT 'Requests' AS name, ROUND(SUM(cpu_request), 1) AS value
+        FROM pod_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        HAVING COUNT(cpu_request) > 0
       bargauge:
         group: "CPU"
-        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_cpu))
+            .sum() : 0.0
         unit: millicores
         format: percentage
         thresholds:
@@ -197,10 +250,18 @@ spec:
     - name: CPU Limits
       type: bargauge
       query: |
-        SELECT 'Limits' as name, ROUND(value, 1) as value FROM cpu_limit
+        SELECT 'Limits' AS name, ROUND(SUM(cpu_limit), 1) AS value
+        FROM pod_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        HAVING COUNT(cpu_limit) > 0
       bargauge:
         group: "CPU"
-        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_cpu))
+            .sum() : 0.0
         unit: millicores
         format: multiplier
         thresholds:
@@ -211,7 +272,8 @@ spec:
           - percent: 100
             color: '#28C19B'
           - percent: 400
-            color: '#F25C54'  
+            color: '#F25C54'
+    {{- end }}
   columns:
     - name: id
       type: string
@@ -272,144 +334,64 @@ spec:
       width: "2"
       card:
         position: footer
+  {{- if .Values.views.pods.enabled }}
+  merge: |
+    WITH namespace_metrics AS (
+      SELECT
+        namespace,
+        SUM(cpu) AS cpu_usage,
+        SUM(memory) AS memory_usage,
+        SUM(CASE WHEN cpu_limit > 0 THEN cpu_limit ELSE cpu_request END) AS cpu_limit,
+        SUM(CASE WHEN memory_limit > 0 THEN memory_limit ELSE memory_request END) AS memory_limit,
+        SUM(CASE WHEN phase = 'Running' THEN 1 ELSE 0 END) AS pods
+      FROM pod_overview
+      WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+      GROUP BY namespace
+    )
+    SELECT
+      namespaces.id,
+      namespaces.name,
+      json_extract(namespaces.tags, '$.cluster') AS cluster,
+      namespaces.created_at,
+      namespace_metrics.cpu_usage,
+      namespace_metrics.memory_usage,
+      namespace_metrics.cpu_limit,
+      namespace_metrics.memory_limit,
+      namespace_metrics.pods
+    FROM namespaces
+    LEFT JOIN namespace_metrics ON namespaces.name = namespace_metrics.namespace
+    ORDER BY name
+  {{- else }}
   merge: |
     SELECT
       namespaces.id,
       namespaces.name,
       json_extract(namespaces.tags, '$.cluster') AS cluster,
       namespaces.created_at,
-      cpu_usage_by_namespace.value AS cpu_usage,
-      memory_usage_by_namespace.value AS memory_usage,
-      cpu_limit_by_namespace.value AS cpu_limit,
-      memory_limit_by_namespace.value AS memory_limit,
-      pod_count_by_namespace.value AS pods
+      NULL AS cpu_usage,
+      NULL AS memory_usage,
+      NULL AS cpu_limit,
+      NULL AS memory_limit,
+      NULL AS pods
     FROM namespaces
-    LEFT JOIN cpu_usage_by_namespace
-      ON namespaces.name = cpu_usage_by_namespace.namespace
-    LEFT JOIN memory_usage_by_namespace
-      ON namespaces.name = memory_usage_by_namespace.namespace
-    LEFT JOIN cpu_limit_by_namespace
-      ON namespaces.name = cpu_limit_by_namespace.namespace
-    LEFT JOIN memory_limit_by_namespace
-      ON namespaces.name = memory_limit_by_namespace.namespace
-    LEFT JOIN pod_count_by_namespace
-      ON namespaces.name = pod_count_by_namespace.namespace
     ORDER BY name
+  {{- end }}
   queries:
-    cpu_usage_by_namespace:
-      columns:
-        namespace: string
-        value : decimal
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum by (namespace) (
-            irate(container_cpu_usage_seconds_total{
-              container!="POD",
-              container!=""
-            }[5m])
-          ) * 1000
-    memory_usage_by_namespace:
-      columns:
-        namespace: string
-        value: decimal
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum by (namespace) (
-            container_memory_working_set_bytes{
-              container!="POD",
-              container!=""
-            }
-          )
-    cpu_limit_by_namespace:
-      columns:
-        namespace: string
-        value: decimal
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum by (namespace) (
-            (
-              kube_pod_container_resource_limits{resource="cpu", container!="POD", container!=""} > 0
-            ) or
-            kube_pod_container_resource_requests{resource="cpu", container!="POD", container!=""}
-          ) * 1000
-    memory_limit_by_namespace:
-      columns:
-        namespace: string
-        value: decimal
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum by (namespace) (
-            (
-              kube_pod_container_resource_limits{resource="memory", container!="POD", container!=""} > 0
-            ) or
-            kube_pod_container_resource_requests{resource="memory", container!="POD", container!=""}
-          )
-    pod_count_by_namespace:
-      columns:
-        namespace: string
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_pod_status_phase{phase="Running"}) by (namespace)
-    pods_node_distribution:
-      columns:
-        node: string
-        value: decimal
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          count(kube_pod_info) by (node)
-    total_cpu:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(machine_cpu_cores{}) * 1000
-    resource_count_by_type:
-      columns:
-        resource_type: string
-        value: decimal
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          (label_replace(count(kube_node_info), "resource_type", "Nodes", "", "")) or 
-          (label_replace(count(kube_namespace_status_phase{phase="Active"}), "resource_type", "Namespaces", "", "")) or 
-          (label_replace(count(kube_pod_status_phase{phase="Running"}), "resource_type", "Running Pods", "", "")) or 
-          (label_replace(count(kube_deployment_status_replicas), "resource_type", "Deployments", "", "")) or 
-          (label_replace(count(kube_statefulset_status_replicas), "resource_type", "StatefulSets", "", "")) or 
-          (label_replace(count(kube_daemonset_status_number_ready), "resource_type", "DaemonSets", "", "")) or 
-          (label_replace(count(kube_persistentvolume_info), "resource_type", "Persistent Volumes", "", "")) or 
-          (label_replace(count(kube_persistentvolumeclaim_info), "resource_type", "Persistent Volume Claims", "", "")) or
-          (label_replace(count(kube_ingress_info), "resource_type", "Ingresses", "", "")) or
-          (label_replace(count(kube_cronjob_info), "resource_type", "CronJobs", "", ""))
-    cpu_request:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(kube_pod_container_resource_requests{resource="cpu"}) * 1000
-    cpu_limit:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(kube_pod_container_resource_limits{resource="cpu"}) * 1000
-    memory_request:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(kube_pod_container_resource_requests{resource="memory"})
-    memory_limit:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(kube_pod_container_resource_limits{resource="memory"})
-    total_machine_memory:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(machine_memory_bytes{})
+    resources:
+      configs:
+        tagSelector: "cluster=$(.var.cluster)"
+        agent: "all"
+        types:
+          - Kubernetes::Node
+          - Kubernetes::Namespace
+          - Kubernetes::Pod
+          - Kubernetes::Deployment
+          - Kubernetes::StatefulSet
+          - Kubernetes::DaemonSet
+          - Kubernetes::PersistentVolume
+          - Kubernetes::PersistentVolumeClaim
+          - Kubernetes::Ingress
+          - Kubernetes::CronJob
     namespaces:
       configs:
         tagSelector: "cluster=$(.var.cluster)"
@@ -442,6 +424,36 @@ spec:
         is_pushed: boolean
       viewTableSelector:
         name: nodes
+        namespace: {{ .Release.Namespace }}
+    {{- end }}
+    {{- if .Values.views.pods.enabled }}
+    pod_overview:
+      columns:
+        id: string
+        namespace: string
+        cluster: string
+        name: string
+        tags: jsonb
+        status: string
+        health: string
+        memory: decimal
+        cpu: decimal
+        memory_request: decimal
+        memory_limit: decimal
+        cpu_request: decimal
+        cpu_limit: decimal
+        phase: string
+        created: datetime
+        updated: datetime
+        image: string
+        node: string
+        __row__attributes: jsonb
+        __grants: jsonb
+        request_fingerprint: string
+        agent_id: string
+        is_pushed: boolean
+      viewTableSelector:
+        name: pods
         namespace: {{ .Release.Namespace }}
     {{- end }}
 {{- end }}

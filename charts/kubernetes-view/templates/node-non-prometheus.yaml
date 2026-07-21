@@ -80,6 +80,29 @@ spec:
       filter:
         type: multiselect
       width: "1"
+    - name: cpu
+      type: gauge
+      unit: millicore
+      hidden: true
+    - name: memory
+      type: gauge
+      unit: bytes
+      hidden: true
+    - name: disk
+      type: gauge
+      unit: percent
+      hidden: true
+    - name: pods
+      type: number
+      hidden: true
+    - name: allocatable_cpu
+      type: number
+      unit: millicore
+      hidden: true
+    - name: allocatable_memory
+      type: number
+      unit: bytes
+      hidden: true
     - name: zone
       type: string
       width: "2"
@@ -88,6 +111,12 @@ spec:
       description: Availability zone
       filter:
         type: multiselect
+    - name: uptime
+      type: duration
+      hidden: true
+    - name: load
+      type: number
+      hidden: true
     - name: created_at
       type: datetime
       width: "2"
@@ -101,8 +130,16 @@ spec:
       MIN(nodes.status) AS status,
       MIN(nodes.health) AS health,
       MIN(nodes.created_at) AS created_at,
+      NULL AS cpu,
+      NULL AS memory,
+      NULL AS disk,
+      NULL AS pods,
+      to_millicores(COALESCE(json_extract(nodes.config, '$.status.allocatable.cpu'), '')) AS allocatable_cpu,
+      to_bytes(COALESCE(json_extract(nodes.config, '$.status.allocatable.memory'), '')) AS allocatable_memory,
       CASE WHEN json_extract(nodes.labels, '$."node-role.kubernetes.io/control-plane"') IS NOT NULL THEN 'control-plane' ELSE 'worker' END AS role,
-      json_extract(nodes.labels, '$."topology.kubernetes.io/zone"') AS zone
+      json_extract(nodes.labels, '$."topology.kubernetes.io/zone"') AS zone,
+      NULL AS uptime,
+      NULL AS load
     FROM nodes
     GROUP BY nodes.name, json_extract(nodes.tags, '$.cluster')
     ORDER BY name
