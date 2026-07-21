@@ -69,6 +69,9 @@ spec:
           name: >
             'namespace'
       width: "2"
+    - name: cluster
+      type: string
+      hidden: true
     - name: name
       type: config_item
       card:
@@ -94,6 +97,33 @@ spec:
         useForAccent: true
       filter:
         type: multiselect
+    - name: memory
+      type: gauge
+      unit: bytes
+      hidden: true
+    - name: cpu
+      type: gauge
+      unit: millicore
+      hidden: true
+    - name: memory_request
+      type: number
+      unit: bytes
+      hidden: true
+    - name: memory_limit
+      type: number
+      unit: bytes
+      hidden: true
+    - name: cpu_request
+      type: number
+      unit: millicore
+      hidden: true
+    - name: cpu_limit
+      type: number
+      unit: millicore
+      hidden: true
+    - name: phase
+      type: string
+      hidden: true
     - name: created
       type: datetime
       card:
@@ -128,7 +158,26 @@ spec:
       pod.config,
       pod.__grants,
       pod.created_at,
-      pod.updated_at
+      pod.updated_at,
+      NULL AS memory,
+      NULL AS cpu,
+      COALESCE((
+        SELECT SUM(to_bytes(COALESCE(json_extract(container.value, '$.resources.requests.memory'), '')))
+        FROM json_each(json_extract(pod.config, '$.spec.containers')) AS container
+      ), 0) AS memory_request,
+      COALESCE((
+        SELECT SUM(to_bytes(COALESCE(json_extract(container.value, '$.resources.limits.memory'), '')))
+        FROM json_each(json_extract(pod.config, '$.spec.containers')) AS container
+      ), 0) AS memory_limit,
+      COALESCE((
+        SELECT SUM(to_millicores(COALESCE(json_extract(container.value, '$.resources.requests.cpu'), '')))
+        FROM json_each(json_extract(pod.config, '$.spec.containers')) AS container
+      ), 0) AS cpu_request,
+      COALESCE((
+        SELECT SUM(to_millicores(COALESCE(json_extract(container.value, '$.resources.limits.cpu'), '')))
+        FROM json_each(json_extract(pod.config, '$.spec.containers')) AS container
+      ), 0) AS cpu_limit,
+      json_extract(pod.config, '$.status.phase') AS phase
     FROM pod
     ORDER BY namespace, name
   queries:
