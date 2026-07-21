@@ -34,12 +34,23 @@ spec:
       description: Count of resources grouped by type
       type: table
       query: SELECT * FROM resource_count_by_type
+    {{- if .Values.views.nodes.enabled }}
     - name: CPU Usage
       type: gauge
-      query: SELECT value FROM cpu_usage
+      query: |
+        SELECT SUM(cpu) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+          AND cpu IS NOT NULL
+        HAVING COUNT(cpu) > 0
       gauge:
         unit: millicore
-        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_cpu))
+            .sum() : 0.0
         thresholds:
           - percent: 0
             color: '#28C19B'
@@ -49,9 +60,19 @@ spec:
             color: '#F25C54'
     - name: Memory Usage
       type: gauge
-      query: SELECT value FROM memory_usage
+      query: |
+        SELECT SUM(memory) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+          AND memory IS NOT NULL
+        HAVING COUNT(memory) > 0
       gauge:
-        max: "size(.dataset.total_memory) > 0 ? .dataset.total_memory[0].value : 0"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_memory))
+            .sum() : 0.0
         unit: bytes
         thresholds:
           - percent: 0
@@ -60,19 +81,30 @@ spec:
             color: '#F4B23C'
           - percent: 85
             color: '#F25C54'
+    {{- end }}
     - name: Pods Node Distribution
       description: Distribution of pods across nodes
       type: piechart
       piechart:
         showLabels: true
       query: SELECT value as "count", node FROM pods_node_distribution
+    {{- if .Values.views.nodes.enabled }}
     - name: Memory Real Usage
       type: bargauge
       query: |
-        SELECT 'Real' as name, ROUND(value, 1) as value FROM memory_real
+        SELECT 'Real' AS name, ROUND(SUM(memory), 1) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+          AND memory IS NOT NULL
+        HAVING COUNT(memory) > 0
       bargauge:
         group: "Memory"
-        max: "size(.dataset.total_machine_memory) > 0 ? .dataset.total_machine_memory[0].value : 0"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_memory))
+            .sum() : 0.0
         unit: bytes
         thresholds:
           - percent: 0
@@ -81,6 +113,7 @@ spec:
             color: '#F4B23C'
           - percent: 80
             color: '#F25C54'
+    {{- end }}
     - name: Memory Requests
       type: bargauge
       query: |
@@ -117,13 +150,23 @@ spec:
             color: '#28C19B'
           - percent: 400
             color: '#F25C54'  
+    {{- if .Values.views.nodes.enabled }}
     - name: CPU Real Usage
       type: bargauge
       query: |
-        SELECT 'Real' as name, ROUND(value, 1) as value FROM cpu_real
+        SELECT 'Real' AS name, ROUND(SUM(cpu), 1) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+          AND cpu IS NOT NULL
+        HAVING COUNT(cpu) > 0
       bargauge:
         group: "CPU"
-        max: "size(.dataset.total_cpu) > 0 ? .dataset.total_cpu[0].value : 0"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_cpu))
+            .sum() : 0.0
         unit: millicores
         thresholds:
           - percent: 0
@@ -132,6 +175,7 @@ spec:
             color: '#F4B23C'
           - percent: 80
             color: '#F25C54'
+    {{- end }}
     - name: CPU Requests
       type: bargauge
       query: |
@@ -324,21 +368,6 @@ spec:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           sum(machine_cpu_cores{}) * 1000
-    cpu_usage:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m])) * 1000
-    total_memory:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(kube_node_status_allocatable{resource="memory"})
-    memory_usage:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"})
     resource_count_by_type:
       columns:
         resource_type: string
@@ -356,11 +385,6 @@ spec:
           (label_replace(count(kube_persistentvolumeclaim_info), "resource_type", "Persistent Volume Claims", "", "")) or
           (label_replace(count(kube_ingress_info), "resource_type", "Ingresses", "", "")) or
           (label_replace(count(kube_cronjob_info), "resource_type", "CronJobs", "", ""))
-    cpu_real:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(rate(node_cpu_seconds_total{mode!~"idle|iowait|steal", job="node-exporter"}[5m])) * 1000
     cpu_request:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
@@ -371,11 +395,6 @@ spec:
         connection: {{ .Values.global.prometheus.connection }}
         query: |
           sum(kube_pod_container_resource_limits{resource="cpu"}) * 1000
-    memory_real:
-      prometheus:
-        connection: {{ .Values.global.prometheus.connection }}
-        query: |
-          sum(node_memory_MemTotal_bytes{job="node-exporter"} - node_memory_MemAvailable_bytes{job="node-exporter"})
     memory_request:
       prometheus:
         connection: {{ .Values.global.prometheus.connection }}
@@ -397,4 +416,32 @@ spec:
         agent: "all"
         types:
           - Kubernetes::Namespace
+    {{- if .Values.views.nodes.enabled }}
+    node_overview:
+      columns:
+        id: string
+        name: string
+        cluster: string
+        status: string
+        health: string
+        created_at: datetime
+        cpu: decimal
+        memory: decimal
+        disk: decimal
+        pods: decimal
+        allocatable_cpu: decimal
+        allocatable_memory: decimal
+        role: string
+        zone: string
+        uptime: duration
+        load: decimal
+        __row__attributes: jsonb
+        __grants: jsonb
+        request_fingerprint: string
+        agent_id: string
+        is_pushed: boolean
+      viewTableSelector:
+        name: nodes
+        namespace: {{ .Release.Namespace }}
+    {{- end }}
 {{- end }}

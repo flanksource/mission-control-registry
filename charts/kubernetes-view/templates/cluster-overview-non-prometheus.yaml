@@ -29,6 +29,103 @@ spec:
       - configTab:
           types:
             - Kubernetes::Cluster
+  {{- if .Values.views.nodes.enabled }}
+  panels:
+    - name: CPU Usage
+      type: gauge
+      query: |
+        SELECT SUM(cpu) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+          AND cpu IS NOT NULL
+        HAVING COUNT(cpu) > 0
+      gauge:
+        unit: millicore
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_cpu))
+            .sum() : 0.0
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: Memory Usage
+      type: gauge
+      query: |
+        SELECT SUM(memory) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+          AND memory IS NOT NULL
+        HAVING COUNT(memory) > 0
+      gauge:
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_memory))
+            .sum() : 0.0
+        unit: bytes
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 85
+            color: '#F25C54'
+    - name: Memory Real Usage
+      type: bargauge
+      query: |
+        SELECT 'Real' AS name, ROUND(SUM(memory), 1) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+          AND memory IS NOT NULL
+        HAVING COUNT(memory) > 0
+      bargauge:
+        group: "Memory"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_memory))
+            .sum() : 0.0
+        unit: bytes
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 80
+            color: '#F25C54'
+    - name: CPU Real Usage
+      type: bargauge
+      query: |
+        SELECT 'Real' AS name, ROUND(SUM(cpu), 1) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+          AND cpu IS NOT NULL
+        HAVING COUNT(cpu) > 0
+      bargauge:
+        group: "CPU"
+        max: >-
+          size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
+          .dataset.node_overview
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .map(node, double(node.allocatable_cpu))
+            .sum() : 0.0
+        unit: millicores
+        thresholds:
+          - percent: 0
+            color: '#28C19B'
+          - percent: 70
+            color: '#F4B23C'
+          - percent: 80
+            color: '#F25C54'
+  {{- end }}
   columns:
     - name: id
       type: string
@@ -66,4 +163,32 @@ spec:
         agent: "all"
         types:
           - Kubernetes::Namespace
+    {{- if .Values.views.nodes.enabled }}
+    node_overview:
+      columns:
+        id: string
+        name: string
+        cluster: string
+        status: string
+        health: string
+        created_at: datetime
+        cpu: decimal
+        memory: decimal
+        disk: decimal
+        pods: decimal
+        allocatable_cpu: decimal
+        allocatable_memory: decimal
+        role: string
+        zone: string
+        uptime: duration
+        load: decimal
+        __row__attributes: jsonb
+        __grants: jsonb
+        request_fingerprint: string
+        agent_id: string
+        is_pushed: boolean
+      viewTableSelector:
+        name: nodes
+        namespace: {{ .Release.Namespace }}
+    {{- end }}
 {{- end }}
