@@ -29,6 +29,8 @@ spec:
       - configTab:
           types:
             - Kubernetes::Cluster
+        variables:
+          cluster: '$(.config.name)'
   panels:
     - name: Resources
       description: Count of resources grouped by type
@@ -59,7 +61,7 @@ spec:
       query: |
         SELECT SUM(cpu) AS value
         FROM node_overview
-        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
           AND cpu IS NOT NULL
         HAVING COUNT(cpu) > 0
       gauge:
@@ -67,7 +69,7 @@ spec:
         max: >-
           size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
           .dataset.node_overview
-            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].tags.cluster)
             .map(node, double(node.allocatable_cpu))
             .sum() : 0.0
         thresholds:
@@ -82,14 +84,14 @@ spec:
       query: |
         SELECT SUM(memory) AS value
         FROM node_overview
-        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
           AND memory IS NOT NULL
         HAVING COUNT(memory) > 0
       gauge:
         max: >-
           size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
           .dataset.node_overview
-            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].tags.cluster)
             .map(node, double(node.allocatable_memory))
             .sum() : 0.0
         unit: bytes
@@ -110,7 +112,7 @@ spec:
       query: |
         SELECT COUNT(*) AS count, node
         FROM pod_overview
-        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
           AND node IS NOT NULL
         GROUP BY node
     {{- end }}
@@ -120,7 +122,7 @@ spec:
       query: |
         SELECT 'Real' AS name, ROUND(SUM(memory), 1) AS value
         FROM node_overview
-        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
           AND memory IS NOT NULL
         HAVING COUNT(memory) > 0
       bargauge:
@@ -128,7 +130,7 @@ spec:
         max: >-
           size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
           .dataset.node_overview
-            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].tags.cluster)
             .map(node, double(node.allocatable_memory))
             .sum() : 0.0
         unit: bytes
@@ -146,14 +148,14 @@ spec:
       query: |
         SELECT 'Requests' AS name, ROUND(SUM(memory_request), 1) AS value
         FROM pod_overview
-        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
         HAVING COUNT(memory_request) > 0
       bargauge:
         group: "Memory"
         max: >-
           size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
           .dataset.node_overview
-            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].tags.cluster)
             .map(node, double(node.allocatable_memory))
             .sum() : 0.0
         unit: bytes
@@ -172,14 +174,14 @@ spec:
       query: |
         SELECT 'Limits' AS name, ROUND(SUM(memory_limit), 1) AS value
         FROM pod_overview
-        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
         HAVING COUNT(memory_limit) > 0
       bargauge:
         group: "Memory"
         max: >-
           size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
           .dataset.node_overview
-            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].cluster)
+            .filter(node, has(node.allocatable_memory) && node.allocatable_memory != null && node.cluster == .dataset.namespaces[0].tags.cluster)
             .map(node, double(node.allocatable_memory))
             .sum() : 0.0
         unit: bytes
@@ -200,7 +202,7 @@ spec:
       query: |
         SELECT 'Real' AS name, ROUND(SUM(cpu), 1) AS value
         FROM node_overview
-        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
           AND cpu IS NOT NULL
         HAVING COUNT(cpu) > 0
       bargauge:
@@ -208,7 +210,7 @@ spec:
         max: >-
           size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
           .dataset.node_overview
-            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].tags.cluster)
             .map(node, double(node.allocatable_cpu))
             .sum() : 0.0
         unit: millicores
@@ -226,14 +228,14 @@ spec:
       query: |
         SELECT 'Requests' AS name, ROUND(SUM(cpu_request), 1) AS value
         FROM pod_overview
-        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
         HAVING COUNT(cpu_request) > 0
       bargauge:
         group: "CPU"
         max: >-
           size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
           .dataset.node_overview
-            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].tags.cluster)
             .map(node, double(node.allocatable_cpu))
             .sum() : 0.0
         unit: millicores
@@ -252,14 +254,14 @@ spec:
       query: |
         SELECT 'Limits' AS name, ROUND(SUM(cpu_limit), 1) AS value
         FROM pod_overview
-        WHERE cluster IN (SELECT DISTINCT cluster FROM namespaces)
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
         HAVING COUNT(cpu_limit) > 0
       bargauge:
         group: "CPU"
         max: >-
           size(.dataset.namespaces) > 0 && size(.dataset.node_overview) > 0 ?
           .dataset.node_overview
-            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].cluster)
+            .filter(node, has(node.allocatable_cpu) && node.allocatable_cpu != null && node.cluster == .dataset.namespaces[0].tags.cluster)
             .map(node, double(node.allocatable_cpu))
             .sum() : 0.0
         unit: millicores
