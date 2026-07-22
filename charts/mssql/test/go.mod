@@ -5,7 +5,7 @@ go 1.26.1
 godebug x509negativeserial=1
 
 require (
-	github.com/flanksource/clicky v1.21.37-0.20260715094201-d847a9108f43
+	github.com/flanksource/clicky v1.21.40
 	github.com/flanksource/commons v1.53.1
 	github.com/flanksource/commons-db v0.1.17
 	github.com/flanksource/commons-test v0.1.12
