@@ -5,10 +5,10 @@ go 1.26.1
 godebug x509negativeserial=1
 
 require (
-	github.com/flanksource/clicky v1.21.37-0.20260715094201-d847a9108f43
+	github.com/flanksource/clicky v1.21.45
 	github.com/flanksource/commons v1.53.1
-	github.com/flanksource/commons-db v0.1.17
-	github.com/flanksource/commons-test v0.1.12
+	github.com/flanksource/commons-db v0.1.21
+	github.com/flanksource/commons-test v0.1.15
 	github.com/microsoft/go-mssqldb v1.10.0
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
@@ -71,7 +71,7 @@ require (
 	github.com/emirpasic/gods/v2 v2.0.0-alpha // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/flanksource/gomplate/v3 v3.24.82 // indirect
+	github.com/flanksource/gomplate/v3 v3.24.84 // indirect
 	github.com/flanksource/is-healthy v1.0.88 // indirect
 	github.com/flanksource/kubectl-neat v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
