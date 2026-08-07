@@ -99,11 +99,13 @@ spec:
         type: multiselect
     - name: memory
       type: gauge
+      gauge: {}
       unit: bytes
       hidden: true
       gauge: {}
     - name: cpu
       type: gauge
+      gauge: {}
       unit: millicore
       hidden: true
       gauge: {}

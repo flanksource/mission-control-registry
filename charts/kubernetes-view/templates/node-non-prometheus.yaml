@@ -82,16 +82,19 @@ spec:
       width: "1"
     - name: cpu
       type: gauge
+      gauge: {}
       unit: millicore
       hidden: true
       gauge: {}
     - name: memory
       type: gauge
+      gauge: {}
       unit: bytes
       hidden: true
       gauge: {}
     - name: disk
       type: gauge
+      gauge: {}
       unit: percent
       hidden: true
       gauge: {}
