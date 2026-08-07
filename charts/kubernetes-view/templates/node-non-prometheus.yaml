@@ -84,14 +84,17 @@ spec:
       type: gauge
       unit: millicore
       hidden: true
+      gauge: {}
     - name: memory
       type: gauge
       unit: bytes
       hidden: true
+      gauge: {}
     - name: disk
       type: gauge
       unit: percent
       hidden: true
+      gauge: {}
     - name: pods
       type: number
       hidden: true

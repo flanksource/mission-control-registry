@@ -101,10 +101,12 @@ spec:
       type: gauge
       unit: bytes
       hidden: true
+      gauge: {}
     - name: cpu
       type: gauge
       unit: millicore
       hidden: true
+      gauge: {}
     - name: memory_request
       type: number
       unit: bytes
