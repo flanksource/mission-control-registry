@@ -1,0 +1,323 @@
+{{- if and .Values.views.enabled .Values.views.overview.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: cost-overview
+  labels:
+    {{- include "cost-view.labels" . | nindent 4 }}
+spec:
+  description: Cloud spend across every scraped account, by service and by resource.
+  display:
+    title: Cost
+    icon: dollar
+    ordinal: 1
+    {{- if .Values.views.overview.sidebar }}
+    sidebar: true
+    {{- end }}
+    table:
+      sort: "-cost"
+      size: 20
+  {{- include "cost-view.cache" . | nindent 2 }}
+  {{- include "cost-view.templating" . | nindent 2 }}
+  panels:
+    - name: Total spend
+      description: Effective cost over the selected window
+      type: number
+      number:
+        precision: 2
+      query: SELECT total_effective AS value, label FROM kpis
+
+    - name: Change vs prior window
+      description: Against the equally long window before it
+      type: number
+      number:
+        unit: percent
+        precision: 1
+      query: SELECT delta_pct AS value FROM kpis
+
+    - name: Projected 30 days
+      description: Selected window's daily mean, extended to 30 days
+      type: number
+      number:
+        precision: 2
+      query: SELECT projected_30d AS value, projection_label AS label FROM kpis
+
+    - name: Savings vs list
+      description: Discounts, commitments and credits already applied
+      type: number
+      number:
+        unit: percent
+        precision: 1
+      query: SELECT savings_pct AS value FROM kpis
+
+    - name: Daily spend by service
+      description: Top services; the final bucket is usually incomplete
+      type: timeseries
+      timeseries:
+        timeKey: timestamp
+        valueKey: value
+        style: area
+        legend:
+          layout: horizontal
+      query: |
+        SELECT day AS timestamp, service, SUM(effective) AS value
+        FROM daily
+        WHERE service IN (
+          SELECT service FROM daily GROUP BY service ORDER BY SUM(effective) DESC LIMIT 8
+        )
+        GROUP BY day, service
+        ORDER BY day
+
+    - name: Spend by service
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT service, SUM(effective) AS count FROM daily GROUP BY service ORDER BY count DESC
+
+    - name: Attribution
+      description: How much spend reaches a resource of its own
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          Attributed: "#28C19B"
+          Unallocatable: "#F4B23C"
+          Unresolved resource: "#F25C54"
+      query: SELECT bucket, effective AS count FROM attribution ORDER BY count DESC
+
+    - name: Top services
+      description: Share of spend over the selected window
+      type: bargauge
+      bargauge:
+        format: percentage
+      query: |
+        SELECT service AS name, SUM(effective) AS value,
+               (SELECT SUM(effective) FROM daily) AS max
+        FROM daily
+        GROUP BY service
+        ORDER BY value DESC
+        LIMIT 10
+
+    - name: Data freshness
+      description: Cloud billing exports land late; the newest bucket is partial
+      type: properties
+      query: SELECT label, value FROM freshness
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: config_item
+      configItem:
+        idField: id
+      card:
+        position: title
+      url:
+        config: row.id
+    - name: type
+      type: string
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: owner
+      type: string
+      description: From the config item's labels, then its tags
+      filter:
+        type: multiselect
+    - name: account
+      type: string
+      filter:
+        type: multiselect
+    - name: cost
+      type: decimal
+      description: Effective cost over the selected window
+      card:
+        position: headerRight
+    - name: prior_cost
+      type: decimal
+      description: Effective cost over the equally long window before it
+    - name: delta_pct
+      type: decimal
+      description: Change against the prior window, in percent
+    - name: savings
+      type: decimal
+      description: List cost less effective cost
+    - name: health
+      type: health
+      card:
+        useForAccent: true
+      filter:
+        type: multiselect
+    - name: last_charge
+      type: datetime
+      card:
+        position: footer
+  merge: SELECT * FROM resources
+  queries:
+    kpis:
+      columns:
+        total_effective: decimal
+        prior_effective: decimal
+        delta_pct: decimal
+        projected_30d: decimal
+        savings_pct: decimal
+        label: string
+        projection_label: string
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          , cur AS (
+            SELECT COALESCE(SUM(effective_cost), 0) AS eff,
+                   COALESCE(SUM(list_cost), 0)      AS list
+            FROM deduped
+            WHERE billing_currency = '$(.var.currency)'
+              AND period_start >= now() - INTERVAL '$(.var.window)'
+          )
+          , prev AS (
+            SELECT COALESCE(SUM(effective_cost), 0) AS eff
+            FROM deduped
+            WHERE billing_currency = '$(.var.currency)'
+              AND period_start >= now() - INTERVAL '$(.var.window)' * 2
+              AND period_start <  now() - INTERVAL '$(.var.window)'
+          )
+          , span AS (
+            SELECT GREATEST(EXTRACT(epoch FROM INTERVAL '$(.var.window)') / 86400.0, 1) AS days
+          )
+          SELECT
+            round(cur.eff, 2)::float8                                              AS total_effective,
+            round(prev.eff, 2)::float8                                             AS prior_effective,
+            CASE WHEN prev.eff > 0
+                 THEN round((cur.eff - prev.eff) / prev.eff * 100, 1)::float8 END  AS delta_pct,
+            round(cur.eff / span.days * 30, 2)::float8                             AS projected_30d,
+            CASE WHEN cur.list > 0
+                 THEN round((cur.list - cur.eff) / cur.list * 100, 1)::float8 END  AS savings_pct,
+            'Total spend ($(.var.currency))'                                       AS label,
+            'Projected 30 days ($(.var.currency))'                                 AS projection_label
+          FROM cur, prev, span
+    daily:
+      columns:
+        day: string
+        service: string
+        effective: decimal
+        list: decimal
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          SELECT
+            to_char(date_trunc('day', d.period_start AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
+            COALESCE(NULLIF(d.service_name, ''), 'Unknown')                             AS service,
+            round(SUM(d.effective_cost), 4)::float8                                     AS effective,
+            round(SUM(d.list_cost), 4)::float8                                          AS list
+          FROM deduped d
+          WHERE d.billing_currency = '$(.var.currency)'
+            AND d.period_start >= now() - INTERVAL '$(.var.window)'
+          GROUP BY 1, 2
+          ORDER BY 1, 3 DESC
+    attribution:
+      columns:
+        bucket: string
+        effective: decimal
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          SELECT
+          {{- include "cost-view.attributionBucket" . | nindent 12 }} AS bucket,
+            round(SUM(d.effective_cost), 2)::float8 AS effective
+          FROM deduped d
+          JOIN config_items ci ON ci.id = d.config_id
+          WHERE d.billing_currency = '$(.var.currency)'
+            AND d.period_start >= now() - INTERVAL '$(.var.window)'
+          GROUP BY 1
+          ORDER BY 2 DESC
+    freshness:
+      columns:
+        label: string
+        value: string
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          {{- include "cost-view.freshnessQuery" . | nindent 10 }}
+    resources:
+      columns:
+        id: string
+        name: string
+        type: string
+        owner: string
+        account: string
+        cost: decimal
+        prior_cost: decimal
+        delta_pct: decimal
+        savings: decimal
+        health: string
+        last_charge: datetime
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          , windowed AS (
+            SELECT
+              d.config_id,
+              SUM(d.effective_cost) FILTER (
+                WHERE d.period_start >= now() - INTERVAL '$(.var.window)')       AS cur_eff,
+              SUM(d.effective_cost) FILTER (
+                WHERE d.period_start <  now() - INTERVAL '$(.var.window)')       AS prev_eff,
+              SUM(d.list_cost) FILTER (
+                WHERE d.period_start >= now() - INTERVAL '$(.var.window)')       AS cur_list,
+              MAX(d.period_end)                                                  AS last_charge
+            FROM deduped d
+            WHERE d.billing_currency = '$(.var.currency)'
+            GROUP BY d.config_id
+          )
+          SELECT
+            ci.id::text                                                          AS id,
+            ci.name                                                              AS name,
+            ci.type                                                              AS type,
+            {{ include "cost-view.owner" . }} AS owner,
+            COALESCE(NULLIF(ci.tags->>'project', ''),
+                     NULLIF(ci.tags->>'account', ''), '')                        AS account,
+            round(COALESCE(w.cur_eff, 0), 2)::float8                             AS cost,
+            round(COALESCE(w.prev_eff, 0), 2)::float8                            AS prior_cost,
+            CASE WHEN COALESCE(w.prev_eff, 0) > 0
+                 THEN round((w.cur_eff - w.prev_eff) / w.prev_eff * 100, 1)::float8
+            END                                                                  AS delta_pct,
+            round(COALESCE(w.cur_list, 0) - COALESCE(w.cur_eff, 0), 2)::float8   AS savings,
+            ci.health::text                                                      AS health,
+            to_char(w.last_charge AT TIME ZONE 'UTC',
+                    'YYYY-MM-DD"T"HH24:MI:SS"Z"')                                AS last_charge
+          FROM windowed w
+          JOIN config_items ci ON ci.id = w.config_id
+          WHERE COALESCE(w.cur_eff, 0) <> 0
+          ORDER BY cost DESC
+          LIMIT {{ .Values.views.overview.limit | int }}
+  sections:
+    {{- if .Values.views.owner.enabled }}
+    - title: By owner
+      icon: group
+      viewRef:
+        namespace: {{ .Release.Namespace }}
+        name: cost-by-owner
+    {{- end }}
+    {{- if .Values.views.account.enabled }}
+    - title: By account
+      icon: folder
+      viewRef:
+        namespace: {{ .Release.Namespace }}
+        name: cost-by-account
+    {{- end }}
+    {{- if .Values.views.movers.enabled }}
+    - title: Biggest movers
+      icon: activity
+      viewRef:
+        namespace: {{ .Release.Namespace }}
+        name: cost-movers
+    {{- end }}
+{{- end }}

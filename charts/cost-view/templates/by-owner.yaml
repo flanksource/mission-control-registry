@@ -1,0 +1,186 @@
+{{- if and .Values.views.enabled .Values.views.owner.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: cost-by-owner
+  labels:
+    {{- include "cost-view.labels" . | nindent 4 }}
+spec:
+  description: >-
+    Spend grouped by the ownership key selected in "Group by", read from each config
+    item's labels and then its tags. Spend on resources carrying no such key, and spend
+    that never reached a resource at all, groups under "(unallocated)".
+  display:
+    title: Cost by owner
+    icon: group
+    table:
+      sort: "-cost"
+      size: 20
+  {{- include "cost-view.cache" . | nindent 2 }}
+  {{- include "cost-view.templating" . | nindent 2 }}
+  panels:
+    - name: Share of spend
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT owner, cost AS count FROM owners ORDER BY count DESC
+
+    - name: Attributed share
+      description: Spend carrying the selected ownership key
+      type: gauge
+      gauge:
+        unit: percent
+        thresholds:
+          - percent: 0
+            color: "#F25C54"
+          - percent: 50
+            color: "#F4B23C"
+          - percent: 80
+            color: "#28C19B"
+      query: |
+        SELECT ROUND(
+          100.0 * COALESCE(SUM(CASE WHEN owner <> '(unallocated)' THEN cost END), 0)
+                / NULLIF(SUM(cost), 0), 1) AS value
+        FROM owners
+
+    - name: Daily spend by owner
+      description: Top owners; the final bucket is usually incomplete
+      type: timeseries
+      timeseries:
+        timeKey: timestamp
+        valueKey: value
+        style: area
+      query: |
+        SELECT day AS timestamp, owner, SUM(effective) AS value
+        FROM daily_owner
+        WHERE owner IN (
+          SELECT owner FROM daily_owner GROUP BY owner ORDER BY SUM(effective) DESC LIMIT 8
+        )
+        GROUP BY day, owner
+        ORDER BY day
+
+    - name: Data freshness
+      description: Cloud billing exports land late; the newest bucket is partial
+      type: properties
+      query: SELECT label, value FROM freshness
+  columns:
+    - name: owner
+      type: string
+      primaryKey: true
+      card:
+        position: title
+      filter:
+        type: multiselect
+    - name: cost
+      type: decimal
+      description: Effective cost over the selected window
+      card:
+        position: headerRight
+    - name: prior_cost
+      type: decimal
+      description: Effective cost over the equally long window before it
+    - name: delta_pct
+      type: decimal
+      description: Change against the prior window, in percent
+    - name: resources
+      type: number
+      description: Config items charged in the window
+    - name: top_service
+      type: string
+      card:
+        position: subtitle
+    - name: savings
+      type: decimal
+      description: List cost less effective cost
+  merge: SELECT * FROM owners
+  queries:
+    owners:
+      columns:
+        owner: string
+        cost: decimal
+        prior_cost: decimal
+        delta_pct: decimal
+        resources: number
+        top_service: string
+        savings: decimal
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          , owned AS (
+            SELECT
+              {{ include "cost-view.owner" . }} AS owner,
+              d.config_id,
+              COALESCE(NULLIF(d.service_name, ''), 'Unknown') AS service,
+              d.effective_cost,
+              d.list_cost,
+              d.period_start
+            FROM deduped d
+            JOIN config_items ci ON ci.id = d.config_id
+            WHERE d.billing_currency = '$(.var.currency)'
+          )
+          , agg AS (
+            SELECT
+              owner,
+              SUM(effective_cost) FILTER (
+                WHERE period_start >= now() - INTERVAL '$(.var.window)')          AS cur_eff,
+              SUM(effective_cost) FILTER (
+                WHERE period_start <  now() - INTERVAL '$(.var.window)')          AS prev_eff,
+              SUM(list_cost) FILTER (
+                WHERE period_start >= now() - INTERVAL '$(.var.window)')          AS cur_list,
+              COUNT(DISTINCT config_id) FILTER (
+                WHERE period_start >= now() - INTERVAL '$(.var.window)')          AS resources
+            FROM owned
+            GROUP BY owner
+          )
+          , top_service AS (
+            SELECT DISTINCT ON (owner) owner, service
+            FROM owned
+            WHERE period_start >= now() - INTERVAL '$(.var.window)'
+            GROUP BY owner, service
+            ORDER BY owner, SUM(effective_cost) DESC
+          )
+          SELECT
+            a.owner                                                              AS owner,
+            round(COALESCE(a.cur_eff, 0), 2)::float8                             AS cost,
+            round(COALESCE(a.prev_eff, 0), 2)::float8                            AS prior_cost,
+            CASE WHEN COALESCE(a.prev_eff, 0) > 0
+                 THEN round((a.cur_eff - a.prev_eff) / a.prev_eff * 100, 1)::float8
+            END                                                                  AS delta_pct,
+            COALESCE(a.resources, 0)::int                                        AS resources,
+            COALESCE(t.service, '')                                              AS top_service,
+            round(COALESCE(a.cur_list, 0) - COALESCE(a.cur_eff, 0), 2)::float8   AS savings
+          FROM agg a
+          LEFT JOIN top_service t ON t.owner = a.owner
+          WHERE COALESCE(a.cur_eff, 0) <> 0
+          ORDER BY cost DESC
+    daily_owner:
+      columns:
+        day: string
+        owner: string
+        effective: decimal
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          SELECT
+            to_char(date_trunc('day', d.period_start AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
+            {{ include "cost-view.owner" . }} AS owner,
+            round(SUM(d.effective_cost), 4)::float8 AS effective
+          FROM deduped d
+          JOIN config_items ci ON ci.id = d.config_id
+          WHERE d.billing_currency = '$(.var.currency)'
+            AND d.period_start >= now() - INTERVAL '$(.var.window)'
+          GROUP BY 1, 2
+          ORDER BY 1, 3 DESC
+    freshness:
+      columns:
+        label: string
+        value: string
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          {{- include "cost-view.freshnessQuery" . | nindent 10 }}
+{{- end }}

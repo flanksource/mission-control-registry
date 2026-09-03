@@ -1,0 +1,262 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "connection": {
+      "default": "connection://mission-control-db",
+      "description": "Connection to the Mission Control database. Cost data is read with SQL because\nthe `configs` resource selector does not expose cost columns.\n\nNames the connection the mission-control chart creates (its `connectionName`,\ndefault `mission-control-db`). The namespace is left off so it resolves in the\nnamespace this chart is installed into.",
+      "title": "connection",
+      "type": "string"
+    },
+    "currencies": {
+      "description": "Currencies offered in the currency selector. Costs are never summed across\ncurrencies, so every view filters to exactly one.",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          }
+        ],
+        "required": []
+      },
+      "title": "currencies",
+      "type": "array"
+    },
+    "deduplicate": {
+      "default": true,
+      "description": "Compensates for duplicate cost bookings left behind when a charge's\nresolution target changes (see the chart README). Disable once the ingest\npipeline retires superseded bookings.",
+      "title": "deduplicate",
+      "type": "boolean"
+    },
+    "enabled": {
+      "default": true,
+      "description": "Field that can be used as a condition when cost-view is a dependency.\nThis definition is only here as a placeholder such that it is included in\nthe json schema.\nSee https://helm.sh/docs/chart_best_practices/dependencies/#conditions-and-tags\nfor more info.\n+docs:hidden",
+      "title": "enabled",
+      "type": "boolean"
+    },
+    "fullnameOverride": {
+      "default": "",
+      "required": [],
+      "title": "fullnameOverride"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "grainLabels": {
+      "additionalProperties": true,
+      "description": "How each compaction level is described in the Data freshness panel.\n\nA level names a position in the ladder, not a width: the widths are operator\nproperties in config-db (`config.costs.level1`, `level2`, `level3`, defaulting\nto 1h, 1d and 30d). A deployment that changes a width should relabel it here to\nmatch, otherwise the panel reports a resolution the data does not have.\n\nA level with no label here is reported by its own name rather than guessed at.",
+      "properties": {
+        "level1": {
+          "default": "hourly",
+          "title": "level1",
+          "type": "string"
+        },
+        "level2": {
+          "default": "daily",
+          "title": "level2",
+          "type": "string"
+        },
+        "level3": {
+          "default": "monthly",
+          "title": "level3",
+          "type": "string"
+        }
+      },
+      "required": [
+        "level1",
+        "level2",
+        "level3"
+      ],
+      "title": "grainLabels",
+      "type": "object"
+    },
+    "labels": {
+      "additionalProperties": true,
+      "required": [],
+      "title": "labels"
+    },
+    "nameOverride": {
+      "default": "",
+      "required": [],
+      "title": "nameOverride"
+    },
+    "ownershipKeys": {
+      "description": "Tag/label keys offered in the \"group by\" selector for ownership attribution.\nEach is looked up on the config item's labels first, then its tags.",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "required": []
+      },
+      "title": "ownershipKeys",
+      "type": "array"
+    },
+    "rootConfigTypes": {
+      "description": "Config types that spend is booked against when it cannot be resolved to a\nresource of its own — tax, support, credits, and resources the scraper has\nnot discovered yet. Used to separate attributable from account-level spend.",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "required": []
+      },
+      "title": "rootConfigTypes",
+      "type": "array"
+    },
+    "views": {
+      "additionalProperties": false,
+      "properties": {
+        "account": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "account"
+        },
+        "cacheMaxAge": {
+          "default": "30m",
+          "description": "How long a rendered view may be served from cache. Cost data is refreshed\nby a 30m compaction job and a 15m matview refresh, so anything shorter\nonly adds load without adding freshness.",
+          "title": "cacheMaxAge",
+          "type": "string"
+        },
+        "configTab": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "types": {
+              "description": "Config types the cost tab is offered on. Supports globs. Only cloud\nresources carry cost, so the tab is scoped to them rather than every\nconfig in the catalog.",
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "title": "types",
+              "type": "array"
+            }
+          },
+          "required": [],
+          "title": "configTab"
+        },
+        "enabled": {
+          "default": true,
+          "description": "If this is set to false, no views will be created",
+          "title": "enabled",
+          "type": "boolean"
+        },
+        "movers": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "threshold": {
+              "default": 1,
+              "description": "Ignore movements smaller than this absolute amount, in the selected\ncurrency. Percentage swings on trivial amounts are noise.",
+              "title": "threshold",
+              "type": "number"
+            }
+          },
+          "required": [],
+          "title": "movers"
+        },
+        "overview": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "limit": {
+              "default": 100,
+              "description": "Number of resources listed in the spend table",
+              "title": "limit",
+              "type": "integer"
+            },
+            "sidebar": {
+              "default": true,
+              "description": "Show the view in the sidebar",
+              "title": "sidebar",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "overview"
+        },
+        "owner": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            }
+          },
+          "required": [],
+          "title": "owner"
+        }
+      },
+      "required": [
+        "enabled"
+      ],
+      "title": "views"
+    },
+    "windows": {
+      "description": "Windows offered in the window selector. Values are interpolated into a\nPostgres INTERVAL, so they must be valid interval literals.",
+      "items": {
+        "anyOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "type": "string"
+          }
+        ],
+        "required": []
+      },
+      "title": "windows",
+      "type": "array"
+    }
+  },
+  "required": [
+    "enabled"
+  ],
+  "type": "object"
+}

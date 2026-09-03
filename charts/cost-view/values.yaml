@@ -1,0 +1,213 @@
+# yaml-language-server: $schema=values.schema.json
+
+# Field that can be used as a condition when cost-view is a dependency.
+# This definition is only here as a placeholder such that it is included in
+# the json schema.
+# See https://helm.sh/docs/chart_best_practices/dependencies/#conditions-and-tags
+# for more info.
+# +docs:hidden
+enabled: true
+
+# @schema
+# required: false
+# @schema
+# @ignored
+nameOverride: ""
+# @schema
+# required: false
+# @schema
+# @ignored
+fullnameOverride: ""
+# @schema
+# required: false
+# additionalProperties: true
+# @schema
+labels: {}
+
+# Connection to the Mission Control database. Cost data is read with SQL because
+# the `configs` resource selector does not expose cost columns.
+#
+# Names the connection the mission-control chart creates (its `connectionName`,
+# default `mission-control-db`). The namespace is left off so it resolves in the
+# namespace this chart is installed into.
+# @schema
+# required: false
+# type: string
+# default: "connection://mission-control-db"
+# @schema
+connection: "connection://mission-control-db"
+
+# Currencies offered in the currency selector. Costs are never summed across
+# currencies, so every view filters to exactly one.
+# @schema
+# required: false
+# type: array
+# @schema
+currencies:
+  - USD
+
+# Windows offered in the window selector. Values are interpolated into a
+# Postgres INTERVAL, so they must be valid interval literals.
+# @schema
+# required: false
+# type: array
+# @schema
+windows:
+  - 7 days
+  - 30 days
+  - 90 days
+
+# Tag/label keys offered in the "group by" selector for ownership attribution.
+# Each is looked up on the config item's labels first, then its tags.
+# @schema
+# required: false
+# type: array
+# @schema
+ownershipKeys:
+  - team
+  - namespace
+
+# Config types that spend is booked against when it cannot be resolved to a
+# resource of its own — tax, support, credits, and resources the scraper has
+# not discovered yet. Used to separate attributable from account-level spend.
+# @schema
+# required: false
+# type: array
+# @schema
+rootConfigTypes:
+  - AWS::::Account
+  - GCP::Project
+  - GCP::Organization
+
+# How each compaction level is described in the Data freshness panel.
+#
+# A level names a position in the ladder, not a width: the widths are operator
+# properties in config-db (`config.costs.level1`, `level2`, `level3`, defaulting
+# to 1h, 1d and 30d). A deployment that changes a width should relabel it here to
+# match, otherwise the panel reports a resolution the data does not have.
+#
+# A level with no label here is reported by its own name rather than guessed at.
+# @schema
+# required: false
+# type: object
+# additionalProperties: true
+# @schema
+grainLabels:
+  level1: hourly
+  level2: daily
+  level3: monthly
+
+# Compensates for duplicate cost bookings left behind when a charge's
+# resolution target changes (see the chart README). Disable once the ingest
+# pipeline retires superseded bookings.
+# @schema
+# required: false
+# type: boolean
+# default: true
+# @schema
+deduplicate: true
+
+# @schema
+# required: false
+# @schema
+views:
+  # If this is set to false, no views will be created
+  enabled: true
+
+  # How long a rendered view may be served from cache. Cost data is refreshed
+  # by a 30m compaction job and a 15m matview refresh, so anything shorter
+  # only adds load without adding freshness.
+  # @schema
+  # required: false
+  # type: string
+  # default: "30m"
+  # @schema
+  cacheMaxAge: 30m
+
+  # @schema
+  # required: false
+  # @schema
+  overview:
+    # @schema
+    # required: false
+    # default: true
+    # type: boolean
+    # @schema
+    enabled: true
+    # Show the view in the sidebar
+    # @schema
+    # required: false
+    # default: true
+    # type: boolean
+    # @schema
+    sidebar: true
+    # Number of resources listed in the spend table
+    # @schema
+    # required: false
+    # default: 100
+    # type: integer
+    # @schema
+    limit: 100
+
+  # @schema
+  # required: false
+  # @schema
+  owner:
+    # @schema
+    # required: false
+    # default: true
+    # type: boolean
+    # @schema
+    enabled: true
+
+  # @schema
+  # required: false
+  # @schema
+  account:
+    # @schema
+    # required: false
+    # default: true
+    # type: boolean
+    # @schema
+    enabled: true
+
+  # @schema
+  # required: false
+  # @schema
+  movers:
+    # @schema
+    # required: false
+    # default: true
+    # type: boolean
+    # @schema
+    enabled: true
+    # Ignore movements smaller than this absolute amount, in the selected
+    # currency. Percentage swings on trivial amounts are noise.
+    # @schema
+    # required: false
+    # default: 1
+    # type: number
+    # @schema
+    threshold: 1
+
+  # @schema
+  # required: false
+  # @schema
+  configTab:
+    # @schema
+    # required: false
+    # default: true
+    # type: boolean
+    # @schema
+    enabled: true
+    # Config types the cost tab is offered on. Supports globs. Only cloud
+    # resources carry cost, so the tab is scoped to them rather than every
+    # config in the catalog.
+    # @schema
+    # required: false
+    # type: array
+    # @schema
+    types:
+      - AWS::*
+      - GCP::*
+      - Azure::*

@@ -1,0 +1,183 @@
+{{- if and .Values.views.enabled .Values.views.movers.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: cost-movers
+  labels:
+    {{- include "cost-view.labels" . | nindent 4 }}
+spec:
+  description: >-
+    Resources whose spend changed most against the previous window of equal length.
+    Ranked by absolute change rather than percentage, because a large percentage
+    swing on a trivial amount is noise. Movements smaller than
+    {{ .Values.views.movers.threshold }} in the selected currency are excluded.
+  display:
+    title: Biggest movers
+    icon: activity
+    table:
+      sort: "-delta_abs"
+      size: 20
+  {{- include "cost-view.cache" . | nindent 2 }}
+  {{- include "cost-view.templating" . | nindent 2 }}
+  panels:
+    - name: Net change
+      description: Total spend change against the prior window
+      type: number
+      number:
+        precision: 2
+      query: SELECT ROUND(SUM(delta), 2) AS value, 'Net change' AS label FROM movers
+
+    - name: Increases
+      description: Added spend, excluding resources that stopped
+      type: number
+      number:
+        precision: 2
+      query: SELECT ROUND(COALESCE(SUM(delta), 0), 2) AS value, 'Increases' AS label FROM movers WHERE delta > 0
+
+    - name: Decreases
+      description: Removed spend, including resources that stopped charging
+      type: number
+      number:
+        precision: 2
+      query: SELECT ROUND(COALESCE(SUM(delta), 0), 2) AS value, 'Decreases' AS label FROM movers WHERE delta < 0
+
+    - name: Movement
+      description: Where the change came from
+      type: piechart
+      piechart:
+        showLabels: true
+        colors:
+          Started: "#2563EB"
+          Grew: "#F25C54"
+          Shrank: "#28C19B"
+          Stopped: "#6B7280"
+      query: |
+        SELECT movement, SUM(ABS(delta)) AS count
+        FROM movers
+        GROUP BY movement
+        ORDER BY count DESC
+
+    - name: Data freshness
+      description: Cloud billing exports land late; the newest bucket is partial
+      type: properties
+      query: SELECT label, value FROM freshness
+  columns:
+    - name: id
+      type: string
+      hidden: true
+      primaryKey: true
+    - name: name
+      type: config_item
+      configItem:
+        idField: id
+      card:
+        position: title
+      url:
+        config: row.id
+    - name: type
+      type: string
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: movement
+      type: string
+      filter:
+        type: multiselect
+      badge:
+        color:
+          map:
+            Started: "#2563EB"
+            Grew: "#F25C54"
+            Shrank: "#28C19B"
+            Stopped: "#6B7280"
+    - name: delta_abs
+      type: decimal
+      description: Size of the change, ignoring direction. The table's default sort.
+    - name: delta
+      type: decimal
+      description: Change against the prior window
+      card:
+        position: headerRight
+    - name: delta_pct
+      type: decimal
+      description: Change against the prior window, in percent
+    - name: cost
+      type: decimal
+      description: Effective cost over the selected window
+    - name: prior_cost
+      type: decimal
+      description: Effective cost over the equally long window before it
+    - name: owner
+      type: string
+      filter:
+        type: multiselect
+    - name: account
+      type: string
+      filter:
+        type: multiselect
+  merge: SELECT * FROM movers
+  queries:
+    movers:
+      columns:
+        id: string
+        name: string
+        type: string
+        movement: string
+        delta: decimal
+        delta_abs: decimal
+        delta_pct: decimal
+        cost: decimal
+        prior_cost: decimal
+        owner: string
+        account: string
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          , windowed AS (
+            SELECT
+              d.config_id,
+              COALESCE(SUM(d.effective_cost) FILTER (
+                WHERE d.period_start >= now() - INTERVAL '$(.var.window)'), 0)    AS cur_eff,
+              COALESCE(SUM(d.effective_cost) FILTER (
+                WHERE d.period_start <  now() - INTERVAL '$(.var.window)'), 0)    AS prev_eff
+            FROM deduped d
+            WHERE d.billing_currency = '$(.var.currency)'
+            GROUP BY d.config_id
+          )
+          SELECT
+            ci.id::text                                                           AS id,
+            ci.name                                                               AS name,
+            ci.type                                                               AS type,
+            CASE
+              WHEN w.prev_eff = 0 THEN 'Started'
+              WHEN w.cur_eff  = 0 THEN 'Stopped'
+              WHEN w.cur_eff > w.prev_eff THEN 'Grew'
+              ELSE 'Shrank'
+            END                                                                   AS movement,
+            round(w.cur_eff - w.prev_eff, 2)::float8                              AS delta,
+            round(abs(w.cur_eff - w.prev_eff), 2)::float8                         AS delta_abs,
+            CASE WHEN w.prev_eff > 0
+                 THEN round((w.cur_eff - w.prev_eff) / w.prev_eff * 100, 1)::float8
+            END                                                                   AS delta_pct,
+            round(w.cur_eff, 2)::float8                                           AS cost,
+            round(w.prev_eff, 2)::float8                                          AS prior_cost,
+            {{ include "cost-view.owner" . }} AS owner,
+            COALESCE(NULLIF(ci.tags->>'project', ''),
+                     NULLIF(ci.tags->>'account', ''), '')                         AS account
+          FROM windowed w
+          JOIN config_items ci ON ci.id = w.config_id
+          WHERE abs(w.cur_eff - w.prev_eff) >= {{ .Values.views.movers.threshold }}
+          ORDER BY delta_abs DESC
+          LIMIT 100
+    freshness:
+      columns:
+        label: string
+        value: string
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          {{- include "cost-view.freshnessQuery" . | nindent 10 }}
+{{- end }}
