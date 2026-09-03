@@ -25,6 +25,7 @@ jobs:
             argocd: charts/argocd/**
             aws: charts/aws/**
             azure: charts/azure/**
+            cost-view: charts/cost-view/**
             flux: charts/flux/**
             gcp: charts/gcp/**
             kubernetes: charts/kubernetes/**

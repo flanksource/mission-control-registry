@@ -1,0 +1,192 @@
+{{- if and .Values.views.enabled .Values.views.account.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: cost-by-account
+  labels:
+    {{- include "cost-view.labels" . | nindent 4 }}
+spec:
+  description: >-
+    Spend grouped by the sub-account it was billed to — a GCP project, an AWS member
+    account — with the share of each account's spend that never reached a resource of
+    its own broken out.
+  display:
+    title: Cost by account
+    icon: folder
+    table:
+      sort: "-cost"
+      size: 20
+  {{- include "cost-view.cache" . | nindent 2 }}
+  {{- include "cost-view.templating" . | nindent 2 }}
+  panels:
+    - name: Share of spend
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT account, cost AS count FROM accounts ORDER BY count DESC
+
+    - name: Unresolved spend
+      description: Charges naming a resource the catalog has not discovered
+      type: number
+      number:
+        precision: 2
+      query: SELECT SUM(unresolved) AS value, 'Unresolved spend' AS label FROM accounts
+
+    - name: Unallocatable spend
+      description: Tax, support, credits and other charges with no resource
+      type: number
+      number:
+        precision: 2
+      query: SELECT SUM(unallocatable) AS value, 'Unallocatable spend' AS label FROM accounts
+
+    - name: Undiscovered resources
+      description: Spend the catalog cannot attribute, by resource. Each row is a scrape gap.
+      type: table
+      query: |
+        SELECT resource, service, account, ROUND(cost, 2) AS cost
+        FROM unresolved
+        ORDER BY cost DESC
+        LIMIT 20
+
+    - name: Data freshness
+      description: Cloud billing exports land late; the newest bucket is partial
+      type: properties
+      query: SELECT label, value FROM freshness
+  columns:
+    - name: account
+      type: string
+      primaryKey: true
+      card:
+        position: title
+      filter:
+        type: multiselect
+    - name: billing_account
+      type: string
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: cost
+      type: decimal
+      description: Effective cost over the selected window
+      card:
+        position: headerRight
+    - name: prior_cost
+      type: decimal
+      description: Effective cost over the equally long window before it
+    - name: delta_pct
+      type: decimal
+      description: Change against the prior window, in percent
+    - name: attributed
+      type: decimal
+      description: Spend booked against a resource of its own
+    - name: unresolved
+      type: decimal
+      description: Spend naming a resource the catalog has not discovered
+    - name: unallocatable
+      type: decimal
+      description: Tax, support, credits and other charges with no resource
+    - name: resources
+      type: number
+  merge: SELECT * FROM accounts
+  queries:
+    accounts:
+      columns:
+        account: string
+        billing_account: string
+        cost: decimal
+        prior_cost: decimal
+        delta_pct: decimal
+        attributed: decimal
+        unresolved: decimal
+        unallocatable: decimal
+        resources: number
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          , classified AS (
+            SELECT
+              COALESCE(NULLIF(d.focus->>'sub_account_id', ''), '(no account)')     AS account,
+              COALESCE(NULLIF(d.focus->>'billing_account_id', ''), '')             AS billing_account,
+              {{- include "cost-view.attributionBucket" . | nindent 14 }} AS bucket,
+              d.config_id,
+              d.effective_cost,
+              d.period_start
+            FROM deduped d
+            JOIN config_items ci ON ci.id = d.config_id
+            WHERE d.billing_currency = '$(.var.currency)'
+          )
+          , agg AS (
+            SELECT
+              account,
+              MAX(billing_account)                                                AS billing_account,
+              SUM(effective_cost) FILTER (
+                WHERE period_start >= now() - INTERVAL '$(.var.window)')          AS cur_eff,
+              SUM(effective_cost) FILTER (
+                WHERE period_start <  now() - INTERVAL '$(.var.window)')          AS prev_eff,
+              SUM(effective_cost) FILTER (
+                WHERE period_start >= now() - INTERVAL '$(.var.window)'
+                  AND bucket = 'Attributed')                                      AS attributed,
+              SUM(effective_cost) FILTER (
+                WHERE period_start >= now() - INTERVAL '$(.var.window)'
+                  AND bucket = 'Unresolved resource')                             AS unresolved,
+              SUM(effective_cost) FILTER (
+                WHERE period_start >= now() - INTERVAL '$(.var.window)'
+                  AND bucket = 'Unallocatable')                                   AS unallocatable,
+              COUNT(DISTINCT config_id) FILTER (
+                WHERE period_start >= now() - INTERVAL '$(.var.window)')          AS resources
+            FROM classified
+            GROUP BY account
+          )
+          SELECT
+            account                                                               AS account,
+            billing_account                                                       AS billing_account,
+            round(COALESCE(cur_eff, 0), 2)::float8                                AS cost,
+            round(COALESCE(prev_eff, 0), 2)::float8                               AS prior_cost,
+            CASE WHEN COALESCE(prev_eff, 0) > 0
+                 THEN round((cur_eff - prev_eff) / prev_eff * 100, 1)::float8
+            END                                                                   AS delta_pct,
+            round(COALESCE(attributed, 0), 2)::float8                             AS attributed,
+            round(COALESCE(unresolved, 0), 2)::float8                             AS unresolved,
+            round(COALESCE(unallocatable, 0), 2)::float8                          AS unallocatable,
+            COALESCE(resources, 0)::int                                           AS resources
+          FROM agg
+          WHERE COALESCE(cur_eff, 0) <> 0
+          ORDER BY cost DESC
+    unresolved:
+      columns:
+        resource: string
+        service: string
+        account: string
+        cost: decimal
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          SELECT
+            d.external_id                                                         AS resource,
+            COALESCE(NULLIF(d.service_name, ''), 'Unknown')                       AS service,
+            COALESCE(NULLIF(d.focus->>'sub_account_id', ''), '(no account)')      AS account,
+            round(SUM(d.effective_cost), 2)::float8                               AS cost
+          FROM deduped d
+          JOIN config_items ci ON ci.id = d.config_id
+          WHERE d.billing_currency = '$(.var.currency)'
+            AND d.period_start >= now() - INTERVAL '$(.var.window)'
+            AND ci.type IN ({{ include "cost-view.rootTypes" . }})
+            AND d.external_id IS NOT NULL
+            AND d.external_id NOT LIKE '%:unallocated:%'
+          GROUP BY 1, 2, 3
+          ORDER BY 4 DESC
+          LIMIT 100
+    freshness:
+      columns:
+        label: string
+        value: string
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          {{- include "cost-view.freshnessQuery" . | nindent 10 }}
+{{- end }}

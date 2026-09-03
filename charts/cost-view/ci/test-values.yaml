@@ -1,0 +1,7 @@
+connection: connection://mission-control-db
+currencies:
+  - USD
+  - EUR
+ownershipKeys:
+  - team
+  - namespace

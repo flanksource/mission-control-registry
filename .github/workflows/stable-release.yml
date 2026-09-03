@@ -10,6 +10,7 @@ on:
           - argocd
           - aws
           - azure
+          - cost-view
           - flux
           - gcp
           - kubernetes
