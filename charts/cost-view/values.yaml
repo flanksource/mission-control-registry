@@ -79,6 +79,24 @@ rootConfigTypes:
   - GCP::Project
   - GCP::Organization
 
+# How each compaction level is described in the Data freshness panel.
+#
+# A level names a position in the ladder, not a width: the widths are operator
+# properties in config-db (`config.costs.level1`, `level2`, `level3`, defaulting
+# to 1h, 1d and 30d). A deployment that changes a width should relabel it here to
+# match, otherwise the panel reports a resolution the data does not have.
+#
+# A level with no label here is reported by its own name rather than guessed at.
+# @schema
+# required: false
+# type: object
+# additionalProperties: true
+# @schema
+grainLabels:
+  level1: hourly
+  level2: daily
+  level3: monthly
+
 # Compensates for duplicate cost bookings left behind when a charge's
 # resolution target changes (see the chart README). Disable once the ingest
 # pipeline retires superseded bookings.
@@ -101,6 +119,7 @@ views:
   # only adds load without adding freshness.
   # @schema
   # required: false
+  # type: string
   # default: "30m"
   # @schema
   cacheMaxAge: 30m

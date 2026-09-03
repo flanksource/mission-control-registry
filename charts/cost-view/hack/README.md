@@ -41,3 +41,10 @@ VIEW_CRD=/path/to/mission-control.flanksource.com_views.yaml python3 hack/valida
 ## Requirements
 
 `helm`, `psql`, and Python with `pyyaml` and `jsonschema`.
+
+`verify_queries.py` runs each query through `psql -c`, which executes everything in the
+string as a single request. The SQL comes from this chart's own templates, so nothing
+untrusted reaches it — but the target is a live database, so the script forces
+`default_transaction_read_only` on every session and a mistake in a template fails rather
+than writes. Point `DB_URL` at a read-only role as well if you have one; the guard does
+not depend on it.

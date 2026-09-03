@@ -78,6 +78,9 @@ superseded bookings, at which point the CTE becomes dead weight and should be re
 | currencies[0] | string | `"USD"` |  |
 | deduplicate | bool | `true` |  |
 | enabled | bool | `true` |  |
+| grainLabels.level1 | string | `"hourly"` |  |
+| grainLabels.level2 | string | `"daily"` |  |
+| grainLabels.level3 | string | `"monthly"` |  |
 | labels | object | `{}` |  |
 | ownershipKeys[0] | string | `"team"` |  |
 | ownershipKeys[1] | string | `"namespace"` |  |

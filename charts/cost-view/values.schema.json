@@ -44,6 +44,34 @@
       "title": "global",
       "type": "object"
     },
+    "grainLabels": {
+      "additionalProperties": true,
+      "description": "How each compaction level is described in the Data freshness panel.\n\nA level names a position in the ladder, not a width: the widths are operator\nproperties in config-db (`config.costs.level1`, `level2`, `level3`, defaulting\nto 1h, 1d and 30d). A deployment that changes a width should relabel it here to\nmatch, otherwise the panel reports a resolution the data does not have.\n\nA level with no label here is reported by its own name rather than guessed at.",
+      "properties": {
+        "level1": {
+          "default": "hourly",
+          "title": "level1",
+          "type": "string"
+        },
+        "level2": {
+          "default": "daily",
+          "title": "level2",
+          "type": "string"
+        },
+        "level3": {
+          "default": "monthly",
+          "title": "level3",
+          "type": "string"
+        }
+      },
+      "required": [
+        "level1",
+        "level2",
+        "level3"
+      ],
+      "title": "grainLabels",
+      "type": "object"
+    },
     "labels": {
       "additionalProperties": true,
       "required": [],
@@ -107,8 +135,8 @@
         "cacheMaxAge": {
           "default": "30m",
           "description": "How long a rendered view may be served from cache. Cost data is refreshed\nby a 30m compaction job and a 15m matview refresh, so anything shorter\nonly adds load without adding freshness.",
-          "required": [],
-          "title": "cacheMaxAge"
+          "title": "cacheMaxAge",
+          "type": "string"
         },
         "configTab": {
           "additionalProperties": false,

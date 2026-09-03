@@ -7,6 +7,14 @@ VARS = {"$(.var.currency)": "USD", "$(.var.window)": "90 days", "$(.var.ownershi
         "$(.var.config_id)": "38ac64a1-d64b-f0e4-ff8c-1c60fdd91616"}
 DB = os.environ["DB_URL"]
 
+# psql -c runs everything in the string as one request, so a template that ever produced
+# a statement past the query would run it against a real database. Nothing untrusted
+# reaches here today — the SQL comes from this chart's own templates — but this script is
+# pointed at live Mission Control databases, and a read-only session makes a mistake in a
+# template fail instead of writing. Prefer a read-only role as well; this does not
+# depend on one existing.
+PSQL_ENV = {**os.environ, "PGOPTIONS": "-c default_transaction_read_only=on"}
+
 def subst(s):
     for k, v in VARS.items():
         s = s.replace(k, v)
@@ -33,7 +41,7 @@ for doc in docs:
             print(f"  skip {qname} (not a sql query)"); continue
         wrapped = f"SELECT coalesce(json_agg(t), '[]'::json) FROM ({subst(sql).rstrip().rstrip(';')}) t"
         r = subprocess.run(["psql", DB, "-tAX", "-v", "ON_ERROR_STOP=1", "-c", wrapped],
-                           capture_output=True, text=True)
+                           capture_output=True, text=True, env=PSQL_ENV)
         if r.returncode:
             fails += 1
             print(f"  FAIL query {qname}")

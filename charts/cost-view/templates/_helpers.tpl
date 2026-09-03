@@ -163,6 +163,23 @@ cache:
 {{- end }}
 
 {{/*
+Describes the finest compaction level present, from the labels in .Values.grainLabels.
+
+A level with no label falls through to its own name rather than to a guess: reporting
+"level4" is honest where reporting "monthly" would be a claim about the data that nothing
+has checked. Labels are single-quoted for SQL, so an apostrophe in one is doubled.
+*/}}
+{{- define "cost-view.grainCase" -}}
+CASE
+  WHEN MIN(grain) IS NULL THEN 'n/a'
+{{- range $level, $label := .Values.grainLabels }}
+  WHEN MIN(grain) = '{{ $level | replace "'" "''" }}' THEN '{{ $label | replace "'" "''" }}'
+{{- end }}
+  ELSE MIN(grain)
+END
+{{- end }}
+
+{{/*
 Data freshness, as rows for a properties panel. Billing exports land hours to days
 late, so the trailing edge of every cost chart is always partly empty. Stating the
 frontier is what stops a half-filled final bucket from being read as a saving.
@@ -183,11 +200,7 @@ SELECT 'Billing lag',
 FROM config_cost_compact WHERE billing_currency = '$(.var.currency)'
 UNION ALL
 SELECT 'Resolution',
-  COALESCE(CASE MIN(grain)
-    WHEN 'level1' THEN 'hourly'
-    WHEN 'level2' THEN 'daily'
-    ELSE 'monthly'
-  END, 'n/a')
+{{- include "cost-view.grainCase" . | nindent 2 }}
 FROM config_cost_compact
 WHERE billing_currency = '$(.var.currency)'
   AND period_start >= now() - INTERVAL '$(.var.window)'
