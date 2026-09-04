@@ -193,21 +193,17 @@ views:
   # @schema
   # required: false
   # @schema
-  configTab:
+  unresolved:
     # @schema
     # required: false
     # default: true
     # type: boolean
     # @schema
     enabled: true
-    # Config types the cost tab is offered on. Supports globs. Only cloud
-    # resources carry cost, so the tab is scoped to them rather than every
-    # config in the catalog.
+    # Number of undiscovered resources listed
     # @schema
     # required: false
-    # type: array
+    # default: 100
+    # type: integer
     # @schema
-    types:
-      - AWS::*
-      - GCP::*
-      - Azure::*
+    limit: 100

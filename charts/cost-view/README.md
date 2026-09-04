@@ -10,7 +10,7 @@ A Helm chart for cloud cost views in Flanksource Mission Control
 | `cost-by-owner` | Which team or namespace does the spend belong to? |
 | `cost-by-account` | Which account is it billed to, and how much of it reaches a resource? |
 | `cost-movers` | What changed since last period, ranked by dollars rather than percent? |
-| `cost-config-tab` | What does this one resource cost? Appears as a tab on cloud config pages. |
+| `cost-unresolved` | Which resources are costing money that the catalog has never seen? |
 
 ## Reading the numbers
 
@@ -49,8 +49,8 @@ root config item, and `cost-by-account` splits it into two very different cases:
   attribute it to, and there never will be. The scrapers mark these with a
   `<provider>:unallocated:` resource id.
 - **Unresolved resource** — the charge names a real resource that the catalog has not
-  discovered. This is a scrape coverage gap, not a billing fact. The **Undiscovered
-  resources** panel lists them by spend; each row is a resource worth scraping.
+  discovered. This is a scrape coverage gap, not a billing fact. The `cost-unresolved`
+  view lists them by spend; each row is a resource worth scraping.
 
 A healthy install has most spend Attributed and a small, stable Unallocatable slice. A
 large Unresolved slice means the cost scraper is ahead of the resource scrapers.
@@ -89,10 +89,6 @@ superseded bookings, at which point the CTE becomes dead weight and should be re
 | rootConfigTypes[2] | string | `"GCP::Organization"` |  |
 | views.account.enabled | bool | `true` |  |
 | views.cacheMaxAge | string | `"30m"` |  |
-| views.configTab.enabled | bool | `true` |  |
-| views.configTab.types[0] | string | `"AWS::*"` |  |
-| views.configTab.types[1] | string | `"GCP::*"` |  |
-| views.configTab.types[2] | string | `"Azure::*"` |  |
 | views.enabled | bool | `true` |  |
 | views.movers.enabled | bool | `true` |  |
 | views.movers.threshold | int | `1` |  |
@@ -100,6 +96,8 @@ superseded bookings, at which point the CTE becomes dead weight and should be re
 | views.overview.limit | int | `100` |  |
 | views.overview.sidebar | bool | `true` |  |
 | views.owner.enabled | bool | `true` |  |
+| views.unresolved.enabled | bool | `true` |  |
+| views.unresolved.limit | int | `100` |  |
 | windows[0] | string | `"7 days"` |  |
 | windows[1] | string | `"30 days"` |  |
 | windows[2] | string | `"90 days"` |  |
