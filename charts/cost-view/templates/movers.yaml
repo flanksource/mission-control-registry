@@ -47,7 +47,7 @@ spec:
       piechart:
         showLabels: true
         colors:
-          Started: "#2563EB"
+          Started: "#9CC7FC"
           Grew: "#F25C54"
           Shrank: "#28C19B"
           Stopped: "#6B7280"
@@ -87,7 +87,7 @@ spec:
       badge:
         color:
           map:
-            Started: "#2563EB"
+            Started: "#9CC7FC"
             Grew: "#F25C54"
             Shrank: "#28C19B"
             Stopped: "#6B7280"

@@ -55,6 +55,7 @@ spec:
   columns:
     - name: account
       type: string
+      description: Sub-account the spend was billed to. Charges the provider bills to the billing account itself, such as tax, support and subscriptions, name no sub-account and are listed under the billing account id instead.
       primaryKey: true
       card:
         position: title
@@ -108,8 +109,8 @@ spec:
           {{- include "cost-view.deduped" . | nindent 10 }}
           , classified AS (
             SELECT
-              COALESCE(NULLIF(d.focus->>'sub_account_id', ''), '(no account)')     AS account,
-              COALESCE(NULLIF(d.focus->>'billing_account_id', ''), '')             AS billing_account,
+              {{- include "cost-view.accountLabel" . | nindent 14 }} AS account,
+              COALESCE(NULLIF(d.focus->>'billing_account_id', ''), '')               AS billing_account,
               {{- include "cost-view.attributionBucket" . | nindent 14 }} AS bucket,
               d.config_id,
               d.effective_cost,
@@ -169,7 +170,7 @@ spec:
           SELECT
             d.external_id                                                         AS resource,
             COALESCE(NULLIF(d.service_name, ''), 'Unknown')                       AS service,
-            COALESCE(NULLIF(d.focus->>'sub_account_id', ''), '(no account)')      AS account,
+            {{- include "cost-view.accountLabel" . | nindent 12 }} AS account,
             round(SUM(d.effective_cost), 2)::float8                               AS cost
           FROM deduped d
           JOIN config_items ci ON ci.id = d.config_id
