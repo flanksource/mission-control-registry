@@ -39,15 +39,6 @@ spec:
         precision: 2
       query: SELECT SUM(unallocatable) AS value, 'Unallocatable spend' AS label FROM accounts
 
-    - name: Undiscovered resources
-      description: Spend the catalog cannot attribute, by resource. Each row is a scrape gap.
-      type: table
-      query: |
-        SELECT resource, service, account, ROUND(cost, 2) AS cost
-        FROM unresolved
-        ORDER BY cost DESC
-        LIMIT 20
-
     - name: Data freshness
       description: Cloud billing exports land late; the newest bucket is partial
       type: properties
@@ -156,32 +147,6 @@ spec:
           FROM agg
           WHERE COALESCE(cur_eff, 0) <> 0
           ORDER BY cost DESC
-    unresolved:
-      columns:
-        resource: string
-        service: string
-        account: string
-        cost: decimal
-      sql:
-        connection: {{ .Values.connection | quote }}
-        query: |
-          WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
-          SELECT
-            d.external_id                                                         AS resource,
-            COALESCE(NULLIF(d.service_name, ''), 'Unknown')                       AS service,
-            {{- include "cost-view.accountLabel" . | nindent 12 }} AS account,
-            round(SUM(d.effective_cost), 2)::float8                               AS cost
-          FROM deduped d
-          JOIN config_items ci ON ci.id = d.config_id
-          WHERE d.billing_currency = '$(.var.currency)'
-            AND d.period_start >= now() - INTERVAL '$(.var.window)'
-            AND ci.type IN ({{ include "cost-view.rootTypes" . }})
-            AND d.external_id IS NOT NULL
-            AND d.external_id NOT LIKE '%:unallocated:%'
-          GROUP BY 1, 2, 3
-          ORDER BY 4 DESC
-          LIMIT 100
     freshness:
       columns:
         label: string

@@ -1,0 +1,119 @@
+{{- if and .Values.views.enabled .Values.views.unresolved.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: cost-unresolved
+  labels:
+    {{- include "cost-view.labels" . | nindent 4 }}
+spec:
+  description: >-
+    Charges naming a resource the catalog has not discovered. The spend is real and is
+    booked against the account root, but it cannot be attributed to anything, so it is
+    invisible to every per-resource and per-owner breakdown. Each row is a scrape gap:
+    something is costing money that nothing is watching.
+  display:
+    title: Undiscovered resources
+    icon: search
+    table:
+      sort: "-cost"
+      size: 20
+  {{- include "cost-view.cache" . | nindent 2 }}
+  {{- include "cost-view.baseTemplating" . | nindent 2 }}
+  panels:
+    - name: Unattributed spend
+      description: Total over the selected window
+      type: number
+      number:
+        precision: 2
+      query: SELECT ROUND(COALESCE(SUM(cost), 0), 2) AS value, 'Unattributed spend' AS label FROM unresolved
+
+    - name: By service
+      description: Which services the catalog is missing resources from
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT service, SUM(cost) AS count FROM unresolved GROUP BY service ORDER BY count DESC
+
+    - name: Data freshness
+      description: Cloud billing exports land late; the newest bucket is partial
+      type: properties
+      query: SELECT label, value FROM freshness
+  columns:
+    - name: resource
+      type: string
+      primaryKey: true
+      description: The resource id the charge names, as the provider reports it
+      card:
+        position: title
+    - name: service
+      type: string
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: resource_type
+      type: string
+      filter:
+        type: multiselect
+    - name: account
+      type: string
+      filter:
+        type: multiselect
+    - name: region
+      type: string
+      filter:
+        type: multiselect
+    - name: cost
+      type: decimal
+      description: Effective cost over the selected window
+      card:
+        position: headerRight
+    - name: last_charge
+      type: datetime
+      description: End of the most recent charge period. Still accruing, or stopped.
+      card:
+        position: footer
+  merge: SELECT * FROM unresolved
+  queries:
+    unresolved:
+      columns:
+        resource: string
+        service: string
+        resource_type: string
+        account: string
+        region: string
+        cost: decimal
+        last_charge: datetime
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.deduped" . | nindent 10 }}
+          SELECT
+            d.external_id                                                         AS resource,
+            COALESCE(NULLIF(d.service_name, ''), 'Unknown')                       AS service,
+            COALESCE(NULLIF(d.external_config_type, ''), '')                      AS resource_type,
+            {{- include "cost-view.accountLabel" . | nindent 12 }} AS account,
+            COALESCE(NULLIF(d.region_id, ''), '')                                 AS region,
+            round(SUM(d.effective_cost), 2)::float8                               AS cost,
+            to_char(MAX(d.period_end) AT TIME ZONE 'UTC',
+                    'YYYY-MM-DD"T"HH24:MI:SS"Z"')                                 AS last_charge
+          FROM deduped d
+          JOIN config_items ci ON ci.id = d.config_id
+          WHERE d.billing_currency = '$(.var.currency)'
+            AND d.period_start >= now() - INTERVAL '$(.var.window)'
+            AND ci.type IN ({{ include "cost-view.rootTypes" . }})
+            AND d.external_id IS NOT NULL
+            AND d.external_id NOT LIKE '%:unallocated:%'
+          GROUP BY 1, 2, 3, 4, 5
+          ORDER BY 6 DESC
+          LIMIT {{ .Values.views.unresolved.limit | int }}
+    freshness:
+      columns:
+        label: string
+        value: string
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          {{- include "cost-view.freshnessQuery" . | nindent 10 }}
+{{- end }}

@@ -138,37 +138,6 @@
           "title": "cacheMaxAge",
           "type": "string"
         },
-        "configTab": {
-          "additionalProperties": false,
-          "properties": {
-            "enabled": {
-              "default": true,
-              "title": "enabled",
-              "type": "boolean"
-            },
-            "types": {
-              "description": "Config types the cost tab is offered on. Supports globs. Only cloud\nresources carry cost, so the tab is scoped to them rather than every\nconfig in the catalog.",
-              "items": {
-                "anyOf": [
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  },
-                  {
-                    "type": "string"
-                  }
-                ],
-                "required": []
-              },
-              "title": "types",
-              "type": "array"
-            }
-          },
-          "required": [],
-          "title": "configTab"
-        },
         "enabled": {
           "default": true,
           "description": "If this is set to false, no views will be created",
@@ -228,6 +197,24 @@
           },
           "required": [],
           "title": "owner"
+        },
+        "unresolved": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "limit": {
+              "default": 100,
+              "description": "Number of undiscovered resources listed",
+              "title": "limit",
+              "type": "integer"
+            }
+          },
+          "required": [],
+          "title": "unresolved"
         }
       },
       "required": [

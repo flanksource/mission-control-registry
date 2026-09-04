@@ -320,4 +320,11 @@ spec:
         namespace: {{ .Release.Namespace }}
         name: cost-movers
     {{- end }}
+    {{- if .Values.views.unresolved.enabled }}
+    - title: Undiscovered resources
+      icon: search
+      viewRef:
+        namespace: {{ .Release.Namespace }}
+        name: cost-unresolved
+    {{- end }}
 {{- end }}
