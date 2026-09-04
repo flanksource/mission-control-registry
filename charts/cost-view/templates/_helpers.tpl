@@ -102,6 +102,26 @@ COALESCE(NULLIF(ci.labels->>'$(.var.ownership)', ''), NULLIF(ci.tags->>'$(.var.o
 {{- end }}
 
 {{/*
+The sub-account a charge was billed to — a GCP project, an AWS member account.
+
+Providers bill some charges to the billing account itself and name no sub-account at
+all: tax, support, subscriptions, invoice adjustments. Those keep the billing account
+id, so the row says which account it came from and two billing accounts never collapse
+into one row.
+
+Callers write:  {{- include "cost-view.accountLabel" . | nindent <n> }} AS account,
+*/}}
+{{- define "cost-view.accountLabel" -}}
+CASE
+    WHEN NULLIF(d.focus->>'sub_account_id', '') IS NOT NULL
+      THEN d.focus->>'sub_account_id'
+    WHEN NULLIF(d.focus->>'billing_account_id', '') IS NOT NULL
+      THEN (d.focus->>'billing_account_id') || ' (billing account)'
+    ELSE '(no account)'
+  END
+{{- end }}
+
+{{/*
 How well a charge could be attributed. Anything booked against a root config item
 either had no resource of its own (the scrapers mark those with a `<provider>:unallocated:`
 resource id) or names a resource the catalog has not discovered.
