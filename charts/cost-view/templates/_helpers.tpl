@@ -63,32 +63,16 @@ Config types that unattributable spend is booked against, as a SQL IN list.
 {{/*
 The cost series every query reads, as a named CTE.
 
-A charge is re-resolved on every scrape, and the merge key includes config_id, so a
-charge that was booked against the root config item before its own resource was
-discovered keeps that booking forever alongside the newer one. Summing the table
-directly therefore counts those charges twice. DISTINCT ON keeps one row per charge,
-preferring the resource-level booking over the root so attribution stays as specific
-as the data allows.
-
 Bounded to twice the selected window, which is the widest any view needs — the
-prior-period comparison. Duplicates of a charge always share its period, so bounding
-by period first never splits a group.
+prior-period comparison. One charge is one row: config_cost_compact is unique on
+(source_key, fingerprint, period_start, period_end), so summing it is summing the bill.
 
-Callers write:  WITH {{ include "cost-view.deduped" . | nindent 10 }}
+Callers write:  WITH {{ include "cost-view.costSeries" . | nindent 10 }}
 */}}
-{{- define "cost-view.deduped" -}}
-deduped AS (
-{{- if .Values.deduplicate }}
-  SELECT DISTINCT ON (cc.source_key, cc.fingerprint, cc.period_start, cc.period_end) cc.*
-  FROM config_cost_compact cc
-  JOIN config_items ci ON ci.id = cc.config_id
-  WHERE cc.period_start >= now() - INTERVAL '$(.var.window)' * 2
-  ORDER BY cc.source_key, cc.fingerprint, cc.period_start, cc.period_end,
-           (ci.type IN ({{ include "cost-view.rootTypes" . }})), cc.updated_at DESC
-{{- else }}
+{{- define "cost-view.costSeries" -}}
+costs AS (
   SELECT cc.* FROM config_cost_compact cc
   WHERE cc.period_start >= now() - INTERVAL '$(.var.window)' * 2
-{{- end }}
 )
 {{- end }}
 
@@ -96,9 +80,38 @@ deduped AS (
 Ownership attribution. Cost rows carry no resource tags of their own — the label on a
 cost row is only the key it was resolved by — so ownership comes off the config item.
 Labels win over tags because cloud resource tags land in labels.
+
+A resource carrying no such key groups under "(unset)", which says what is true of it —
+the key was never set — rather than making a claim about whether the spend could have
+reached a resource at all. That is a separate question, and cost-view.attributionBucket
+is where it is answered.
 */}}
 {{- define "cost-view.owner" -}}
-COALESCE(NULLIF(ci.labels->>'$(.var.ownership)', ''), NULLIF(ci.tags->>'$(.var.ownership)', ''), '(unallocated)')
+COALESCE(NULLIF(ci.labels->>'$(.var.ownership)', ''), NULLIF(ci.tags->>'$(.var.ownership)', ''), '(unset)')
+{{- end }}
+
+{{/*
+An amount, in the selected currency, written the way an invoice writes it.
+
+Takes the name of a numeric column already in scope; it is read three times, so an
+aggregate belongs in a CTE rather than here. The sign leads the symbol, so a credit reads
+-$4.20 rather than $-4.20, and is taken from the rounded amount so a value too small to
+show does not print as a negative zero.
+
+Only the currencies with a symbol most readers know get one. Anything else is prefixed
+with its ISO code, which is unambiguous where an unfamiliar symbol would not be.
+
+Callers write:  {{ include "cost-view.humanSpend" "a.cost" }} AS spend,
+*/}}
+{{- define "cost-view.humanSpend" -}}
+CASE WHEN round({{ . }}, 2) < 0 THEN '-' ELSE '' END
+    || CASE '$(.var.currency)'
+         WHEN 'USD' THEN '$'
+         WHEN 'EUR' THEN '€'
+         WHEN 'GBP' THEN '£'
+         ELSE '$(.var.currency)' || ' '
+       END
+    || to_char(round(abs({{ . }}), 2), 'FM999,999,999,990.00')
 {{- end }}
 
 {{/*

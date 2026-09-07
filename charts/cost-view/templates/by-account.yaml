@@ -97,7 +97,7 @@ spec:
         connection: {{ .Values.connection | quote }}
         query: |
           WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
+          {{- include "cost-view.costSeries" . | nindent 10 }}
           , classified AS (
             SELECT
               {{- include "cost-view.accountLabel" . | nindent 14 }} AS account,
@@ -106,7 +106,7 @@ spec:
               d.config_id,
               d.effective_cost,
               d.period_start
-            FROM deduped d
+            FROM costs d
             JOIN config_items ci ON ci.id = d.config_id
             WHERE d.billing_currency = '$(.var.currency)'
           )

@@ -88,7 +88,7 @@ spec:
         connection: {{ .Values.connection | quote }}
         query: |
           WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
+          {{- include "cost-view.costSeries" . | nindent 10 }}
           SELECT
             d.external_id                                                         AS resource,
             COALESCE(NULLIF(d.service_name, ''), 'Unknown')                       AS service,
@@ -98,13 +98,24 @@ spec:
             round(SUM(d.effective_cost), 2)::float8                               AS cost,
             to_char(MAX(d.period_end) AT TIME ZONE 'UTC',
                     'YYYY-MM-DD"T"HH24:MI:SS"Z"')                                 AS last_charge
-          FROM deduped d
+          FROM costs d
           JOIN config_items ci ON ci.id = d.config_id
           WHERE d.billing_currency = '$(.var.currency)'
             AND d.period_start >= now() - INTERVAL '$(.var.window)'
             AND ci.type IN ({{ include "cost-view.rootTypes" . }})
             AND d.external_id IS NOT NULL
             AND d.external_id NOT LIKE '%:unallocated:%'
+            -- Being booked against the account root is evidence the catalog was missing
+            -- the resource when the charge was last resolved, not that it is missing now.
+            -- A charge is only re-resolved while its billing period is still being
+            -- restated, so a resource discovered after its first charges landed leaves
+            -- those charges pointing at the root for good. Ask the catalog directly
+            -- instead, and list only what it genuinely does not have. Soft-deleted items
+            -- count as discovered: a retired resource is one the catalog knows about.
+            AND NOT EXISTS (
+              SELECT 1 FROM config_items known
+              WHERE known.external_id @> ARRAY[d.external_id]
+            )
           GROUP BY 1, 2, 3, 4, 5
           ORDER BY 6 DESC
           LIMIT {{ .Values.views.unresolved.limit | int }}

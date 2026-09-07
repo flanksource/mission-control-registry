@@ -1,0 +1,188 @@
+{{- if and .Values.views.enabled .Values.views.unallocated.enabled }}
+apiVersion: mission-control.flanksource.com/v1
+kind: View
+metadata:
+  name: cost-unallocated
+  labels:
+    {{- include "cost-view.labels" . | nindent 4 }}
+spec:
+  description: >-
+    Spend the provider books to an account rather than to anything inside it — tax,
+    support, subscriptions, credits, invoice adjustments, and shared usage the billing
+    export reports with no resource id at all. There is no resource to discover here and
+    nothing to tag, so no per-resource or per-owner breakdown can ever account for it.
+    It is listed on its own so it is subtracted knowingly rather than quietly missing.
+  display:
+    title: Unallocated spend
+    icon: dollar
+    table:
+      sort: "-cost"
+      size: 20
+  {{- include "cost-view.cache" . | nindent 2 }}
+  {{- include "cost-view.baseTemplating" . | nindent 2 }}
+  panels:
+    - name: Unallocated spend
+      description: Total over the selected window
+      type: number
+      number:
+        precision: 2
+      query: SELECT ROUND(COALESCE(SUM(cost), 0), 2) AS value, (SELECT label FROM totals) AS label FROM unallocated
+
+    - name: Share of all spend
+      description: How much of the bill never reaches a resource
+      type: gauge
+      gauge:
+        unit: percent
+        thresholds:
+          - percent: 0
+            color: "#28C19B"
+          - percent: 20
+            color: "#F4B23C"
+          - percent: 40
+            color: "#F25C54"
+      query: SELECT share_pct AS value FROM totals
+
+    - name: By service
+      description: Which services bill without naming a resource
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT service, SUM(cost) AS count FROM unallocated GROUP BY service ORDER BY count DESC
+
+    - name: By charge category
+      description: Usage and purchases against tax, credits and adjustments
+      type: piechart
+      piechart:
+        showLabels: true
+      query: SELECT charge_category, SUM(cost) AS count FROM unallocated GROUP BY charge_category ORDER BY count DESC
+
+    - name: Data freshness
+      description: Cloud billing exports land late; the newest bucket is partial
+      type: properties
+      query: SELECT label, value FROM freshness
+  columns:
+    - name: service
+      type: string
+      primaryKey: true
+      card:
+        position: title
+      filter:
+        type: multiselect
+    - name: account
+      type: string
+      primaryKey: true
+      description: Account the charge was billed to. Charges the provider bills to the billing account itself name no sub-account and are listed under the billing account id instead.
+      card:
+        position: subtitle
+      filter:
+        type: multiselect
+    - name: charge_category
+      type: string
+      primaryKey: true
+      description: Usage, Purchase, Tax, Credit or Adjustment
+      filter:
+        type: multiselect
+      badge:
+        color:
+          map:
+            Usage: "#9CC7FC"
+            Purchase: "#F4B23C"
+            Tax: "#F25C54"
+            Credit: "#28C19B"
+            Adjustment: "#6B7280"
+    - name: spend
+      type: string
+      description: Effective cost over the selected window
+      card:
+        position: headerRight
+    - name: cost
+      type: decimal
+      hidden: true
+      description: The same amount unformatted, so the table sorts and filters on it
+    - name: charges
+      type: number
+      description: Charge periods rolled into this row
+    - name: last_charge
+      type: datetime
+      description: End of the most recent charge period. Still accruing, or stopped.
+      card:
+        position: footer
+  merge: SELECT * FROM unallocated
+  queries:
+    unallocated:
+      columns:
+        service: string
+        account: string
+        charge_category: string
+        spend: string
+        cost: decimal
+        charges: number
+        last_charge: datetime
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.costSeries" . | nindent 10 }}
+          , agg AS (
+            SELECT
+              COALESCE(NULLIF(d.service_name, ''), 'Unknown')                     AS service,
+            {{- include "cost-view.accountLabel" . | nindent 14 }} AS account,
+              d.charge_category                                                   AS charge_category,
+              SUM(d.effective_cost)                                               AS cost,
+              COUNT(*)::int                                                       AS charges,
+              MAX(d.period_end)                                                   AS last_charge
+            FROM costs d
+            JOIN config_items ci ON ci.id = d.config_id
+            WHERE d.billing_currency = '$(.var.currency)'
+              AND d.period_start >= now() - INTERVAL '$(.var.window)'
+              AND ci.type IN ({{ include "cost-view.rootTypes" . }})
+              AND d.external_id LIKE '%:unallocated:%'
+            GROUP BY 1, 2, 3
+          )
+          SELECT
+            a.service,
+            a.account,
+            a.charge_category,
+          {{- include "cost-view.humanSpend" "a.cost" | nindent 12 }} AS spend,
+            round(a.cost, 2)::float8                                              AS cost,
+            a.charges,
+            to_char(a.last_charge AT TIME ZONE 'UTC',
+                    'YYYY-MM-DD"T"HH24:MI:SS"Z"')                                 AS last_charge
+          FROM agg a
+          ORDER BY a.cost DESC
+          LIMIT {{ .Values.views.unallocated.limit | int }}
+    totals:
+      columns:
+        share_pct: decimal
+        label: string
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.costSeries" . | nindent 10 }}
+          , windowed AS (
+            SELECT
+              SUM(d.effective_cost)                                               AS total,
+              SUM(d.effective_cost) FILTER (
+                WHERE ci.type IN ({{ include "cost-view.rootTypes" . }})
+                  AND d.external_id LIKE '%:unallocated:%')                       AS unallocated
+            FROM costs d
+            JOIN config_items ci ON ci.id = d.config_id
+            WHERE d.billing_currency = '$(.var.currency)'
+              AND d.period_start >= now() - INTERVAL '$(.var.window)'
+          )
+          SELECT
+            CASE WHEN COALESCE(total, 0) > 0
+                 THEN round(COALESCE(unallocated, 0) / total * 100, 1)::float8
+            END                                                                   AS share_pct,
+            'Unallocated spend ($(.var.currency))'                                AS label
+          FROM windowed
+    freshness:
+      columns:
+        label: string
+        value: string
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          {{- include "cost-view.freshnessQuery" . | nindent 10 }}
+{{- end }}

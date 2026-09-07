@@ -135,7 +135,7 @@ spec:
         connection: {{ .Values.connection | quote }}
         query: |
           WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
+          {{- include "cost-view.costSeries" . | nindent 10 }}
           , windowed AS (
             SELECT
               d.config_id,
@@ -143,7 +143,7 @@ spec:
                 WHERE d.period_start >= now() - INTERVAL '$(.var.window)'), 0)    AS cur_eff,
               COALESCE(SUM(d.effective_cost) FILTER (
                 WHERE d.period_start <  now() - INTERVAL '$(.var.window)'), 0)    AS prev_eff
-            FROM deduped d
+            FROM costs d
             WHERE d.billing_currency = '$(.var.currency)'
             GROUP BY d.config_id
           )

@@ -10,6 +10,7 @@ A Helm chart for cloud cost views in Flanksource Mission Control
 | `cost-by-owner` | Which team or namespace does the spend belong to? |
 | `cost-by-account` | Which account is it billed to, and how much of it reaches a resource? |
 | `cost-movers` | What changed since last period, ranked by dollars rather than percent? |
+| `cost-unallocated` | What is on the bill that no resource could ever account for? |
 | `cost-unresolved` | Which resources are costing money that the catalog has never seen? |
 
 ## Reading the numbers
@@ -38,7 +39,9 @@ present in the selected window.
 **Ownership comes off the config item, not the charge.** Cost rows carry no resource
 tags — the only label on a charge is the key it was resolved by. So `cost-by-owner`
 reads the selected key from each config item's labels, then its tags. Resources with
-neither, and spend that never reached a resource, group under `(unallocated)`.
+neither, and spend that never reached a resource, group under `(unset)` — a statement
+about the key, not about whether the spend was attributable. Account rows in the
+`cost-overview` table carry no owner at all, having no resource there was anything to own.
 
 ## Attribution
 
@@ -47,7 +50,8 @@ root config item, and `cost-by-account` splits it into two very different cases:
 
 - **Unallocatable** — tax, support, credits, shared fees. There is no resource to
   attribute it to, and there never will be. The scrapers mark these with a
-  `<provider>:unallocated:` resource id.
+  `<provider>:unallocated:` resource id. The `cost-unallocated` view lists it by service
+  and account, so it is subtracted knowingly rather than quietly missing.
 - **Unresolved resource** — the charge names a real resource that the catalog has not
   discovered. This is a scrape coverage gap, not a billing fact. The `cost-unresolved`
   view lists them by spend; each row is a resource worth scraping.
@@ -55,20 +59,12 @@ root config item, and `cost-by-account` splits it into two very different cases:
 A healthy install has most spend Attributed and a small, stable Unallocatable slice. A
 large Unresolved slice means the cost scraper is ahead of the resource scrapers.
 
-## Known issue: duplicate cost bookings
-
-Charges are re-resolved on every scrape, and the merge key on `config_cost_compact`
-includes `config_id`. When a charge's resolution target changes — which happens every
-time a resource is discovered *after* its costs first landed, and the charge moves from
-the account root to the resource itself — the earlier booking is not retired. Both rows
-survive, and summing the table counts that charge twice.
-
-Every query in this chart therefore reads through a `deduped` CTE that keeps one row per
-`(source_key, fingerprint, period_start, period_end)`, preferring the resource-level
-booking so attribution stays as specific as the data allows.
-
-Set `deduplicate: false` to read the table directly once the ingest pipeline retires
-superseded bookings, at which point the CTE becomes dead weight and should be removed.
+**Being booked at the root does not by itself mean undiscovered.** A charge is resolved
+at scrape time and re-resolved only while its billing period is still being restated, so
+a resource discovered after its first charges landed leaves those charges pointing at the
+account root for good. `cost-unresolved` therefore asks the catalog directly and lists
+only resource ids it genuinely does not hold; config-db's `ReattributeConfigCosts` job
+moves the frozen charges onto their resource nightly.
 
 ## Values
 
@@ -76,7 +72,6 @@ superseded bookings, at which point the CTE becomes dead weight and should be re
 |-----|------|---------|-------------|
 | connection | string | `"connection://mission-control-db"` |  |
 | currencies[0] | string | `"USD"` |  |
-| deduplicate | bool | `true` |  |
 | enabled | bool | `true` |  |
 | grainLabels.level1 | string | `"hourly"` |  |
 | grainLabels.level2 | string | `"daily"` |  |
@@ -96,6 +91,8 @@ superseded bookings, at which point the CTE becomes dead weight and should be re
 | views.overview.limit | int | `100` |  |
 | views.overview.sidebar | bool | `true` |  |
 | views.owner.enabled | bool | `true` |  |
+| views.unallocated.enabled | bool | `true` |  |
+| views.unallocated.limit | int | `100` |  |
 | views.unresolved.enabled | bool | `true` |  |
 | views.unresolved.limit | int | `100` |  |
 | windows[0] | string | `"7 days"` |  |

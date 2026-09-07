@@ -123,7 +123,7 @@ spec:
         type: multiselect
     - name: owner
       type: string
-      description: From the config item's labels, then its tags
+      description: From the config item's labels, then its tags. Blank on an account row, whose spend never reached a resource there was anything to own.
       filter:
         type: multiselect
     - name: account
@@ -169,17 +169,17 @@ spec:
         connection: {{ .Values.connection | quote }}
         query: |
           WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
+          {{- include "cost-view.costSeries" . | nindent 10 }}
           , cur AS (
             SELECT COALESCE(SUM(effective_cost), 0) AS eff,
                    COALESCE(SUM(list_cost), 0)      AS list
-            FROM deduped
+            FROM costs
             WHERE billing_currency = '$(.var.currency)'
               AND period_start >= now() - INTERVAL '$(.var.window)'
           )
           , prev AS (
             SELECT COALESCE(SUM(effective_cost), 0) AS eff
-            FROM deduped
+            FROM costs
             WHERE billing_currency = '$(.var.currency)'
               AND period_start >= now() - INTERVAL '$(.var.window)' * 2
               AND period_start <  now() - INTERVAL '$(.var.window)'
@@ -208,13 +208,13 @@ spec:
         connection: {{ .Values.connection | quote }}
         query: |
           WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
+          {{- include "cost-view.costSeries" . | nindent 10 }}
           SELECT
             to_char(date_trunc('day', d.period_start AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
             COALESCE(NULLIF(d.service_name, ''), 'Unknown')                             AS service,
             round(SUM(d.effective_cost), 4)::float8                                     AS effective,
             round(SUM(d.list_cost), 4)::float8                                          AS list
-          FROM deduped d
+          FROM costs d
           WHERE d.billing_currency = '$(.var.currency)'
             AND d.period_start >= now() - INTERVAL '$(.var.window)'
           GROUP BY 1, 2
@@ -227,11 +227,11 @@ spec:
         connection: {{ .Values.connection | quote }}
         query: |
           WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
+          {{- include "cost-view.costSeries" . | nindent 10 }}
           SELECT
           {{- include "cost-view.attributionBucket" . | nindent 12 }} AS bucket,
             round(SUM(d.effective_cost), 2)::float8 AS effective
-          FROM deduped d
+          FROM costs d
           JOIN config_items ci ON ci.id = d.config_id
           WHERE d.billing_currency = '$(.var.currency)'
             AND d.period_start >= now() - INTERVAL '$(.var.window)'
@@ -262,7 +262,7 @@ spec:
         connection: {{ .Values.connection | quote }}
         query: |
           WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
+          {{- include "cost-view.costSeries" . | nindent 10 }}
           , windowed AS (
             SELECT
               d.config_id,
@@ -273,7 +273,7 @@ spec:
               SUM(d.list_cost) FILTER (
                 WHERE d.period_start >= now() - INTERVAL '$(.var.window)')       AS cur_list,
               MAX(d.period_end)                                                  AS last_charge
-            FROM deduped d
+            FROM costs d
             WHERE d.billing_currency = '$(.var.currency)'
             GROUP BY d.config_id
           )
@@ -281,7 +281,9 @@ spec:
             ci.id::text                                                          AS id,
             ci.name                                                              AS name,
             ci.type                                                              AS type,
-            {{ include "cost-view.owner" . }} AS owner,
+            CASE WHEN ci.type IN ({{ include "cost-view.rootTypes" . }}) THEN ''
+                 ELSE {{ include "cost-view.owner" . }}
+            END                                                                  AS owner,
             COALESCE(NULLIF(ci.tags->>'project', ''),
                      NULLIF(ci.tags->>'account', ''), '')                        AS account,
             round(COALESCE(w.cur_eff, 0), 2)::float8                             AS cost,
@@ -319,6 +321,13 @@ spec:
       viewRef:
         namespace: {{ .Release.Namespace }}
         name: cost-movers
+    {{- end }}
+    {{- if .Values.views.unallocated.enabled }}
+    - title: Unallocated spend
+      icon: dollar
+      viewRef:
+        namespace: {{ .Release.Namespace }}
+        name: cost-unallocated
     {{- end }}
     {{- if .Values.views.unresolved.enabled }}
     - title: Undiscovered resources
