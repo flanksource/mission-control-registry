@@ -97,16 +97,6 @@ grainLabels:
   level2: daily
   level3: monthly
 
-# Compensates for duplicate cost bookings left behind when a charge's
-# resolution target changes (see the chart README). Disable once the ingest
-# pipeline retires superseded bookings.
-# @schema
-# required: false
-# type: boolean
-# default: true
-# @schema
-deduplicate: true
-
 # @schema
 # required: false
 # @schema
@@ -146,6 +136,7 @@ views:
     # required: false
     # default: 100
     # type: integer
+    # minimum: 0
     # @schema
     limit: 100
 
@@ -193,6 +184,25 @@ views:
   # @schema
   # required: false
   # @schema
+  unallocated:
+    # @schema
+    # required: false
+    # default: true
+    # type: boolean
+    # @schema
+    enabled: true
+    # Number of unallocated spend rows listed
+    # @schema
+    # required: false
+    # default: 100
+    # type: integer
+    # minimum: 0
+    # @schema
+    limit: 100
+
+  # @schema
+  # required: false
+  # @schema
   unresolved:
     # @schema
     # required: false
@@ -205,5 +215,6 @@ views:
     # required: false
     # default: 100
     # type: integer
+    # minimum: 0
     # @schema
     limit: 100

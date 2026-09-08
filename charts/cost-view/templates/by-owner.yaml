@@ -9,7 +9,7 @@ spec:
   description: >-
     Spend grouped by the ownership key selected in "Group by", read from each config
     item's labels and then its tags. Spend on resources carrying no such key, and spend
-    that never reached a resource at all, groups under "(unallocated)".
+    that never reached a resource at all, group under "(unset)".
   display:
     title: Cost by owner
     icon: group
@@ -39,7 +39,7 @@ spec:
             color: "#28C19B"
       query: |
         SELECT ROUND(
-          100.0 * COALESCE(SUM(CASE WHEN owner <> '(unallocated)' THEN cost END), 0)
+          100.0 * COALESCE(SUM(CASE WHEN owner <> '(unset)' THEN cost END), 0)
                 / NULLIF(SUM(cost), 0), 1) AS value
         FROM owners
 
@@ -107,7 +107,7 @@ spec:
         connection: {{ .Values.connection | quote }}
         query: |
           WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
+          {{- include "cost-view.costSeries" . | nindent 10 }}
           , owned AS (
             SELECT
               {{ include "cost-view.owner" . }} AS owner,
@@ -116,7 +116,7 @@ spec:
               d.effective_cost,
               d.list_cost,
               d.period_start
-            FROM deduped d
+            FROM costs d
             JOIN config_items ci ON ci.id = d.config_id
             WHERE d.billing_currency = '$(.var.currency)'
           )
@@ -164,12 +164,12 @@ spec:
         connection: {{ .Values.connection | quote }}
         query: |
           WITH
-          {{- include "cost-view.deduped" . | nindent 10 }}
+          {{- include "cost-view.costSeries" . | nindent 10 }}
           SELECT
             to_char(date_trunc('day', d.period_start AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS day,
             {{ include "cost-view.owner" . }} AS owner,
             round(SUM(d.effective_cost), 4)::float8 AS effective
-          FROM deduped d
+          FROM costs d
           JOIN config_items ci ON ci.id = d.config_id
           WHERE d.billing_currency = '$(.var.currency)'
             AND d.period_start >= now() - INTERVAL '$(.var.window)'

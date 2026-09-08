@@ -21,12 +21,6 @@
       "title": "currencies",
       "type": "array"
     },
-    "deduplicate": {
-      "default": true,
-      "description": "Compensates for duplicate cost bookings left behind when a charge's\nresolution target changes (see the chart README). Disable once the ingest\npipeline retires superseded bookings.",
-      "title": "deduplicate",
-      "type": "boolean"
-    },
     "enabled": {
       "default": true,
       "description": "Field that can be used as a condition when cost-view is a dependency.\nThis definition is only here as a placeholder such that it is included in\nthe json schema.\nSee https://helm.sh/docs/chart_best_practices/dependencies/#conditions-and-tags\nfor more info.\n+docs:hidden",
@@ -173,6 +167,7 @@
             "limit": {
               "default": 100,
               "description": "Number of resources listed in the spend table",
+              "minimum": 0,
               "title": "limit",
               "type": "integer"
             },
@@ -198,6 +193,25 @@
           "required": [],
           "title": "owner"
         },
+        "unallocated": {
+          "additionalProperties": false,
+          "properties": {
+            "enabled": {
+              "default": true,
+              "title": "enabled",
+              "type": "boolean"
+            },
+            "limit": {
+              "default": 100,
+              "description": "Number of unallocated spend rows listed",
+              "minimum": 0,
+              "title": "limit",
+              "type": "integer"
+            }
+          },
+          "required": [],
+          "title": "unallocated"
+        },
         "unresolved": {
           "additionalProperties": false,
           "properties": {
@@ -209,6 +223,7 @@
             "limit": {
               "default": 100,
               "description": "Number of undiscovered resources listed",
+              "minimum": 0,
               "title": "limit",
               "type": "integer"
             }
