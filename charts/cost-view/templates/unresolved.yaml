@@ -25,14 +25,14 @@ spec:
       type: number
       number:
         precision: 2
-      query: SELECT ROUND(COALESCE(SUM(cost), 0), 2) AS value, 'Unattributed spend' AS label FROM unresolved
+      query: SELECT ROUND(COALESCE(SUM(cost), 0), 2) AS value, 'Unattributed spend' AS label FROM breakdown
 
     - name: By service
       description: Which services the catalog is missing resources from
       type: piechart
       piechart:
         showLabels: true
-      query: SELECT service, SUM(cost) AS count FROM unresolved GROUP BY service ORDER BY count DESC
+      query: SELECT service, SUM(cost) AS count FROM breakdown GROUP BY service ORDER BY count DESC
 
     - name: Data freshness
       description: Cloud billing exports land late; the newest bucket is partial
@@ -102,23 +102,29 @@ spec:
           JOIN config_items ci ON ci.id = d.config_id
           WHERE d.billing_currency = '$(.var.currency)'
             AND d.period_start >= now() - INTERVAL '$(.var.window)'
-            AND ci.type IN ({{ include "cost-view.rootTypes" . }})
-            AND d.external_id IS NOT NULL
-            AND d.external_id NOT LIKE '%:unallocated:%'
-            -- Being booked against the account root is evidence the catalog was missing
-            -- the resource when the charge was last resolved, not that it is missing now.
-            -- A charge is only re-resolved while its billing period is still being
-            -- restated, so a resource discovered after its first charges landed leaves
-            -- those charges pointing at the root for good. Ask the catalog directly
-            -- instead, and list only what it genuinely does not have. Soft-deleted items
-            -- count as discovered: a retired resource is one the catalog knows about.
-            AND NOT EXISTS (
-              SELECT 1 FROM config_items known
-              WHERE known.external_id @> ARRAY[d.external_id]
-            )
+            AND {{ include "cost-view.undiscovered" . | nindent 12 | trim }}
           GROUP BY 1, 2, 3, 4, 5
           ORDER BY 6 DESC
           LIMIT {{ .Values.views.unresolved.limit | int }}
+    breakdown:
+      columns:
+        service: string
+        cost: decimal
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.costSeries" . | nindent 10 }}
+          SELECT
+            COALESCE(NULLIF(d.service_name, ''), 'Unknown')                       AS service,
+            round(SUM(d.effective_cost), 2)::float8                               AS cost
+          FROM costs d
+          JOIN config_items ci ON ci.id = d.config_id
+          WHERE d.billing_currency = '$(.var.currency)'
+            AND d.period_start >= now() - INTERVAL '$(.var.window)'
+            AND {{ include "cost-view.undiscovered" . | nindent 12 | trim }}
+          GROUP BY 1
+          ORDER BY 2 DESC
     freshness:
       columns:
         label: string

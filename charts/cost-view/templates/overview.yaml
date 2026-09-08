@@ -123,7 +123,7 @@ spec:
         type: multiselect
     - name: owner
       type: string
-      description: From the config item's labels, then its tags. Blank on an account row, whose spend never reached a resource there was anything to own.
+      description: From the config item's labels, then its tags. Blank on an account row, whose spend never reached a resource at all.
       filter:
         type: multiselect
     - name: account

@@ -149,6 +149,41 @@ CASE
 {{- end }}
 
 {{/*
+Charges naming a resource the catalog does not hold, as predicates on a `costs d` joined
+to `config_items ci`.
+
+Being booked against the account root is evidence the catalog was missing the resource
+when the charge was last resolved, not that it is missing now. A charge is only
+re-resolved while its billing period is still being restated, so a resource discovered
+after its first charges landed leaves those charges pointing at the root for good. Ask the
+catalog directly instead, and list only what it genuinely does not have. Soft-deleted
+items count as discovered: a retired resource is one the catalog knows about.
+
+Callers write:  AND {{ include "cost-view.undiscovered" . | nindent <n> }}
+*/}}
+{{- define "cost-view.undiscovered" -}}
+ci.type IN ({{ include "cost-view.rootTypes" . }})
+AND d.external_id IS NOT NULL
+AND d.external_id NOT LIKE '%:unallocated:%'
+AND NOT EXISTS (
+  SELECT 1 FROM config_items known
+  WHERE known.external_id @> ARRAY[d.external_id]
+)
+{{- end }}
+
+{{/*
+Charges the provider books to an account rather than to anything inside it, as predicates
+on a `costs d` joined to `config_items ci`. The scrapers mark these with a
+`<provider>:unallocated:` resource id, so there is no resource to find and never will be.
+
+Callers write:  AND {{ include "cost-view.unallocated" . | nindent <n> }}
+*/}}
+{{- define "cost-view.unallocated" -}}
+ci.type IN ({{ include "cost-view.rootTypes" . }})
+AND d.external_id LIKE '%:unallocated:%'
+{{- end }}
+
+{{/*
 Currency and window, which every cost view offers. Values are interpolated into SQL,
 so each is constrained to a fixed list rather than free text.
 

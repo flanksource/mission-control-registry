@@ -26,7 +26,7 @@ spec:
       type: number
       number:
         precision: 2
-      query: SELECT ROUND(COALESCE(SUM(cost), 0), 2) AS value, (SELECT label FROM totals) AS label FROM unallocated
+      query: SELECT ROUND(COALESCE(SUM(cost), 0), 2) AS value, (SELECT label FROM totals) AS label FROM breakdown
 
     - name: Share of all spend
       description: How much of the bill never reaches a resource
@@ -47,14 +47,14 @@ spec:
       type: piechart
       piechart:
         showLabels: true
-      query: SELECT service, SUM(cost) AS count FROM unallocated GROUP BY service ORDER BY count DESC
+      query: SELECT service, SUM(cost) AS count FROM breakdown GROUP BY service ORDER BY count DESC
 
     - name: By charge category
       description: Usage and purchases against tax, credits and adjustments
       type: piechart
       piechart:
         showLabels: true
-      query: SELECT charge_category, SUM(cost) AS count FROM unallocated GROUP BY charge_category ORDER BY count DESC
+      query: SELECT charge_category, SUM(cost) AS count FROM breakdown GROUP BY charge_category ORDER BY count DESC
 
     - name: Data freshness
       description: Cloud billing exports land late; the newest bucket is partial
@@ -135,8 +135,7 @@ spec:
             JOIN config_items ci ON ci.id = d.config_id
             WHERE d.billing_currency = '$(.var.currency)'
               AND d.period_start >= now() - INTERVAL '$(.var.window)'
-              AND ci.type IN ({{ include "cost-view.rootTypes" . }})
-              AND d.external_id LIKE '%:unallocated:%'
+              AND {{ include "cost-view.unallocated" . | nindent 14 | trim }}
             GROUP BY 1, 2, 3
           )
           SELECT
@@ -151,6 +150,27 @@ spec:
           FROM agg a
           ORDER BY a.cost DESC
           LIMIT {{ .Values.views.unallocated.limit | int }}
+    breakdown:
+      columns:
+        service: string
+        charge_category: string
+        cost: decimal
+      sql:
+        connection: {{ .Values.connection | quote }}
+        query: |
+          WITH
+          {{- include "cost-view.costSeries" . | nindent 10 }}
+          SELECT
+            COALESCE(NULLIF(d.service_name, ''), 'Unknown')                       AS service,
+            d.charge_category                                                     AS charge_category,
+            round(SUM(d.effective_cost), 2)::float8                               AS cost
+          FROM costs d
+          JOIN config_items ci ON ci.id = d.config_id
+          WHERE d.billing_currency = '$(.var.currency)'
+            AND d.period_start >= now() - INTERVAL '$(.var.window)'
+            AND {{ include "cost-view.unallocated" . | nindent 12 | trim }}
+          GROUP BY 1, 2
+          ORDER BY 3 DESC
     totals:
       columns:
         share_pct: decimal
@@ -164,8 +184,7 @@ spec:
             SELECT
               SUM(d.effective_cost)                                               AS total,
               SUM(d.effective_cost) FILTER (
-                WHERE ci.type IN ({{ include "cost-view.rootTypes" . }})
-                  AND d.external_id LIKE '%:unallocated:%')                       AS unallocated
+                WHERE {{ include "cost-view.unallocated" . | nindent 16 | trim }}) AS unallocated
             FROM costs d
             JOIN config_items ci ON ci.id = d.config_id
             WHERE d.billing_currency = '$(.var.currency)'

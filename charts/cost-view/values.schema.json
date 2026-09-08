@@ -167,6 +167,7 @@
             "limit": {
               "default": 100,
               "description": "Number of resources listed in the spend table",
+              "minimum": 0,
               "title": "limit",
               "type": "integer"
             },
@@ -203,6 +204,7 @@
             "limit": {
               "default": 100,
               "description": "Number of unallocated spend rows listed",
+              "minimum": 0,
               "title": "limit",
               "type": "integer"
             }
@@ -221,6 +223,7 @@
             "limit": {
               "default": 100,
               "description": "Number of undiscovered resources listed",
+              "minimum": 0,
               "title": "limit",
               "type": "integer"
             }

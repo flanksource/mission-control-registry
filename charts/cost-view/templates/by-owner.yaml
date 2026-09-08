@@ -9,7 +9,7 @@ spec:
   description: >-
     Spend grouped by the ownership key selected in "Group by", read from each config
     item's labels and then its tags. Spend on resources carrying no such key, and spend
-    that never reached a resource at all, groups under "(unset)".
+    that never reached a resource at all, group under "(unset)".
   display:
     title: Cost by owner
     icon: group
