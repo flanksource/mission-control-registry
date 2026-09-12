@@ -60,3 +60,16 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Render an EnvVar object, omitting empty fields.
+Accepts an EnvVar with optional .value and .valueFrom fields.
+*/}}
+{{- define "argocd.envvar" -}}
+{{- if .valueFrom }}
+valueFrom:
+  {{- .valueFrom | toYaml | nindent 2 }}
+{{- else }}
+value: {{ .value | quote }}
+{{- end }}
+{{- end -}}

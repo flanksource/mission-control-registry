@@ -3,10 +3,142 @@
 # @schema
 # default: argocd
 # @schema
+nameOverride: ""
+
+# @schema
+# default: ""
+# @schema
+fullnameOverride: ""
+
+# @schema
+# type: object
+# additionalProperties: true
+# @schema
+labels: {}
+
+# -- Deprecated: no longer used (topology removed)
+# @schema
+# default: argocd
+# deprecated: true
+# @schema
 topologyName: argocd
+
+# -- ArgoCD namespace where the ArgoCD pods are running
+# @schema
+# default: argocd
+# @schema
+namespace: argocd
+
+# -- ArgoCD API configuration used by canary checks
+# @schema
+# type: object
+# additionalProperties: false
+# @schema
 argocd:
+  # -- Deprecated: Use namespace instead
   # @schema
-  # description: The namespace that Argo is installed in
   # default: argocd
+  # deprecated: true
   # @schema
   namespace: argocd
+
+  # -- Optional connection reference for ArgoCD API checks (e.g. connection://http/argocd)
+  # @schema
+  # required: false
+  # @schema
+  connection: ""
+
+  # -- ArgoCD API base URL (e.g. https://argocd.example.com)
+  baseURL: ""
+
+  # -- Bearer token for ArgoCD API authentication.
+  # This is an EnvVar object — either a static value or a reference to a Kubernetes secret.
+  #
+  # Static value:
+  #   token:
+  #     value: "Bearer eyJhbGciOiJIUzI1NiIs..."
+  #
+  # From a Kubernetes secret:
+  #   token:
+  #     valueFrom:
+  #       secretKeyRef:
+  #         name: argocd-credentials
+  #         key: token
+  #
+  # The value must include the "Bearer " prefix.
+  # @schema
+  # $ref: https://raw.githubusercontent.com/flanksource/duty/main/schema/openapi/scrape_config.schema.json#/$defs/EnvVar
+  # @schema
+  token:
+    value: ""
+
+# -- Health check canary that verifies ArgoCD repositories and clusters via the API
+canary:
+  # -- Enable ArgoCD health check canary
+  enabled: false
+  # -- Cron schedule for health checks
+  # @schema
+  # default: "@every 5m"
+  # @schema
+  schedule: "@every 5m"
+
+  # -- Repository health checks
+  repositories:
+    # -- Enable repository health checking
+    enabled: true
+
+  # -- Cluster health checks
+  clusters:
+    # -- Enable cluster health checking
+    enabled: true
+
+  # -- Deployment health check: creates resources (e.g. an ArgoCD Application),
+  # waits for them to become healthy, then tears them down.
+  # Provide your own Kubernetes resources (typically an ArgoCD Application manifest).
+  #
+  # Example:
+  #   deployment:
+  #     enabled: true
+  #     resources:
+  #       - apiVersion: argoproj.io/v1alpha1
+  #         kind: Application
+  #         metadata:
+  #           name: canary-deploy-test
+  #           namespace: argocd
+  #           finalizers:
+  #             - resources-finalizer.argocd.argoproj.io
+  #         spec:
+  #           project: default
+  #           source:
+  #             repoURL: https://github.com/argoproj/argocd-example-apps
+  #             path: guestbook
+  #             targetRevision: HEAD
+  #           destination:
+  #             server: https://kubernetes.default.svc
+  #             namespace: canary-test
+  #           syncPolicy:
+  #             automated:
+  #               prune: true
+  #               selfHeal: true
+  deployment:
+    # -- Enable deployment health checking
+    enabled: false
+    # -- Cron schedule for the deployment check
+    # @schema
+    # default: "@every 30m"
+    # @schema
+    schedule: "@every 30m"
+    # -- Timeout for waiting for resources to become healthy
+    # @schema
+    # default: "5m"
+    # @schema
+    waitTimeout: "5m"
+    # -- Kubernetes resources to create for the deployment check.
+    # These are created each run, verified healthy, then deleted.
+    # @schema
+    # type: array
+    # items:
+    #   type: object
+    #   additionalProperties: true
+    # @schema
+    resources: []
