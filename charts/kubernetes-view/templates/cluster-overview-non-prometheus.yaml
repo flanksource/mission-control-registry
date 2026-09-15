@@ -103,7 +103,7 @@ spec:
           - percent: 85
             color: '#F25C54'
     {{- end }}
-    {{- if .Values.views.pods.enabled }}
+    {{- if and .Values.views.pods.enabled .Values.views.nodes.enabled }}
     - name: Pods Node Distribution
       description: Distribution of pods across nodes
       type: piechart
@@ -113,7 +113,8 @@ spec:
         SELECT COUNT(*) AS count, node
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
-          AND node IS NOT NULL
+          AND phase = 'Running'
+          AND (node, cluster) IN (SELECT name, cluster FROM node_overview)
         GROUP BY node
     {{- end }}
     {{- if .Values.views.nodes.enabled }}
