@@ -149,6 +149,8 @@ spec:
         SELECT 'Requests' AS name, ROUND(SUM(memory_request), 1) AS value
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+          AND phase IN ('Pending', 'Running')
+          AND terminating = false
         HAVING COUNT(memory_request) > 0
       bargauge:
         group: "Memory"
@@ -175,6 +177,8 @@ spec:
         SELECT 'Limits' AS name, ROUND(SUM(memory_limit), 1) AS value
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+          AND phase IN ('Pending', 'Running')
+          AND terminating = false
         HAVING COUNT(memory_limit) > 0
       bargauge:
         group: "Memory"
@@ -229,6 +233,8 @@ spec:
         SELECT 'Requests' AS name, ROUND(SUM(cpu_request), 1) AS value
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+          AND phase IN ('Pending', 'Running')
+          AND terminating = false
         HAVING COUNT(cpu_request) > 0
       bargauge:
         group: "CPU"
@@ -255,6 +261,8 @@ spec:
         SELECT 'Limits' AS name, ROUND(SUM(cpu_limit), 1) AS value
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+          AND phase IN ('Pending', 'Running')
+          AND terminating = false
         HAVING COUNT(cpu_limit) > 0
       bargauge:
         group: "CPU"
@@ -445,6 +453,7 @@ spec:
         cpu_request: decimal
         cpu_limit: decimal
         phase: string
+        terminating: boolean
         created: datetime
         updated: datetime
         image: string

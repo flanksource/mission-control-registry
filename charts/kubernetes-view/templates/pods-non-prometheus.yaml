@@ -128,6 +128,9 @@ spec:
     - name: phase
       type: string
       hidden: true
+    - name: terminating
+      type: boolean
+      hidden: true
     - name: created
       type: datetime
       card:
@@ -181,7 +184,8 @@ spec:
         SELECT SUM(to_millicores(COALESCE(json_extract(container.value, '$.resources.limits.cpu'), '')))
         FROM json_each(json_extract(pod.config, '$.spec.containers')) AS container
       ), 0) AS cpu_limit,
-      json_extract(pod.config, '$.status.phase') AS phase
+      json_extract(pod.config, '$.status.phase') AS phase,
+      json_extract(pod.config, '$.metadata.deletionTimestamp') IS NOT NULL AS terminating
     FROM pod
     ORDER BY namespace, name
   queries:
