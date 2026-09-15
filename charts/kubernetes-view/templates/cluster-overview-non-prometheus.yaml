@@ -38,7 +38,6 @@ spec:
       query: |
         SELECT
           CASE type
-            WHEN 'Kubernetes::Node' THEN 'Nodes'
             WHEN 'Kubernetes::Namespace' THEN 'Namespaces'
             WHEN 'Kubernetes::Pod' THEN 'Running Pods'
             WHEN 'Kubernetes::Deployment' THEN 'Deployments'
@@ -51,9 +50,23 @@ spec:
           END AS resource_type,
           COUNT(*) AS value
         FROM resources
-        WHERE type != 'Kubernetes::Pod'
-          OR json_extract(config, '$.status.phase') = 'Running'
+        WHERE type != 'Kubernetes::Node'
+          AND (
+            type != 'Kubernetes::Pod'
+            OR json_extract(config, '$.status.phase') = 'Running'
+          )
         GROUP BY type
+        {{- if .Values.views.nodes.enabled }}
+        UNION ALL
+        SELECT 'Nodes' AS resource_type, COUNT(*) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+        {{- else }}
+        UNION ALL
+        SELECT 'Nodes' AS resource_type, COUNT(*) AS value
+        FROM resources
+        WHERE type = 'Kubernetes::Node'
+        {{- end }}
         ORDER BY resource_type
     {{- if .Values.views.nodes.enabled }}
     - name: CPU Usage
