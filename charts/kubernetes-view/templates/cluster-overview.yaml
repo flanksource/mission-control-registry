@@ -38,7 +38,6 @@ spec:
       query: |
         SELECT
           CASE type
-            WHEN 'Kubernetes::Node' THEN 'Nodes'
             WHEN 'Kubernetes::Namespace' THEN 'Namespaces'
             WHEN 'Kubernetes::Pod' THEN 'Running Pods'
             WHEN 'Kubernetes::Deployment' THEN 'Deployments'
@@ -51,9 +50,23 @@ spec:
           END AS resource_type,
           COUNT(*) AS value
         FROM resources
-        WHERE type != 'Kubernetes::Pod'
-          OR json_extract(config, '$.status.phase') = 'Running'
+        WHERE type != 'Kubernetes::Node'
+          AND (
+            type != 'Kubernetes::Pod'
+            OR json_extract(config, '$.status.phase') = 'Running'
+          )
         GROUP BY type
+        {{- if .Values.views.nodes.enabled }}
+        UNION ALL
+        SELECT 'Nodes' AS resource_type, COUNT(*) AS value
+        FROM node_overview
+        WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+        {{- else }}
+        UNION ALL
+        SELECT 'Nodes' AS resource_type, COUNT(*) AS value
+        FROM resources
+        WHERE type = 'Kubernetes::Node'
+        {{- end }}
         ORDER BY resource_type
     {{- if .Values.views.nodes.enabled }}
     - name: CPU Usage
@@ -103,7 +116,7 @@ spec:
           - percent: 85
             color: '#F25C54'
     {{- end }}
-    {{- if .Values.views.pods.enabled }}
+    {{- if and .Values.views.pods.enabled .Values.views.nodes.enabled }}
     - name: Pods Node Distribution
       description: Distribution of pods across nodes
       type: piechart
@@ -113,7 +126,8 @@ spec:
         SELECT COUNT(*) AS count, node
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
-          AND node IS NOT NULL
+          AND phase = 'Running'
+          AND (node, cluster) IN (SELECT name, cluster FROM node_overview)
         GROUP BY node
     {{- end }}
     {{- if .Values.views.nodes.enabled }}
@@ -149,6 +163,7 @@ spec:
         SELECT 'Requests' AS name, ROUND(SUM(memory_request), 1) AS value
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+          AND phase IN ('Pending', 'Running')
         HAVING COUNT(memory_request) > 0
       bargauge:
         group: "Memory"
@@ -175,6 +190,7 @@ spec:
         SELECT 'Limits' AS name, ROUND(SUM(memory_limit), 1) AS value
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+          AND phase IN ('Pending', 'Running')
         HAVING COUNT(memory_limit) > 0
       bargauge:
         group: "Memory"
@@ -229,6 +245,7 @@ spec:
         SELECT 'Requests' AS name, ROUND(SUM(cpu_request), 1) AS value
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+          AND phase IN ('Pending', 'Running')
         HAVING COUNT(cpu_request) > 0
       bargauge:
         group: "CPU"
@@ -255,6 +272,7 @@ spec:
         SELECT 'Limits' AS name, ROUND(SUM(cpu_limit), 1) AS value
         FROM pod_overview
         WHERE cluster IN (SELECT DISTINCT json_extract(tags, '$.cluster') FROM namespaces)
+          AND phase IN ('Pending', 'Running')
         HAVING COUNT(cpu_limit) > 0
       bargauge:
         group: "CPU"
