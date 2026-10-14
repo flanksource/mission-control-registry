@@ -60,11 +60,11 @@ spec:
       resource:
         scopeRef: playbooks-ai-recommend-playbook
       target:
-        scopeRef: playbooks-ai-all-configs
+        scopeRef: mission-control-builtin/all-configs
     - name: read-configs
       action: read
       resource:
-        scopeRef: playbooks-ai-all-configs
+        scopeRef: mission-control-builtin/all-configs
     {{- if $connectionTargets }}
     - name: use-slack-connection
       action: connection:use

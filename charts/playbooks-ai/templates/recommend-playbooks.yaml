@@ -60,16 +60,6 @@ spec:
 apiVersion: mission-control.flanksource.com/v1
 kind: Scope
 metadata:
-  name: playbooks-ai-all-configs
-spec:
-  description: every config the AI playbook recommender may run on
-  targets:
-    - config:
-        name: "*"
----
-apiVersion: mission-control.flanksource.com/v1
-kind: Scope
-metadata:
   name: playbooks-ai-recommend-playbook
 spec:
   description: the AI playbook recommender playbook
@@ -110,13 +100,13 @@ spec:
     - name: read-configs
       action: read
       resource:
-        scopeRef: playbooks-ai-all-configs
+        scopeRef: mission-control-builtin/all-configs
     - name: run-kubernetes-logs
       action: playbook:run
       resource:
         scopeRef: playbooks-ai-kubernetes-logs-playbook
       target:
-        scopeRef: playbooks-ai-all-configs
+        scopeRef: mission-control-builtin/all-configs
     {{- if $connectionTargets }}
     - name: use-connections
       action: connection:use
