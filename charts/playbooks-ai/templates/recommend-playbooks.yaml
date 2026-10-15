@@ -56,51 +56,73 @@ spec:
         connection: '{{.Values.slack.connection}}'
         title: Recommended playbooks
         message: '$(getLastAction.result.recommendedPlaybooks)'
-{{- if or .Values.slack.connection .Values.global.llm_connection .Values.global.artifact_connection }}
 ---
 apiVersion: mission-control.flanksource.com/v1
-kind: Permission
+kind: Scope
 metadata:
-  name: allow-recommender-playbook-connection-read
+  name: playbooks-ai-recommend-playbook
 spec:
-  description: allow playbook "recommend-playbook" to read slack & llm connection
-  subject:
-    playbook: "{{.Release.Namespace}}/recommend-playbook"
-  actions:
-    - read
-  object:
-    connections:
-      {{- with include "parse-connection" .Values.slack.connection }}
-      {{- $connection := . | fromYaml }}
-      - name: {{ $connection.name | quote }}
-        namespace: {{ $connection.namespace | quote }}
-      {{- end }}
-      {{- with include "parse-connection" .Values.global.llm_connection }}
-      {{- $connection := . | fromYaml }}
-      - name: {{ $connection.name | quote }}
-        namespace: {{ $connection.namespace | quote }}
-      {{- end }}
-      {{- with include "parse-connection" .Values.global.artifact_connection }}
-      {{- $connection := . | fromYaml }}
-      - name: {{ $connection.name | quote }}
-        namespace: {{ $connection.namespace | quote }}
-      {{- end }}
+  description: the AI playbook recommender playbook
+  targets:
+    - playbook:
+        name: recommend-playbook
+        namespace: {{.Release.Namespace}}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Scope
+metadata:
+  name: playbooks-ai-kubernetes-logs-playbook
+spec:
+  description: the kubernetes logs playbook the AI playbook recommender runs for context
+  targets:
+    - playbook:
+        name: kubernetes-logs
+        namespace: {{.Release.Namespace}}
+{{- $connectionTargets := include "connection-scope-targets" (list .Values.slack.connection .Values.global.llm_connection .Values.global.artifact_connection) | trim }}
+{{- if $connectionTargets }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Scope
+metadata:
+  name: playbooks-ai-recommender-connections
+spec:
+  description: slack, llm & artifact connections used by the AI playbook recommender playbook
+  targets:
+    {{- $connectionTargets | nindent 4 }}
 {{- end }}
 ---
 apiVersion: mission-control.flanksource.com/v1
-kind: Permission
+kind: Role
 metadata:
-  name: allow-recommender-playbook-kubernetes-logs-playbook
+  name: recommend-playbook
 spec:
-  description: allow playbook "recommend-playbook" to run the kubernetes logs playbook
-  subject:
-    playbook: "{{.Release.Namespace}}/recommend-playbook"
-  actions:
-    - playbook:*
-  object:
+  rules:
+    - name: read-configs
+      action: read
+      resource:
+        scopeRef: mission-control-builtin/all-configs
+    - name: run-kubernetes-logs
+      action: playbook:run
+      resource:
+        scopeRef: playbooks-ai-kubernetes-logs-playbook
+      target:
+        scopeRef: mission-control-builtin/all-configs
+    {{- if $connectionTargets }}
+    - name: use-connections
+      action: connection:use
+      resource:
+        scopeRef: playbooks-ai-recommender-connections
+    {{- end }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: RoleBinding
+metadata:
+  name: recommend-playbook
+spec:
+  description: allow playbook "recommend-playbook" to use the slack, llm & artifact connections and run the kubernetes logs playbook
+  role: recommend-playbook
+  subjects:
     playbooks:
-      - name: kubernetes-logs
+      - name: recommend-playbook
         namespace: {{.Release.Namespace}}
-    configs:
-      - name: "*"
 {{- end }}

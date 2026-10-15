@@ -36,41 +36,51 @@ spec:
   fallback:
     connection: {{.Values.slack.connection}}
   {{- end}}
+{{- $connectionTargets := include "connection-scope-targets" (list .Values.slack.connection) | trim }}
+{{- if $connectionTargets }}
 ---
 apiVersion: mission-control.flanksource.com/v1
-kind: Permission
+kind: Scope
 metadata:
-  name: allow-notify-recommender-playbook-run
+  name: playbooks-ai-slack-connection
 spec:
-  description: allow notification "notify-recommender-playbook" to run the AI playbook recommender playbook
-  subject:
-    notification: "{{.Release.Namespace}}/notify-recommender-playbook"
-  actions:
-    - playbook:*
-  object:
-    playbooks:
-      - name: recommend-playbook
-        namespace: {{.Release.Namespace}}
-    configs:
-      - name: "*"
-{{- if .Values.slack.connection }}
----
-apiVersion: mission-control.flanksource.com/v1
-kind: Permission
-metadata:
-  name: allow-notify-recommender-connection-read
-spec:
-  description: allow notification "notify-recommender-playbook" to read slack connection
-  subject:
-    notification: "{{.Release.Namespace}}/notify-recommender-playbook"
-  actions:
-    - read
-  object:
-    connections:
-      {{- with include "parse-connection" .Values.slack.connection }}
-      {{- $connection := . | fromYaml }}
-      - name: {{ $connection.name | quote }}
-        namespace: {{ $connection.namespace | quote }}
-      {{- end }}
+  description: slack connection the AI playbook recommender notification falls back to
+  targets:
+    {{- $connectionTargets | nindent 4 }}
 {{- end }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: Role
+metadata:
+  name: notify-recommender-playbook
+spec:
+  rules:
+    - name: run-recommend-playbook
+      action: playbook:run
+      resource:
+        scopeRef: playbooks-ai-recommend-playbook
+      target:
+        scopeRef: mission-control-builtin/all-configs
+    - name: read-configs
+      action: read
+      resource:
+        scopeRef: mission-control-builtin/all-configs
+    {{- if $connectionTargets }}
+    - name: use-slack-connection
+      action: connection:use
+      resource:
+        scopeRef: playbooks-ai-slack-connection
+    {{- end }}
+---
+apiVersion: mission-control.flanksource.com/v1
+kind: RoleBinding
+metadata:
+  name: notify-recommender-playbook
+spec:
+  description: allow notification "notify-recommender-playbook" to run the AI playbook recommender playbook and send through the slack connection
+  role: notify-recommender-playbook
+  subjects:
+    notifications:
+      - name: notify-recommender-playbook
+        namespace: {{.Release.Namespace}}
 {{- end }}
