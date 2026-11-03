@@ -72,7 +72,14 @@ Kubernetes Connection
 kubeconfig:
   {{- .Values.kubeconfig | toYaml | nindent  2}}
 {{- else -}}
-{{ .Values.kubernetesConnection | toYaml }}
+{{- /* Null fields are omitted because the ScrapeConfig CRD rejects null for object fields */}}
+{{- $connection := dict }}
+{{- range $key, $value := .Values.kubernetesConnection }}
+{{- if not (kindIs "invalid" $value) }}
+{{- $_ := set $connection $key $value }}
+{{- end }}
+{{- end }}
+{{- $connection | toYaml }}
 {{- end }}
 {{- end }}
 
