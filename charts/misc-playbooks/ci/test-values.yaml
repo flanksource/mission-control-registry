@@ -1,1 +1,4 @@
-# defaults are sufficient
+playbooks:
+  http: true
+  curl: true
+  kubectl: true

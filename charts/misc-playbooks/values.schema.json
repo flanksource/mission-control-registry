@@ -45,7 +45,7 @@
           "type": "boolean"
         },
         "http": {
-          "default": true,
+          "default": false,
           "description": "create a playbook to make HTTP requests using the HTTP action",
           "title": "http",
           "type": "boolean"
