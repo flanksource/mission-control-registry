@@ -12,6 +12,12 @@
       "title": "createConnection",
       "type": "boolean"
     },
+    "enabled": {
+      "default": true,
+      "description": "Not used by this chart. Parent charts set it in their dependency condition, and Helm passes it down.",
+      "title": "enabled",
+      "type": "boolean"
+    },
     "fullnameOverride": {
       "default": "",
       "title": "fullnameOverride",

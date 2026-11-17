@@ -14,6 +14,13 @@ fullnameOverride: ""
 
 # @schema
 # required: false
+# type: boolean
+# @schema
+# Not used by this chart. Parent charts set it in their dependency condition, and Helm passes it down.
+enabled: true
+
+# @schema
+# required: false
 # additionalProperties: true
 # type: object
 # @schema
